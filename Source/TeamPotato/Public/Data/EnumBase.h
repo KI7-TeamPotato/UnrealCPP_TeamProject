@@ -31,6 +31,14 @@ enum class EEnemySpeed : uint8
     Jumping     UMETA(DisplayName = "JumpingSpeed"),
     Sprint      UMETA(DisplayName = "SprintSpeed"),
 };
+
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+    None	UMETA(DisplayName = "None"),
+    Sword	UMETA(DisplayName = "Sword")
+};
+
 /**
  * 
  */

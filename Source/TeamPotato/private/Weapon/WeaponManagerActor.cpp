@@ -23,5 +23,4 @@ void AWeaponManagerActor::WeaponAttack(ATestCharacter* Player)
 	{
 		TestWeapon->Attack(Player);
 	}
-
 }
