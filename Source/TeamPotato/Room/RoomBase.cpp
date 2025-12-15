@@ -26,9 +26,17 @@ ARoomBase::ARoomBase()
 	Floor2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Floor2"));
 	Floor3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Floor3"));
 	Floor4 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Floor4"));
+	Ceiling1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ceiling1"));
+	Ceiling2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ceiling2"));
+	Ceiling3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ceiling3"));
+	Ceiling4 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ceiling4"));
 	DoorWay1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorWay1"));
 	DoorWay2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorWay2"));
 	DoorWay3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorWay3"));
+	Piller1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piller1"));
+	Piller2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piller2"));
+	Piller3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piller3"));
+	Piller4 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piller4"));
 
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 
@@ -54,9 +62,17 @@ ARoomBase::ARoomBase()
 	Floor2->SetupAttachment(GeometryFolder);
 	Floor3->SetupAttachment(GeometryFolder);
 	Floor4->SetupAttachment(GeometryFolder);
+	Ceiling1->SetupAttachment(GeometryFolder);
+	Ceiling2->SetupAttachment(GeometryFolder);
+	Ceiling3->SetupAttachment(GeometryFolder);
+	Ceiling4->SetupAttachment(GeometryFolder);
 	DoorWay1->SetupAttachment(GeometryFolder);
 	DoorWay2->SetupAttachment(GeometryFolder);
 	DoorWay3->SetupAttachment(GeometryFolder);
+	Piller1->SetupAttachment(GeometryFolder);
+	Piller2->SetupAttachment(GeometryFolder);
+	Piller3->SetupAttachment(GeometryFolder);
+	Piller4->SetupAttachment(GeometryFolder);
 
 	BoxCollision->SetupAttachment(OverlapFolder);
 

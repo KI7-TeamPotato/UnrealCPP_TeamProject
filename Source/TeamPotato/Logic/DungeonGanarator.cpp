@@ -129,6 +129,7 @@ void ADungeonGanarator::SpawnNextRoom()
     {
         //복도도 생성 목록에 등록
         GeneratedActors.Add(SpawnedCorridor);
+        UE_LOG(LogTemp, Warning, TEXT("1. Corridor Spawned OK")); // 1번 로그
     }
     else
     {
@@ -146,6 +147,7 @@ void ADungeonGanarator::SpawnNextRoom()
     // 복도가 겹쳐서 파괴되었다면 리턴
     if (!IsValid(SpawnedCorridor))
     {
+        UE_LOG(LogTemp, Error, TEXT("2. Corridor Destroyed due to Overlap!")); // 2번 로그
         FTimerHandle TimerHandle;
         // 0.01초 뒤에 SpawnNextRoom을 다시 호출 (즉시 호출 아님 -> 스택 초기화됨)
         GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ADungeonGanarator::SpawnNextRoom, 0.01f, false);
@@ -157,6 +159,7 @@ void ADungeonGanarator::SpawnNextRoom()
 
     if (CorridorExits.Num() == 0)
     {
+        UE_LOG(LogTemp, Error, TEXT("3. Corridor has NO Exits! Stopping chain.")); // 3번 로그
         SpawnedCorridor->Destroy();
         return;
     }
@@ -277,7 +280,7 @@ void ADungeonGanarator::ClosingUnuusedWall()
     {
         //막을 벽 설정
         AClosingWall* LastestClosingWallSpawned = GetWorld()->SpawnActor<AClosingWall>(ClosingWall[0]);
-        FVector RelativeOffset(0.0f, -400.0f, 100.0f);//여기 나중에 수정해야 함(하드코딩)
+        FVector RelativeOffset(0.0f, -55.0f, 15.0f);//여기 나중에 수정해야 함(하드코딩)
         FVector WorldOffset = Element->GetComponentRotation().RotateVector(RelativeOffset);
 
         LastestClosingWallSpawned->SetActorLocation(Element->GetComponentLocation() + WorldOffset);
