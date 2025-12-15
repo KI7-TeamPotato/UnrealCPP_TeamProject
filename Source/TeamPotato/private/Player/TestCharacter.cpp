@@ -95,14 +95,14 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 		AddMovementInput(Forward, MoveInput.Y);
 		AddMovementInput(Right, MoveInput.X);*/
 
-		//FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
+		FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
 
 		//FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
 		//moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
 
-		//AddMovementInput(moveDirection);
-		FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
 		AddMovementInput(moveDirection);
+		/*FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
+		AddMovementInput(moveDirection);*/
 	}
 }
 
@@ -142,7 +142,7 @@ void ATestCharacter::OnRollInput()
 		//콜리전 끄기(무적)
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
-		//PlayRollMontage();
+		PlayRollMontage();
 
 		// EndRoll은 몽타주 Notify 또는 Delay로 호출
 		FTimerHandle TimerHandle;
@@ -186,7 +186,7 @@ void ATestCharacter::PlayRollMontage()
 		SetActorRotation(RollDir.Rotation());
 
 		// 4) 이동 처리
-		LaunchCharacter(RollDir * RollStrength, true, true);
+		//LaunchCharacter(RollDir * RollStrength, true, true);
 
 		// 5) 몽타주 재생
 		AnimInstance->Montage_Play(RollMontage);

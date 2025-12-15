@@ -8,7 +8,7 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	RootMotionMode = ERootMotionMode::IgnoreRootMotion;
+	//RootMotionMode = ERootMotionMode::RootMotionFromEverything;
 
 	APawn* ownerPawn = TryGetPawnOwner();
 	if (ownerPawn)
