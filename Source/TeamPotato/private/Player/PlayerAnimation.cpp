@@ -19,6 +19,5 @@ void UPlayerAnimation::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	
 }

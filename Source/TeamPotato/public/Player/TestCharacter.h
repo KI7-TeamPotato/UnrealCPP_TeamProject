@@ -59,6 +59,11 @@ private:
 	//구르기 종료
 	void EndRollMontage();
 
+public:
+	//가지고 있는 무기 정보
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponType")
+	EWeaponType ActivatingWeapon = EWeaponType::None;
+
 protected:
 	//IA
 	//이동 입력
@@ -125,7 +130,6 @@ private:
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
 
-	EWeaponType ActivatingWeapon = EWeaponType::None;
 
 	//마지막 입력 저장
 	FVector2D MoveInput;

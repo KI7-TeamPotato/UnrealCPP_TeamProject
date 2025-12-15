@@ -34,6 +34,8 @@ ATestCharacter::ATestCharacter()
 
 	WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
 
+
+	ActivatingWeapon = EWeaponType::Bow;			//테스트용
 }
 
 // Called when the game starts or when spawned
@@ -43,7 +45,7 @@ void ATestCharacter::BeginPlay()
 
 	if (GetMesh())
 	{
-		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기		
+		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
 }

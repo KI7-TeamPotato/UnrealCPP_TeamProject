@@ -22,5 +22,13 @@ protected:
 
 public:	
 
-		
+protected:
+	//Anim Montage
+	//구르기 몽타주
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> RollMontage = nullptr;
+	//검 공격 몽타주
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
+
 };
