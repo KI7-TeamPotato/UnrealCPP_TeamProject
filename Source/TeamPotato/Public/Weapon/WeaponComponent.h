@@ -17,16 +17,12 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireWeapon();
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -34,4 +30,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<USkeletalMeshComponent> OwnerMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class ABulletActor> BulletClass;
 };

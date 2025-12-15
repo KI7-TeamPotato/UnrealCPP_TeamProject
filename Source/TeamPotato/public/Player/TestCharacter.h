@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/EnumBase.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
@@ -109,6 +110,9 @@ protected:
 	//무기 매니저
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class AWeaponManagerActor> WeaponManager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
 
 private:
 	//가로방향 마우스 감도

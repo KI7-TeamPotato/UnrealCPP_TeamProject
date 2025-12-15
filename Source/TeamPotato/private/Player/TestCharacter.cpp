@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Weapon/WeaponManagerActor.h"
+#include "Weapon/WeaponComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -34,6 +35,7 @@ ATestCharacter::ATestCharacter()
 
 	WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
 
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -132,7 +134,8 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 void ATestCharacter::OnAttackInput()
 {
 	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
-	WeaponManager->WeaponAttack(this);
+	//WeaponManager->WeaponAttack(this);
+	WeaponComponent->FireWeapon();
 }
 
 void ATestCharacter::OnRollInput()
