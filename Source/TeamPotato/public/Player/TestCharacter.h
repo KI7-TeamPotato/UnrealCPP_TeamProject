@@ -10,6 +10,8 @@
 #include "Weapon/WeaponBase.h"
 #include "TestCharacter.generated.h"
 
+class AWeaponPickupActor;
+
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
 {
@@ -30,8 +32,14 @@ public:
 	// 입력과 이벤트 바인딩
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
+
 	//검 공격 몽타주 재생
 	void PlaySwordAttackMontage();
+
+	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -54,11 +62,20 @@ protected:
 	//공격 함수
 	UFUNCTION()
 	void OnAttackInput();
+
+	// 상호작용 함수
+	void OnInteract();
+
 private:
 	//구르기 실행
 	void PlayRollMontage();
 	//구르기 종료
 	void EndRollMontage();
+
+public:
+	// 획득할 수 잇는 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
+	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
 
 protected:
 	//IA
@@ -77,6 +94,10 @@ protected:
 	//구르기 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Roll = nullptr;
+
+	// 상호작용 입력
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+	TObjectPtr<UInputAction> IA_Interact = nullptr;
 
 	//components
 	//스프링 암 컴포넌트

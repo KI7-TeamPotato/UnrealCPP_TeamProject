@@ -18,8 +18,11 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "Fire")
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void FireWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon);
 
 protected:
 	// Called when the game starts

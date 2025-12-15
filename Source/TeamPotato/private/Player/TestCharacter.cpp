@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Weapon/WeaponManagerActor.h"
 #include "Weapon/WeaponComponent.h"
+#include "Weapon/WeaponPickupActor.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -75,6 +76,28 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
 		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
+		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
+	}
+}
+
+void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	AWeaponPickupActor* WeaponPickup = Cast<AWeaponPickupActor>(OtherActor);
+	if (WeaponPickup)
+	{
+		PickupWeapon = WeaponPickup;
+	}
+}
+
+void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorEndOverlap(OtherActor);
+
+	if (OtherActor == PickupWeapon)
+	{
+		PickupWeapon = nullptr;
 	}
 }
 
@@ -136,6 +159,15 @@ void ATestCharacter::OnAttackInput()
 	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
 	//WeaponManager->WeaponAttack(this);
 	WeaponComponent->FireWeapon();
+}
+
+void ATestCharacter::OnInteract()
+{
+	if (PickupWeapon)
+	{
+		PickupWeapon->OnPickup(this);
+		PickupWeapon = nullptr;
+	}
 }
 
 void ATestCharacter::OnRollInput()

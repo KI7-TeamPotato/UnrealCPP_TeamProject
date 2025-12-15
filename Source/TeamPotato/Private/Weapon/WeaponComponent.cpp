@@ -45,3 +45,26 @@ void UWeaponComponent::FireWeapon()
 		CurrentGun->Fire();
 	}
 }
+
+void UWeaponComponent::EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon)
+{
+	if (!InWeapon) return;
+
+	if (CurrentGun)
+	{
+		CurrentGun->Destroy();
+	}
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter) return;
+
+	CurrentGun = GetWorld()->SpawnActor<AGunWeaponActor>(InWeapon);
+	CurrentGun->SetOwner(OwnerCharacter);
+	CurrentGun->SetOwnerComponent(this);
+
+	CurrentGun->AttachToComponent(
+		OwnerCharacter->GetMesh(),
+		FAttachmentTransformRules::SnapToTargetIncludingScale,
+		TEXT("Weapon_R")
+	);
+}
