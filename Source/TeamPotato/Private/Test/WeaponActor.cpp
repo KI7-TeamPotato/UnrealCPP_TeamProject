@@ -1,15 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Weapon/TestWeapon.h"
-#include "Action/PlayerAttack.h"
+#include "Test/WeaponActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-
-ATestWeapon::ATestWeapon()
+// Sets default values
+AWeaponActor::AWeaponActor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -25,32 +24,27 @@ ATestWeapon::ATestWeapon()
 
 }
 
-void ATestWeapon::BeginPlay()
+// Called when the game starts or when spawned
+void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//ExecutePlayerAttack = CreateDefaultSubobject<APlayerAttack>(TEXT("PlayerAttackAction"));
-
-	// 오버랩 델리게이트 이벤트 추가
-	OnActorBeginOverlap.AddDynamic(this, &ATestWeapon::OnWeaponBeginOverlap);
+	
+	OnActorBeginOverlap.AddDynamic(this, &AWeaponActor::OnWeaponBeginOverlap);
+	UE_LOG(LogTemp, Log, TEXT("델리게이트 등록"));
 }
 
-void ATestWeapon::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void AWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
 	UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"), *OtherActor->GetName());
 	DamageToTarget(OtherActor);
 }
 
-void ATestWeapon::Attack(ATestCharacter* OwningPlayer)
+void AWeaponActor::DamageToTarget(AActor* InTarget)
 {
-	ExecutePlayerAttack->PlayerAttackAction(AttackDamage, OwningPlayer, WeaponType);
-}
-
-void ATestWeapon::DamageToTarget(AActor* InTarget)
-{
-	//UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"),*OtherActor->GetName());
-	float finalDamage = AttackDamage;
+	float finalDamage = Damage;
 	AController* instigator = nullptr;
 
 	UGameplayStatics::ApplyDamage(InTarget, finalDamage, instigator, this, DamageType);
 }
+
+

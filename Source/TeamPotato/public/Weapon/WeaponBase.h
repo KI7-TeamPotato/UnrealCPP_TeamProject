@@ -6,15 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-	None	UMETA(DisplayName = "None"),
-	Sword	UMETA(DisplayName = "Sword"),
-	Bow		UMETA(DisplayName = "Bow"),				//테스트용
-	Gun		UMETA(DisplayName = "Gun")				//테스트용
-};
-
 UCLASS()
 class TEAMPOTATO_API AWeaponBase : public AActor
 {

@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/EnumBase.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "Weapon/WeaponBase.h"
 #include "TestCharacter.generated.h"
+
+class AWeaponPickupActor;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -29,7 +32,6 @@ public:
 	// 입력과 이벤트 바인딩
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
 	//무적 활성화
 	void InvincibleActivate();
 	//무적 비활성화
@@ -39,10 +41,16 @@ public:
 	//구르기
 	void PlaySwordRollMontage();
 
-	//공격
+	//검 공격 몽타주 재생
 	void PlaySwordAttackMontage();
-
+	
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
+
+	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -65,12 +73,21 @@ protected:
 	//공격 함수
 	UFUNCTION()
 	void OnAttackInput();
+
+	// 상호작용 함수
+	void OnInteract();
+
 private:
 
 public:
 	//가지고 있는 무기 정보
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponType")
 	EWeaponType ActivatedWeapon = EWeaponType::None;
+
+public:
+	// 획득할 수 잇는 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
+	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
 
 protected:
 	//IA
@@ -89,6 +106,10 @@ protected:
 	//구르기 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Roll = nullptr;
+
+	// 상호작용 입력
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+	TObjectPtr<UInputAction> IA_Interact = nullptr;
 
 	//components
 	//스프링 암 컴포넌트
@@ -123,6 +144,9 @@ protected:
 	//무기 매니저
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class AWeaponManagerActor> WeaponManager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
 
 private:
 	//가로방향 마우스 감도
