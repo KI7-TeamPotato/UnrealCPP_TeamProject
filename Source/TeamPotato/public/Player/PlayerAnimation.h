@@ -21,14 +21,15 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UFUNCTION()
+	void PlayRollMontage();
 
-protected:
-	//Anim Montage
-	//구르기 몽타주
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
-	TObjectPtr<class UAnimMontage> RollMontage = nullptr;
-	//검 공격 몽타주
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
+	
 
+private:
+	
+
+	//메인 플레이어 포인터
+	UPROPERTY()
+	TWeakObjectPtr<class ATestCharacter> MainPlayer = nullptr;
 };

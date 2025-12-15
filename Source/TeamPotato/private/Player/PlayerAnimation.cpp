@@ -2,6 +2,9 @@
 
 
 #include "Player/PlayerAnimation.h"
+#include "Player/TestCharacter.h"
+#include "Weapon/WeaponManagerActor.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties
 UPlayerAnimation::UPlayerAnimation()
@@ -10,7 +13,6 @@ UPlayerAnimation::UPlayerAnimation()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
 }
 
 
@@ -19,5 +21,18 @@ void UPlayerAnimation::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	MainPlayer = Cast<ATestCharacter>(OwnerPawn);
+
+}
+
+void UPlayerAnimation::PlayRollMontage()
+{
+	if (MainPlayer.IsValid())
+	{
+		if (MainPlayer->GetPlayerActivatedWeapon() == EWeaponType::Sword)
+		{
+			MainPlayer->PlaySwordRollMontage();
+		}
+	}
 }
