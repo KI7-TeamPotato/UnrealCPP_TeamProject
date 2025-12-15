@@ -7,7 +7,6 @@
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
-#include "Weapon/WeaponBase.h"
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
