@@ -29,8 +29,20 @@ public:
 	// 입력과 이벤트 바인딩
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//검 공격 몽타주 재생
+
+	//무적 활성화
+	void InvincibleActivate();
+	//무적 비활성화
+	void InvincibleDeactivate();
+
+	//애니메이션만 재생하는 함수
+	//구르기
+	void PlaySwordRollMontage();
+
+	//공격
 	void PlaySwordAttackMontage();
+
+	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -54,10 +66,11 @@ protected:
 	UFUNCTION()
 	void OnAttackInput();
 private:
-	//구르기 실행
-	void PlayRollMontage();
-	//구르기 종료
-	void EndRollMontage();
+
+public:
+	//가지고 있는 무기 정보
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponType")
+	EWeaponType ActivatedWeapon = EWeaponType::None;
 
 protected:
 	//IA
@@ -99,10 +112,11 @@ protected:
 	FQuat CameraRotation = FQuat(FRotator(-20.0f, 0, 0));
 
 	//Anim Montage
+	// 검
 	//구르기 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
-	TObjectPtr<class UAnimMontage> RollMontage = nullptr;
-	//검 공격 몽타주
+	TObjectPtr<class UAnimMontage> SwordRollMontage = nullptr;
+	//공격 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
 	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
 
@@ -119,21 +133,19 @@ private:
 	//위아래 시야 움직임 제한치
 	float MaxSightAngle = 20.0f;
 
+	//마우스 상하 반전을 위함
+	float Reverse = -1.0f;
+
 	//플레이어 위아래 시야 각도
 	float PlayerVerticalDegree = 0.0f;
 
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
 
-	EWeaponType ActivatingWeapon = EWeaponType::None;
 
-	//마지막 입력 저장
-	FVector2D MoveInput;
-
-	FVector RollDir;
-	float RollStrength = 6000.0f; // 구르기 속도
-	bool bIsRolling = false;
-
+	
+	UPROPERTY()
+	TObjectPtr<class UPlayerAnimation> PlayerAnimation = nullptr;
 
 	//ABP
 	UPROPERTY()

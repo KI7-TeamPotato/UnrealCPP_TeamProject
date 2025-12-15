@@ -21,6 +21,15 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UFUNCTION()
+	void PlayRollMontage();
 
-		
+	
+
+private:
+	
+
+	//메인 플레이어 포인터
+	UPROPERTY()
+	TWeakObjectPtr<class ATestCharacter> MainPlayer = nullptr;
 };

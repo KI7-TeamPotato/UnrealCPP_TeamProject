@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Weapon/WeaponManagerActor.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Player/PlayerAnimation.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -34,6 +35,9 @@ ATestCharacter::ATestCharacter()
 
 	WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
 
+	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
+
+	ActivatedWeapon = EWeaponType::Sword;			//테스트용
 }
 
 // Called when the game starts or when spawned
@@ -43,7 +47,7 @@ void ATestCharacter::BeginPlay()
 
 	if (GetMesh())
 	{
-		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기		
+		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
 }
@@ -53,11 +57,6 @@ void ATestCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsRolling)
-	{
-		// 애니메이션이 Actor 회전을 덮어도 매 프레임 입력 방향 유지
-		//SetActorRotation(RollDir.Rotation());
-	}
 }
 
 // Called to bind functionality to input
@@ -76,34 +75,37 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 }
 
+void ATestCharacter::InvincibleActivate()
+{
+	//콜리전 끔
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	UE_LOG(LogTemp, Log, TEXT("Player Collision Disabled"));
+}
+
+void ATestCharacter::InvincibleDeactivate()
+{
+	//콜리전 켬
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	UE_LOG(LogTemp, Log, TEXT("Player Collision Enabled"));
+}
+
 void ATestCharacter::PlaySwordAttackMontage()
 {
 	PlayAnimMontage(SwordAttackMontage);
 }
 
+void ATestCharacter::PlaySwordRollMontage()
+{
+	PlayAnimMontage(SwordRollMontage);
+}
+
 void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 {
-	MoveInput = InValue.Get<FVector2D>();
-	if (!bIsOnAction)
-	{
-		/*FRotator Rotation = Controller->GetControlRotation();
-		FRotator YawRot(0, Rotation.Yaw, 0);
-
-		FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
-		FVector Right = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
-
-		AddMovementInput(Forward, MoveInput.Y);
-		AddMovementInput(Right, MoveInput.X);*/
-
-		FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
-
-		//FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
-		//moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
-
-		AddMovementInput(moveDirection);
-		/*FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
-		AddMovementInput(moveDirection);*/
-	}
+	FVector2D inputtedMovement = InValue.Get<FVector2D>();
+	FVector moveDirection(inputtedMovement.Y, inputtedMovement.X, 0.0f);
+	FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
+	moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
+	AddMovementInput(moveDirection);
 }
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
@@ -113,7 +115,7 @@ void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 {
-	float sightMovingAmount = (InValue.Get<float>()) * VerticalMouseSensivility;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	float sightMovingAmount = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
 	PlayerVerticalDegree += sightMovingAmount;
 	if (PlayerVerticalDegree > MaxSightAngle)											//위로 넘어가지 않도록
 	{
@@ -132,74 +134,15 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 void ATestCharacter::OnAttackInput()
 {
 	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
-	WeaponManager->WeaponAttack(this);
+	//WeaponManager->WeaponAttack(this);
 }
 
 void ATestCharacter::OnRollInput()
 {
-	if (!bIsOnAction)
+	UE_LOG(LogTemp, Log, TEXT("Roll Inputted"));
+	if(AnimInstance.IsValid() && !AnimInstance->IsAnyMontagePlaying())
 	{
-		//콜리전 끄기(무적)
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
-		PlayRollMontage();
-
-		// EndRoll은 몽타주 Notify 또는 Delay로 호출
-		FTimerHandle TimerHandle;
-		float onRolling = (RollMontage->GetPlayLength()) / 2;
-
-		//구르는동안 무적
-		GetWorldTimerManager().SetTimer(TimerHandle, [this] {}, onRolling, false);
-		//콜리전 켜기(무적 종료)
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		//구르기 후딜레이동안 무적아님
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &ATestCharacter::EndRollMontage, onRolling, false);
+		PlayerAnimation->PlayRollMontage();
 	}
 }
 
-void ATestCharacter::PlayRollMontage()
-{
-	if (AnimInstance.IsValid() && !GetController()->IsMoveInputIgnored())
-	{
-		// 1) 입력값 가져오기
-		FVector2D Input = MoveInput;
-		if (Input.IsNearlyZero())
-		{
-			// 입력이 없으면 캐릭터 정면으로 구르기
-			Input.Y = 1.0f;
-		}
-
-		// 2) 입력을 월드 방향으로 변환
-		FRotator CamRot = Controller->GetControlRotation();
-		CamRot.Pitch = 0;
-		CamRot.Roll = 0;
-
-		FVector Forward = FRotationMatrix(CamRot).GetUnitAxis(EAxis::X);
-		FVector Right = FRotationMatrix(CamRot).GetUnitAxis(EAxis::Y);
-
-		RollDir = (Forward * Input.Y + Right * Input.X).GetSafeNormal();
-
-		if (RollDir.IsNearlyZero())
-			RollDir = Forward;
-
-		// 3) 캐릭터를 입력 방향으로 회전
-		SetActorRotation(RollDir.Rotation());
-
-		// 4) 이동 처리
-		//LaunchCharacter(RollDir * RollStrength, true, true);
-
-		// 5) 몽타주 재생
-		AnimInstance->Montage_Play(RollMontage);
-
-		// 6) 상태 플래그
-		bIsRolling = true;
-		bIsOnAction = true;
-	}
-	
-}
-
-void ATestCharacter::EndRollMontage()
-{
-	bIsRolling = false;
-	bIsOnAction = false;
-}

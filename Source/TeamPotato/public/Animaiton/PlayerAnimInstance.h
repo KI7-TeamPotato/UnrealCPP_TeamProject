@@ -24,4 +24,6 @@ protected:
 
 private:
 	TWeakObjectPtr<const UPawnMovementComponent> OwnerMovementComponent = nullptr;
+
+	TObjectPtr<class ATestCharacter> MainPlayer = nullptr;
 };

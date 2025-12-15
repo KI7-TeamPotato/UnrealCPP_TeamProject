@@ -19,9 +19,9 @@ void AWeaponManagerActor::ActivateWeapon()
 
 void AWeaponManagerActor::WeaponAttack(ATestCharacter* Player)
 {
-	if (TestWeapon->bIsActivated)
+	/*if (TestWeapon->bIsActivated)
 	{
-		TestWeapon->Attack(Player);
-	}
+	}*/
 
+		TestWeapon->Attack(Player);
 }
