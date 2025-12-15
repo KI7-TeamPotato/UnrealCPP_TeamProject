@@ -6,6 +6,7 @@
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
+#include "Weapon/WeaponBase.h"
 #include "TestCharacter.generated.h"
 
 UCLASS()
@@ -124,6 +125,9 @@ private:
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
 
+	EWeaponType ActivatingWeapon = EWeaponType::None;
+
+	//마지막 입력 저장
 	FVector2D MoveInput;
 
 	FVector RollDir;

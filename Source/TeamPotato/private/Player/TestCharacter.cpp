@@ -16,9 +16,9 @@ ATestCharacter::ATestCharacter()
 
 	//컨트롤러 방향으로 회전
 	MovementComponent = GetCharacterMovement();
-	MovementComponent->bUseControllerDesiredRotation = true;
-	MovementComponent->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
+	MovementComponent->bUseControllerDesiredRotation = false;
+	MovementComponent->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 
 	//스프링 암 생성
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -56,7 +56,7 @@ void ATestCharacter::Tick(float DeltaTime)
 	if (bIsRolling)
 	{
 		// 애니메이션이 Actor 회전을 덮어도 매 프레임 입력 방향 유지
-		SetActorRotation(RollDir.Rotation());
+		//SetActorRotation(RollDir.Rotation());
 	}
 }
 
@@ -86,14 +86,23 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 	MoveInput = InValue.Get<FVector2D>();
 	if (!bIsOnAction)
 	{
-		FRotator Rotation = Controller->GetControlRotation();
+		/*FRotator Rotation = Controller->GetControlRotation();
 		FRotator YawRot(0, Rotation.Yaw, 0);
 
 		FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
 		FVector Right = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
 
 		AddMovementInput(Forward, MoveInput.Y);
-		AddMovementInput(Right, MoveInput.X);
+		AddMovementInput(Right, MoveInput.X);*/
+
+		//FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
+
+		//FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
+		//moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
+
+		//AddMovementInput(moveDirection);
+		FVector moveDirection(MoveInput.Y, MoveInput.X, 0.0f);
+		AddMovementInput(moveDirection);
 	}
 }
 
@@ -106,12 +115,12 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 {
 	float sightMovingAmount = (InValue.Get<float>()) * VerticalMouseSensivility;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
 	PlayerVerticalDegree += sightMovingAmount;
-	if (PlayerVerticalDegree > MaxSightAngle)
+	if (PlayerVerticalDegree > MaxSightAngle)											//위로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = MaxSightAngle;
 		sightMovingAmount = 0.0f;
 	}
-	else if (PlayerVerticalDegree < -MaxSightAngle)
+	else if (PlayerVerticalDegree < -MaxSightAngle)										//아래로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = -MaxSightAngle;
 		sightMovingAmount = 0.0f;
@@ -133,7 +142,7 @@ void ATestCharacter::OnRollInput()
 		//콜리전 끄기(무적)
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
-		PlayRollMontage();
+		//PlayRollMontage();
 
 		// EndRoll은 몽타주 Notify 또는 Delay로 호출
 		FTimerHandle TimerHandle;
