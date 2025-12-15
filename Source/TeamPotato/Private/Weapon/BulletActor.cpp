@@ -2,6 +2,7 @@
 
 
 #include "Weapon/BulletActor.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -75,6 +76,12 @@ void ABulletActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 			Hit.ImpactNormal.Rotation()
 		);
 	}
+
+	float finalDamage = AttackDamage;
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
+
+	UGameplayStatics::ApplyDamage(OtherActor, finalDamage, instigator, this, DamageType);
 
 	// Destroy the projectile
 	Destroy();

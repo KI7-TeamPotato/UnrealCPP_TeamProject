@@ -38,4 +38,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data|Area")
 	TObjectPtr<class UNiagaraSystem> HitEffect = nullptr;
+
+	// 무기 공격 데미지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	float AttackDamage = 10.0f;
+
+	// 무기 데미지 타입
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	TSubclassOf<UDamageType> DamageType = nullptr;
 };

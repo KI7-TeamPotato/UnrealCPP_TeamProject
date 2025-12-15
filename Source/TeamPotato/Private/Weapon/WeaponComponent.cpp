@@ -4,7 +4,7 @@
 #include "Weapon/WeaponComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
-#include "Weapon/BulletActor.h"
+#include "Weapon/GunWeaponActor.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -21,67 +21,27 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* Owner = Cast<ACharacter>(GetOwner());
-	if (Owner)
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter || !GunClass) return;
+
+	CurrentGun = GetWorld()->SpawnActor<AGunWeaponActor>(GunClass);
+	if (CurrentGun)
 	{
-		OwnerMesh = Owner->GetMesh();
+		CurrentGun->SetOwner(OwnerCharacter);
+		CurrentGun->SetOwnerComponent(this);
+
+		CurrentGun->AttachToComponent(
+			OwnerCharacter->GetMesh(),
+			FAttachmentTransformRules::SnapToTargetIncludingScale,
+			TEXT("Weapon_R")
+		);
 	}
 }
 
 void UWeaponComponent::FireWeapon()
 {
-	// 총구 위치 계산
-	if (!OwnerMesh)
+	if (CurrentGun)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OwnerMesh is null"));
-		return;
-	}
-	FTransform SocketTransform = OwnerMesh->GetSocketTransform("Weapon_R", RTS_World);
-	FVector MuzzleLocation = SocketTransform.GetLocation();
-	FRotator MuzzleRotation = SocketTransform.GetRotation().Rotator();
-
-	// 화면 중심 좌표 계산
-	if (!GEngine || !GEngine->GameViewport)
-	{
-		return;
-	}
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(ViewportSize);
-	FVector2D ScreenCenter(ViewportSize.X / 2, ViewportSize.Y / 2);
-
-	// 화면 중심에서 월드 방향 가져오기
-	FVector WorldLocation, WorldDirection;
-	UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(GetWorld(), 0), ScreenCenter, WorldLocation, WorldDirection);
-
-	// Ray 설정
-	FVector Start = WorldLocation;
-	FVector End = Start + (WorldDirection * 10000); // Ray 길이
-	FHitResult HitResult;
-
-	FVector HitLocation;
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility))
-	{
-		HitLocation = HitResult.Location; // 충돌한 위치
-	}
-	else
-	{
-		HitLocation = End; // 충돌하지 않으면 Ray 끝점
-	}
-
-	// 발사 방향 계산
-	FVector ShootDirection = (HitLocation - MuzzleLocation).GetSafeNormal();
-
-	if(!BulletClass) return;
-
-	ABulletActor* Bullet = GetWorld()->SpawnActor<ABulletActor>(
-		BulletClass,
-		MuzzleLocation,
-		ShootDirection.Rotation()
-	);
-
-	if (Bullet)
-	{
-		Bullet->SetOwner(GetOwner());          // ⭐ 중요 (자기 자신 충돌 무시용)
-		Bullet->ShootInDirection(ShootDirection, 3000.f); // 속도
+		CurrentGun->Fire();
 	}
 }
