@@ -3,7 +3,7 @@
 
 #include "Player/PlayerAnimation.h"
 #include "Player/TestCharacter.h"
-#include "Weapon/WeaponManagerActor.h"
+#include "Item/Weapon/WeaponManagerActor.h"
 #include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties

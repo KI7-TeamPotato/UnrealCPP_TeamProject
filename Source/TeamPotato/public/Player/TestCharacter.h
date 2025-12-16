@@ -10,6 +10,7 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
+class UWeaponComponent;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -49,7 +50,7 @@ public:
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+	UWeaponComponent* GetWeaponComponent();
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
