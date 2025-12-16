@@ -5,10 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Item/Weapon/WeaponManagerActor.h"
-#include "Component/WeaponComponent.h"
-#include "Item/Weapon/WeaponPickupActor.h"
+#include "Weapon/WeaponManagerActor.h"
+#include "Weapon/WeaponComponent.h"
+#include "Weapon/WeaponPickupActor.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Resource/PlayerResource.h"
 #include "Player/PlayerAnimation.h"
 
 // Sets default values
@@ -39,9 +40,11 @@ ATestCharacter::ATestCharacter()
 
 	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::Sword;			//테스트용
+	ActivatedWeapon = EWeaponType::Gun;			//테스트용
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+
+	ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +57,12 @@ void ATestCharacter::BeginPlay()
 		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
+	
+}
+
+void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
@@ -101,15 +110,6 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
-UWeaponComponent* ATestCharacter::GetWeaponComponent()
-{
-	if (WeaponComponent)
-	{
-		return WeaponComponent;
-	}
-	return nullptr;
-}
-
 void ATestCharacter::InvincibleActivate()
 {
 	//콜리전 끔
@@ -145,31 +145,31 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
 {
-	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);			//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	//마우스 움직이는 값 * 마우스 감도만큼 움직임
 }
 
 void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 {
-	float sightMovingAmount = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
-	PlayerVerticalDegree += sightMovingAmount;
-	if (PlayerVerticalDegree > MaxSightAngle)											//위로 넘어가지 않도록
+	SightDegree = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	PlayerVerticalDegree += SightDegree;
+
+	if (PlayerVerticalDegree > MaxSightAngle)		//위로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = MaxSightAngle;
-		sightMovingAmount = 0.0f;
+		SightDegree = 0.0f;
 	}
-	else if (PlayerVerticalDegree < -MaxSightAngle)										//아래로 넘어가지 않도록
+	else if (PlayerVerticalDegree < -MaxSightAngle)	//아래로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = -MaxSightAngle;
-		sightMovingAmount = 0.0f;
+		SightDegree = 0.0f;
 	}
 	
-	AddControllerPitchInput(sightMovingAmount);
+	AddControllerPitchInput(SightDegree);
 }
 
 void ATestCharacter::OnAttackInput()
 {
-	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
-	//WeaponManager->WeaponAttack(this);
+	PlayerAnimation->PlayAttackAnimation();
 	WeaponComponent->FireWeapon();
 }
 
@@ -184,7 +184,6 @@ void ATestCharacter::OnInteract()
 
 void ATestCharacter::OnRollInput()
 {
-	UE_LOG(LogTemp, Log, TEXT("Roll Inputted"));
 	if(AnimInstance.IsValid() && !AnimInstance->IsAnyMontagePlaying())
 	{
 		PlayerAnimation->PlayRollMontage();

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Component/PlayerResource.h"
+#include "Resource/PlayerResource.h"
 
 // Sets default values for this component's properties
 UPlayerResource::UPlayerResource()
@@ -45,4 +45,13 @@ void UPlayerResource::Heal(float InHeal)
 void UPlayerResource::UseStamina(float InUseStaminaAmount)
 {
 	Stamina -= InUseStaminaAmount;
+}
+
+void UPlayerResource::CheckDeath()
+{
+	if (Health <= 0)
+	{
+		bIsAlive = false;
+	}
+	UE_LOG(LogTemp, Log, TEXT("dead"));
 }
