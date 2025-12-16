@@ -212,13 +212,13 @@ void ATestCharacter::OnInteract()
 
 void ATestCharacter::OnRollInput()
 {
-	KillPlayer();
-	/*if (!bIsOnActing)
+	//KillPlayer();				//테스트용으로 사망 연출 실행해봄
+	if (!bIsOnActing)
 	{
 		if (ResourceManager->UseStamina(RollStamina))
 		{
 			PlayerAnimation->PlayRollMontage();
 		}
-	}*/
+	}
 }
 
