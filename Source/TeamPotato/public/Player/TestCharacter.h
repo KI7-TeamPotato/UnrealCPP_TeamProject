@@ -10,6 +10,7 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
+class UWeaponComponent;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -23,8 +24,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	// Called every frame
@@ -51,7 +50,7 @@ public:
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+	UWeaponComponent* GetWeaponComponent();
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -89,9 +88,6 @@ public:
 	// 획득할 수 잇는 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
 	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sight")
-	float SightDegree;
 
 protected:
 	//IA
@@ -178,8 +174,5 @@ private:
 	//ABP
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimInstance> AnimInstance = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
 };

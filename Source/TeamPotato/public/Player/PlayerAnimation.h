@@ -21,13 +21,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	//구르기 애니메이션 실행
 	UFUNCTION()
 	void PlayRollMontage();
-
-	//공격 애니메이션 실행
-	UFUNCTION()
-	void PlayAttackAnimation();
 
 	
 
