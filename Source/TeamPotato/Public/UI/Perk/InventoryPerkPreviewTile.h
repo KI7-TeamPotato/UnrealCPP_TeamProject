@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
-#include "PerkPreviewTile.generated.h"
+#include "InventoryPerkPreviewTile.generated.h"
 
 class UImage;
 /**
  * 
  */
 UCLASS()
-class TEAMPOTATO_API UPerkPreviewTile : public UUserWidget, public IUserObjectListEntry
+class TEAMPOTATO_API UInventoryPerkPreviewTile : public UUserWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 	

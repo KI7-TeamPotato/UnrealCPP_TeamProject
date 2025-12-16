@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Perk/PerkPreviewTile.h"
+#include "UI/Perk/InventoryPerkPreviewTile.h"
 #include "Data/Object/PerkDataObject.h"
 #include "Components/Image.h"
 
-void UPerkPreviewTile::NativeOnListItemObjectSet(UObject* ListItemObject)
+void UInventoryPerkPreviewTile::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	UPerkDataObject* PerkDataObject = Cast<UPerkDataObject>(ListItemObject);
 
@@ -15,7 +15,7 @@ void UPerkPreviewTile::NativeOnListItemObjectSet(UObject* ListItemObject)
 	}
 }
 
-void UPerkPreviewTile::SetPerkIcon(UTexture2D* NewIcon)
+void UInventoryPerkPreviewTile::SetPerkIcon(UTexture2D* NewIcon)
 {
 	if (NewIcon)
 	{

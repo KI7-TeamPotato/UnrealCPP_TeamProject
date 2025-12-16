@@ -6,7 +6,7 @@
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 #include "Subsystem/ViewModel/SkillViewModel.h"
 #include "UI/Player/PlayerStatWidget.h"
-#include "UI/Perk/PerkSelectionWidget.h"
+#include "UI/Perk/PerkSelectionScreenWidget.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -100,7 +100,7 @@ void UMVVMSubsystem::UnregisterPlayerStatWidget(UPlayerStatWidget* ExitingWidget
 {
 }
 
-void UMVVMSubsystem::ResgisterPerkSelectionWidget(UPerkSelectionWidget* NewWidget)
+void UMVVMSubsystem::ResgisterPerkSelectionWidget(UPerkSelectionScreenWidget* NewWidget)
 {
 	if (!NewWidget) return;
 
@@ -113,7 +113,7 @@ void UMVVMSubsystem::ResgisterPerkSelectionWidget(UPerkSelectionWidget* NewWidge
 	NewWidget->OnTryEquippedPerk.AddDynamic(SkillViewModel, &USkillViewModel::EquippedPerkInPerkComp);
 }
 
-void UMVVMSubsystem::UnregisterPerkSelectionWidget(UPerkSelectionWidget* ExitingWidget)
+void UMVVMSubsystem::UnregisterPerkSelectionWidget(UPerkSelectionScreenWidget* ExitingWidget)
 {
 	if (ExitingWidget && SkillViewModel)
 	{

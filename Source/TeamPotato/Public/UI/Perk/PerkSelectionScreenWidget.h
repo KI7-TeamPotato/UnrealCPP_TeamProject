@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PerkSelectionWidget.generated.h"
+#include "PerkSelectionScreenWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTryEquippedPerk, UPerkDataAsset*, NewPerkDataAsset);
 
-class UButton;
+class UPerkCardWidget;
 class UDataTable;
 class UPerkDataAsset;
 struct FPerkSelectDataTableRow;
@@ -16,13 +16,13 @@ struct FPerkSelectDataTableRow;
  * 
  */
 UCLASS()
-class TEAMPOTATO_API UPerkSelectionWidget : public UUserWidget
+class TEAMPOTATO_API UPerkSelectionScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION()
-	UButton* GetPerkSelectButton1() const { return PerkSelectButton1; }
+    UPerkCardWidget* GetPerkCard1() const { return PerkCard1; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -40,13 +40,13 @@ public:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> PerkSelectButton1;
+	TObjectPtr<UPerkCardWidget> PerkCard1;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> PerkSelectButton2;
+	TObjectPtr<UPerkCardWidget> PerkCard2;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> PerkSelectButton3;
+	TObjectPtr<UPerkCardWidget> PerkCard3;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
