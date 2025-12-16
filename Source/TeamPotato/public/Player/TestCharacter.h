@@ -48,8 +48,13 @@ public:
 	//총 발사 몽타주 재생
 	void PlayGunShootingMontage();
 	
+	//현재 활성화된 무기 확인
 	UFUNCTION(BlueprintCallable, Category = "Weapopn")
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
+	//활성화 된 무기 설정
+	UFUNCTION(BlueprintCallable, Category = "Weapopn")
+	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
+
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
