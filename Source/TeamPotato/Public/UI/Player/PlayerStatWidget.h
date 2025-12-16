@@ -58,4 +58,7 @@ private:
     // --- 플레이어 상태 뷰모델 ---
 	UPROPERTY()
 	TObjectPtr<UPlayerStatusViewModel> PlayerStatusViewModel;
+
+    // 중복 바인딩 방지 플래그
+    bool bIsViewModelBound = false;
 };

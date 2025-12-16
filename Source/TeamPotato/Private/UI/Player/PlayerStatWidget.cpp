@@ -66,21 +66,25 @@ void UPlayerStatWidget::SetViewModel(UPlayerStatusViewModel* InViewModel)
 void  UPlayerStatWidget::BindViewModel()
 {
     // 뷰모델의 델리게이트에 바인딩
-    if (PlayerStatusViewModel)
+    if (PlayerStatusViewModel && !bIsViewModelBound)
     {
         // 모델 -> 뷰
         PlayerStatusViewModel->OnPlayerHealthChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
         PlayerStatusViewModel->OnPlayerResourceChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerResourceBar);
         PlayerStatusViewModel->OnPlayerIconChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
+
+        bIsViewModelBound = true;
     }
 }
 
 void  UPlayerStatWidget::UnbindViewModel()
 {
-    if (PlayerStatusViewModel)
+    if (PlayerStatusViewModel && bIsViewModelBound)
     {
         PlayerStatusViewModel->OnPlayerHealthChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
         PlayerStatusViewModel->OnPlayerResourceChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerResourceBar);
         PlayerStatusViewModel->OnPlayerIconChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
+
+        bIsViewModelBound = false;
     }
 }
