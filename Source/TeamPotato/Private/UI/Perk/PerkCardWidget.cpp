@@ -11,13 +11,18 @@ void UPerkCardWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    SelectButton->OnClicked.AddDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    if (SelectButton)
+    {
+        SelectButton->OnClicked.AddDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    }
 }
 
 void UPerkCardWidget::NativeDestruct()
 {
-    SelectButton->OnClicked.RemoveDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
-
+    if (SelectButton)
+    {
+        SelectButton->OnClicked.RemoveDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    }
     Super::NativeDestruct();
 }
 
@@ -26,16 +31,26 @@ void UPerkCardWidget::SetupPerkCard(UPerkDataAsset* InPerkDataAsset)
     if (!InPerkDataAsset) return;
 
     PerkDataAsset = InPerkDataAsset;
-
-    PerkImage->SetBrushFromTexture(PerkDataAsset->Icon);
-    PerkName->SetText(PerkDataAsset->PerkName);
-    PerkDescript->SetText(PerkDataAsset->Description);
+    
+    if (PerkImage && PerkDataAsset->Icon)
+    {
+        PerkImage->SetBrushFromTexture(PerkDataAsset->Icon);
+    }
+    if (PerkName)
+    {
+        PerkName->SetText(PerkDataAsset->PerkName);
+    }
+    if (PerkDescript)
+    {
+        PerkDescript->SetText(PerkDataAsset->Description);
+    }
 }
 
 void UPerkCardWidget::OnPerkSelectButtonClicked()
 {
-    //if (OnTryEquippedPerk.IsBound() && SelectedPerk)
-    //{
-    //    OnTryEquippedPerk.Broadcast(SelectedPerk);
-    //}
+    if (PerkDataAsset)
+    {
+        UE_LOG(LogTemp, Log, TEXT("PerkCardWidget:  Perk Selected - %s"), *PerkDataAsset->PerkName.ToString());
+        OnPerkCardSelected.Broadcast(PerkDataAsset);
+    }
 }

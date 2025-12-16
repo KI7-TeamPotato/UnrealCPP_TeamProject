@@ -14,6 +14,9 @@ class UTextBlock;
 class UButton;
 class UPerkDataAsset;
 
+// 퍽 카드 선택 시 브로드캐스트할 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkCardSelected, UPerkDataAsset*, SelectedPerk);
+
 UCLASS()
 class TEAMPOTATO_API UPerkCardWidget : public UUserWidget
 {
@@ -30,6 +33,10 @@ protected:
 private:
     UFUNCTION()
     void OnPerkSelectButtonClicked();
+    
+public:
+    UPROPERTY(BlueprintAssignable, Category = "Perk")
+    FOnPerkCardSelected OnPerkCardSelected;
 
 protected:
     UPROPERTY(meta = (BindWidget))

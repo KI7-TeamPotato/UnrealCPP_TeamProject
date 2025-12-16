@@ -4,9 +4,7 @@
 #include "Subsystem/MVVMSubsystem.h"
 #include "Component/PerkComponent.h"
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
-#include "Subsystem/ViewModel/SkillViewModel.h"
-#include "UI/Player/PlayerStatWidget.h"
-#include "UI/Perk/PerkSelectionScreenWidget.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -17,13 +15,13 @@ UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 	return PlayerStatusViewModel;
 }
 
-USkillViewModel* UMVVMSubsystem::GetSkillViewModel()
+UPerkViewModel* UMVVMSubsystem::GetPerkViewModel()
 {
-	if (!SkillViewModel)
+	if (!PerkViewModel)
 	{
-		SkillViewModel = NewObject<USkillViewModel>(this);
+        PerkViewModel = NewObject<UPerkViewModel>(this);
 	}
-	return SkillViewModel;
+	return PerkViewModel;
 }
 
 
@@ -70,55 +68,21 @@ void UMVVMSubsystem::RegisterPerkComp(UPerkComponent* NewComp)
 	UnregisterPerkComp(NewComp);
 
 	// 뷰모델 가져오기
-	GetSkillViewModel();
+    UPerkViewModel* VM = GetPerkViewModel();
 
-	// 델리게이트 바인딩
-	NewComp->OnEquipmentUpdated.AddDynamic(SkillViewModel, &USkillViewModel::SetPerkDataAsset);
-	SkillViewModel->OnEquipPerkRequest.BindDynamic(NewComp, &UPerkComponent::EquipPerk);
+	// Model->ViewModel (장착된 퍽이 바뀌면 뷰모델에 반영)
+	NewComp->OnEquipmentUpdated.AddDynamic(VM, &UPerkViewModel::SetPerkDataAsset);
+
+    // ViewModel->Model (장착 요청시에 컴포넌트에서 장착)
+    VM->OnEquipPerkRequest.BindDynamic(NewComp, &UPerkComponent::EquipPerk);
 }
 
 void UMVVMSubsystem::UnregisterPerkComp(UPerkComponent* ExitingComp)
 {
-	if (ExitingComp && SkillViewModel)
+	if (ExitingComp && PerkViewModel)
 	{
 		// 델리게이트 언바인딩
-		ExitingComp->OnEquipmentUpdated.RemoveDynamic(SkillViewModel, &USkillViewModel::SetPerkDataAsset);
-		SkillViewModel->OnEquipPerkRequest.BindDynamic(ExitingComp, &UPerkComponent::EquipPerk);
+		ExitingComp->OnEquipmentUpdated.RemoveDynamic(PerkViewModel, &UPerkViewModel::SetPerkDataAsset);
+        PerkViewModel->OnEquipPerkRequest.Unbind();
 	}
 }
-
-
-// ==============================================================================
-// 위젯 등록 및 해제 함수들
-// ==============================================================================
-
-void UMVVMSubsystem::ResgisterPlayerStatWidget(UPlayerStatWidget* NewWidget)
-{
-}
-
-void UMVVMSubsystem::UnregisterPlayerStatWidget(UPlayerStatWidget* ExitingWidget)
-{
-}
-
-void UMVVMSubsystem::ResgisterPerkSelectionWidget(UPerkSelectionScreenWidget* NewWidget)
-{
-	if (!NewWidget) return;
-
-	UnregisterPerkSelectionWidget(NewWidget);
-
-	// 뷰모델 가져오기
-	GetSkillViewModel();
-
-	// 델리게이트 바인딩
-	NewWidget->OnTryEquippedPerk.AddDynamic(SkillViewModel, &USkillViewModel::EquippedPerkInPerkComp);
-}
-
-void UMVVMSubsystem::UnregisterPerkSelectionWidget(UPerkSelectionScreenWidget* ExitingWidget)
-{
-	if (ExitingWidget && SkillViewModel)
-	{
-		// 델리게이트 언바인딩
-		ExitingWidget->OnTryEquippedPerk.RemoveDynamic(SkillViewModel, &USkillViewModel::EquippedPerkInPerkComp);
-	}
-}
-

@@ -14,6 +14,10 @@ class TEAMPOTATO_API UMainHud : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+    //UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
+    //void ShowPerkSelectionScreen();
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

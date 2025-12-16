@@ -3,38 +3,62 @@
 
 #include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "Data/PerkDataTableRow.h"
-#include "Subsystem/MVVMSubsystem.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/Perk/PerkCardWidget.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
 
 void UPerkSelectionScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// Add Viewport마다 랜덤한 3개의 퍽 데이터를 가져와서 버튼에 세팅.
-	SetupPerkButtons();
-
-	// MVVM Subsystem에 자신을 등록
-	if (UMVVMSubsystem* mVVMSubsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
-	{
-		mVVMSubsystem->ResgisterPerkSelectionWidget(this);
-	}
-
-	if (PerkCard1 && PerkCard2 && PerkCard3
-        && SelectedPerk)
-	{
-        PerkCard1->SetupPerkCard(SelectedPerk);
-	}
+    BindViewModel();
+	// Add Viewport마다 랜덤한 3개의 퍽 데이터를 가져와서 카드에 세팅
+    SetupPerkCards();
 }
 
-void UPerkSelectionScreenWidget::SetupPerkButtons()
+void UPerkSelectionScreenWidget::NativeDestruct()
 {
-	TArray<FPerkSelectDataTableRow> SelectedPerkRows = GetRandomPerkDataRows(PerkDataRow, 3);
+    if (PerkCard1)
+    {
+        PerkCard1->OnPerkCardSelected.RemoveDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
+    }
+    if (PerkCard2)
+    {
+        PerkCard2->OnPerkCardSelected.RemoveDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
+    }
+    if (PerkCard3)
+    {
+        PerkCard3->OnPerkCardSelected.RemoveDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
+    }
+
+    // ViewModel 바인딩 해제
+    if (PerkViewModel)
+    {
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+    }
+
+    Super::NativeDestruct();
+}
+
+void UPerkSelectionScreenWidget::SetupPerkCards()
+{
+	TArray<FPerkSelectDataTableRow> SelectedPerkRows = GetRandomPerkDataRows(PerkDataRow, PerkNum);
 	
-	if (SelectedPerkRows.Num() > 0)
+    // 카드에 정보를 등록하고 카드 선택시에 델리게이트 바인딩
+	if (PerkCard1 && SelectedPerkRows.IsValidIndex(0))
 	{
-		SelectedPerk = SelectedPerkRows[0].PerkDataAsset;
+        PerkCard1->SetupPerkCard(SelectedPerkRows[0].PerkDataAsset);
+        PerkCard1->OnPerkCardSelected.AddDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
 	}
+    if (PerkCard2 && SelectedPerkRows.IsValidIndex(1))
+    {
+        PerkCard2->SetupPerkCard(SelectedPerkRows[1].PerkDataAsset);
+        PerkCard2->OnPerkCardSelected.AddDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
+    }
+    if (PerkCard3 && SelectedPerkRows.IsValidIndex(2))
+    {
+        PerkCard3->SetupPerkCard(SelectedPerkRows[2].PerkDataAsset);
+        PerkCard3->OnPerkCardSelected.AddDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
+    }
 }
 
 //
@@ -92,10 +116,37 @@ TArray<FPerkSelectDataTableRow> UPerkSelectionScreenWidget::GetRandomPerkDataRow
 	return ResultRows;
 }
 
-void UPerkSelectionScreenWidget::OnPerkSelectButtonClicked()
+void UPerkSelectionScreenWidget::HandlePerkSelected(UPerkDataAsset* SelectedPerkData)
 {
-	if (OnTryEquippedPerk.IsBound() && SelectedPerk)
-	{
-		OnTryEquippedPerk.Broadcast(SelectedPerk);
-	}
+    if (!SelectedPerkData || !PerkViewModel) return;
+
+    PerkViewModel->RequestEquipPerk(SelectedPerkData);
+}
+
+void UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk)
+{
+    RemoveFromParent();
+}
+
+void UPerkSelectionScreenWidget::SetViewModel(UPerkViewModel* InViewModel)
+{
+    UnbindViewModel();
+    PerkViewModel = InViewModel;
+    BindViewModel();
+}
+
+void UPerkSelectionScreenWidget::BindViewModel()
+{
+    if (PerkViewModel)
+    {
+        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+    }
+}
+
+void UPerkSelectionScreenWidget::UnbindViewModel()
+{
+    if (PerkViewModel)
+    {
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+    }
 }

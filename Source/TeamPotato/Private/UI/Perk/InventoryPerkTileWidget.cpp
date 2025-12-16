@@ -3,8 +3,7 @@
 
 #include "UI/Perk/PerkPanelWidget.h"
 #include "Data/Object/PerkDataObject.h"
-#include "Subsystem/MVVMSubsystem.h"
-#include "Subsystem/ViewModel/SkillViewModel.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
 #include "Components/TileView.h"
 
 void UPerkPanelWidget::NativeConstruct()
@@ -17,14 +16,7 @@ void UPerkPanelWidget::NativeConstruct()
 		PerkTileView->OnItemIsHoveredChanged().AddUObject(this, &UPerkPanelWidget::OnPerkitemHoveredChanged);
 	}
 
-	// mvvm서브 시스템에서 패시브 스킬을 얻으면 불러올
-	USkillViewModel* SkillViewModel = GetGameInstance()->GetSubsystem<UMVVMSubsystem>()->GetSkillViewModel();
-
-	if (SkillViewModel)
-	{
-		// 뷰모델의 델리게이트 바인딩
-		SkillViewModel->OnPerkDataAssetChanged.AddDynamic(this, &UPerkPanelWidget::LoadPerkDataFromDataAsset);
-	}
+    BindViewModel();
 }
 
 void UPerkPanelWidget::NativeDestruct()
@@ -34,11 +26,15 @@ void UPerkPanelWidget::NativeDestruct()
 		PerkTileView->OnItemIsHoveredChanged().RemoveAll(this);
 	}
 
+    UnbindViewModel();
+
 	Super::NativeDestruct();
 }
 
 void UPerkPanelWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
 {
+    if (!InData || !PerkTileView) return;
+
 	UPerkDataObject* PerDataObject = NewObject<UPerkDataObject>(this);
 	PerDataObject->InitFromDataTableAsset(InData);
 	PerkTileView->AddItem(PerDataObject);
@@ -56,4 +52,27 @@ void UPerkPanelWidget::OnPerkitemHoveredChanged(UObject* Item, bool bIsHovered)
 	{
 		//설명창 띄우기
 	}
+}
+
+void UPerkPanelWidget::SetViewModel(UPerkViewModel* InViewModel)
+{
+    UnbindViewModel();
+    PerkViewModel = InViewModel;
+    BindViewModel();
+}
+
+void UPerkPanelWidget::BindViewModel()
+{
+    if (PerkViewModel)
+    {
+        // Model -> ViewModel 바인딩
+        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkPanelWidget::LoadPerkDataFromDataAsset);
+    }
+}
+void UPerkPanelWidget::UnbindViewModel()
+{
+    if (PerkViewModel)
+    {
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkPanelWidget::LoadPerkDataFromDataAsset);
+    }
 }

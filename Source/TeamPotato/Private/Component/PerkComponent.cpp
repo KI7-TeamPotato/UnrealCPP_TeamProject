@@ -18,17 +18,17 @@ void UPerkComponent::BeginPlay()
 
 	EquippedPerks.Init(nullptr, MaxEquipSlots);
 
-	if (UMVVMSubsystem* mVVMSubsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
 	{
-		mVVMSubsystem->RegisterPerkComp(this);
+		Subsystem->RegisterPerkComp(this);
 	}
 }
 
 void UPerkComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UMVVMSubsystem* mVVMSubsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
 	{
-		mVVMSubsystem->UnregisterPerkComp(this);
+		Subsystem->UnregisterPerkComp(this);
 	}
 
 	Super::EndPlay(EndPlayReason);
