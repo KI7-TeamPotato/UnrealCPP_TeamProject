@@ -9,6 +9,7 @@
 #include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponPickupActor.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Component/PlayerResource.h"
 #include "Player/PlayerAnimation.h"
 
 // Sets default values
@@ -39,9 +40,11 @@ ATestCharacter::ATestCharacter()
 
 	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::Sword;			//테스트용
+	ActivatedWeapon = EWeaponType::Gun;			//테스트용
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+
+	ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +57,12 @@ void ATestCharacter::BeginPlay()
 		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
+	
+}
+
+void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
@@ -101,32 +110,48 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
-UWeaponComponent* ATestCharacter::GetWeaponComponent()
+void ATestCharacter::KillPlayer()
 {
-	if (WeaponComponent)
-	{
-		return WeaponComponent;
-	}
-	return nullptr;
+	// 1. 캐릭터 이동 중지
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+
+	// 2. 캡슐 충돌 끄기 (중요!!)
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 3. 메시를 Ragdoll 프로파일로
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	// 4. 물리 활성화
+	MeshComp->SetSimulatePhysics(true);
+
+	// 5. 캡슐에서 분리 (선택이지만 거의 필수)
+	MeshComp->DetachFromComponent(
+		FDetachmentTransformRules::KeepWorldTransform
+	);
 }
 
 void ATestCharacter::InvincibleActivate()
 {
 	//콜리전 끔
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	UE_LOG(LogTemp, Log, TEXT("Player Collision Disabled"));
 }
 
 void ATestCharacter::InvincibleDeactivate()
 {
 	//콜리전 켬
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	UE_LOG(LogTemp, Log, TEXT("Player Collision Enabled"));
 }
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
 	PlayAnimMontage(SwordAttackMontage);
+}
+
+void ATestCharacter::PlayGunShootingMontage()
+{
+	PlayAnimMontage(GunShootMontage);
 }
 
 void ATestCharacter::PlaySwordRollMontage()
@@ -145,31 +170,35 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
 {
-	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);			//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	//마우스 움직이는 값 * 마우스 감도만큼 움직임
 }
 
 void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 {
-	float sightMovingAmount = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
-	PlayerVerticalDegree += sightMovingAmount;
-	if (PlayerVerticalDegree > MaxSightAngle)											//위로 넘어가지 않도록
+	SightDegree = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	PlayerVerticalDegree += SightDegree;
+
+	if (PlayerVerticalDegree > MaxSightAngle)		//위로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = MaxSightAngle;
-		sightMovingAmount = 0.0f;
+		SightDegree = 0.0f;
 	}
-	else if (PlayerVerticalDegree < -MaxSightAngle)										//아래로 넘어가지 않도록
+	else if (PlayerVerticalDegree < -MaxSightAngle)	//아래로 넘어가지 않도록
 	{
 		PlayerVerticalDegree = -MaxSightAngle;
-		sightMovingAmount = 0.0f;
+		SightDegree = 0.0f;
 	}
 	
-	AddControllerPitchInput(sightMovingAmount);
+	AddControllerPitchInput(SightDegree);
 }
 
 void ATestCharacter::OnAttackInput()
 {
-	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
-	WeaponComponent->WeaponAttack();
+	if(!bIsOnActing)
+	{
+		PlayerAnimation->PlayAttackAnimation();
+		WeaponComponent->WeaponAttack();
+	}
 }
 
 void ATestCharacter::OnInteract()
@@ -183,10 +212,13 @@ void ATestCharacter::OnInteract()
 
 void ATestCharacter::OnRollInput()
 {
-	UE_LOG(LogTemp, Log, TEXT("Roll Inputted"));
-	if(AnimInstance.IsValid() && !AnimInstance->IsAnyMontagePlaying())
+	//KillPlayer();				//테스트용으로 사망 연출 실행해봄
+	if (!bIsOnActing)
 	{
-		PlayerAnimation->PlayRollMontage();
+		if (ResourceManager->UseStamina(RollStamina))
+		{
+			PlayerAnimation->PlayRollMontage();
+		}
 	}
 }
 

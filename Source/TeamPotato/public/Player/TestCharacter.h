@@ -10,7 +10,6 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
-class UWeaponComponent;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -24,6 +23,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	// Called every frame
@@ -43,14 +44,32 @@ public:
 
 	//검 공격 몽타주 재생
 	void PlaySwordAttackMontage();
+
+	//총 발사 몽타주 재생
+	void PlayGunShootingMontage();
 	
+	//현재 활성화된 무기 확인
+	UFUNCTION(BlueprintCallable, Category = "Weapopn")
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
+	//활성화 된 무기 설정
+	UFUNCTION(BlueprintCallable, Category = "Weapopn")
+	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
+
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	UWeaponComponent* GetWeaponComponent();
+	UFUNCTION()
+	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+
+	UFUNCTION(BlueprintCallable, Category = "Kill")
+	void KillPlayer();
+
+	UFUNCTION(BlueprintCallable, Category = "Sight")
+	inline float GetSightDegree() { return SightDegree; }
+
+	inline void SetOnActing(bool InActing) { bIsOnActing = InActing; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -79,10 +98,6 @@ protected:
 
 private:
 
-public:
-	//가지고 있는 무기 정보
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponType")
-	EWeaponType ActivatedWeapon = EWeaponType::None;
 
 public:
 	// 획득할 수 잇는 무기
@@ -141,6 +156,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
 	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
 
+	//총
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> GunShootMontage = nullptr;
+
 	//무기 매니저
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class AWeaponManagerActor> WeaponManager = nullptr;
@@ -166,7 +185,12 @@ private:
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
 
+	//시야각
+	float SightDegree = 0.0f;
 
+	//행동을 하는데 소모하는 스태미너
+	float RollStamina = 10;
+	float AttackStamina = 5;
 	
 	UPROPERTY()
 	TObjectPtr<class UPlayerAnimation> PlayerAnimation = nullptr;
@@ -174,5 +198,14 @@ private:
 	//ABP
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimInstance> AnimInstance = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
+
+	//가지고 있는 무기 정보
+	EWeaponType ActivatedWeapon = EWeaponType::None;
+
+	//플레이어가 현재 행동중인지 아닌지 확인
+	bool bIsOnActing = false;
 
 };

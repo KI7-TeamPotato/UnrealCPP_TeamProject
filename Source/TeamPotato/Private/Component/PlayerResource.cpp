@@ -2,6 +2,7 @@
 
 
 #include "Component/PlayerResource.h"
+#include "Player/TestCharacter.h"
 
 // Sets default values for this component's properties
 UPlayerResource::UPlayerResource()
@@ -29,7 +30,8 @@ void UPlayerResource::TakeDamage(float InDamage)
 	Health -= InDamage;
 	if (Health <= 0)
 	{
-		bIsAlive = false;
+		AActor* OwnerCharacter = GetOwner();
+		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
 	}
 }
 
@@ -42,7 +44,16 @@ void UPlayerResource::Heal(float InHeal)
 	}
 }
 
-void UPlayerResource::UseStamina(float InUseStaminaAmount)
+bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 {
-	Stamina -= InUseStaminaAmount;
+	if (IsStaminaRemain(InUseStaminaAmount))
+	{
+		Stamina -= InUseStaminaAmount;
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
+		return false;
+	}
 }
