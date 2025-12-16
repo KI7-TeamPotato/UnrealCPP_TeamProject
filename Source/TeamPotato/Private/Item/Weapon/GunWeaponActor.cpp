@@ -13,14 +13,14 @@ AGunWeaponActor::AGunWeaponActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
-	RootComponent = GunMesh;
+	// 무기 타입 설정
+	WeaponType = EWeaponType::Gun;
 }
 
 void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 {
 	// 오류 검사
-	if (!OwnerWeaponComponent || !BulletClass) return;
+	if (!OwnerWeaponComponent || !WeaponMesh || !BulletClass) return;
 
 	OwningPlayer = Cast<ATestCharacter>(GetOwner());
 	if (!OwningPlayer) return;
@@ -29,7 +29,7 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 	if (!PC) return;
 
 	// 총구 위치 계산
-	FTransform SocketTransform = GunMesh->GetSocketTransform("FirePoint", RTS_World);
+	FTransform SocketTransform = WeaponMesh->GetSocketTransform("FirePoint", RTS_World);
 	FVector MuzzleLocation = SocketTransform.GetLocation();
 
 	// 화면 중심 좌표 계산
@@ -74,11 +74,3 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 		Bullet->GunFire(ShootDirection, BulletSpeed, AttackDamage);
 	}
 }
-
-// Called when the game starts or when spawned
-void AGunWeaponActor::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-

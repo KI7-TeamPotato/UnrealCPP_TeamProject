@@ -6,7 +6,7 @@
 #include "Item/PickupActor.h"
 #include "WeaponPickupActor.generated.h"
 
-class AGunWeaponActor;
+class AWeaponBase;
 class UWidgetComponent;
 
 /**
@@ -38,7 +38,7 @@ protected:
 protected:
 	// 무기 클래스
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<AGunWeaponActor> GunClass;
+	TSubclassOf<AWeaponBase> WeaponClass;
 
 	// 상호작용 위젯
 	UPROPERTY(VisibleAnywhere)

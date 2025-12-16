@@ -34,14 +34,6 @@ public:
 public:
 
 protected:
-	// 무기 종류
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	EWeaponType WeaponType = EWeaponType::Sword;
-
-	// 무기 매쉬
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UStaticMeshComponent> WeaponMesh = nullptr;
-
 	// 무기 충돌 범위
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<class UCapsuleComponent> WeaponCollision = nullptr;
@@ -53,7 +45,4 @@ protected:
 	// 무기 데미지 타입
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
 	TSubclassOf<UDamageType> DamageType = nullptr;
-
-private:
-	TObjectPtr<class APlayerAttack> ExecutePlayerAttack = nullptr;
 };

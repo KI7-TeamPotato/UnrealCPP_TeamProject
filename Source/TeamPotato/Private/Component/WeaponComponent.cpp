@@ -24,7 +24,7 @@ void UWeaponComponent::BeginPlay()
 	Owner = Cast<ATestCharacter>(GetOwner());
 	if (!Owner || !WeaponClass) return;
 
-	CurrentWeapon = GetWorld()->SpawnActor<AGunWeaponActor>(WeaponClass);
+	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->SetOwner(Owner);
@@ -40,24 +40,26 @@ void UWeaponComponent::BeginPlay()
 
 void UWeaponComponent::WeaponAttack()
 {
+	if (!CurrentWeapon) return;
+
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->Attack(Owner);
 	}
 }
 
-void UWeaponComponent::EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon)
+void UWeaponComponent::EquipWeapon(TSubclassOf<AWeaponBase> InWeapon)
 {
-	if (!InWeapon) return;
+	if (!Owner || !InWeapon) return;
 
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->Destroy();
+		CurrentWeapon = nullptr;
 	}
 
-	if (!Owner) return;
-
-	CurrentWeapon = GetWorld()->SpawnActor<AGunWeaponActor>(InWeapon);
+	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(InWeapon);
+	if (!CurrentWeapon) return;
 	CurrentWeapon->SetOwner(Owner);
 	CurrentWeapon->SetOwnerComponent(this);
 
@@ -66,4 +68,9 @@ void UWeaponComponent::EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon)
 		FAttachmentTransformRules::SnapToTargetIncludingScale,
 		TEXT("Weapon_R")
 	);
+}
+
+EWeaponType UWeaponComponent::GetCurrentWeaponType() const
+{
+	return CurrentWeapon ? CurrentWeapon->GetWeaponType() : EWeaponType::None;
 }

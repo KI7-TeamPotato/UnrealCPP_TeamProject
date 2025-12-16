@@ -26,7 +26,7 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 	if (!WeaponComponent) return;
 
 	// 플레이어의 웨폰 컴포넌트를 가져와 무기 장착 실행
-	WeaponComponent->EquipWeapon(GunClass);
+	WeaponComponent->EquipWeapon(WeaponClass);
 
 	Destroy();
 }

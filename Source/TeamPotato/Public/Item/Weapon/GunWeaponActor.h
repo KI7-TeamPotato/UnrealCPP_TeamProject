@@ -23,17 +23,6 @@ public:
 	virtual void Attack(class ATestCharacter* OwningPlayer) override;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-protected:
-	// 무기 종류
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	EWeaponType WeaponType = EWeaponType::Gun;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USkeletalMeshComponent> GunMesh = nullptr;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<ABulletActor> BulletClass;
 

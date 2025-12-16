@@ -8,7 +8,6 @@
 #include "WeaponComponent.generated.h"
 
 class ATestCharacter;
-class AGunWeaponActor;
 class AWeaponBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -24,7 +23,9 @@ public:
 	void WeaponAttack();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon);
+	void EquipWeapon(TSubclassOf<AWeaponBase> InWeapon);
+
+	EWeaponType GetCurrentWeaponType() const;
 
 protected:
 	// Called when the game starts
@@ -35,10 +36,10 @@ protected:
 	TObjectPtr<USkeletalMeshComponent> OwnerMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AGunWeaponActor> WeaponClass;
+	TSubclassOf<AWeaponBase> WeaponClass;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TObjectPtr<AGunWeaponActor> CurrentWeapon = nullptr;
+	TObjectPtr<AWeaponBase> CurrentWeapon = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TObjectPtr<ATestCharacter> Owner = nullptr;

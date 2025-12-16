@@ -2,7 +2,7 @@
 
 
 #include "Item/Weapon/BulletActor.h"
-#include "GameFramework/Character.h"
+#include "Player/TestCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
