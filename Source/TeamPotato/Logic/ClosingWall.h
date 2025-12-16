@@ -15,14 +15,23 @@ public:
 	// Sets default values for this actor's properties
 	AClosingWall();
 
+	FVector GetLoc() {
+		return WallLocationOffset;
+	}
+
+	FRotator GetRot() {
+		return WallRotationOffset;
+	}
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> ClosingWall;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Wall")
+	FVector WallLocationOffset = FVector(0.0f, -55.0f, 15.0f); // 기본값 설정
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Wall")
+	FRotator WallRotationOffset = FRotator(0.0f, 0.0f, 0.0f); // 기본값 설정
 };
