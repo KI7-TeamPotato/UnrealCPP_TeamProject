@@ -89,7 +89,7 @@ void ADungeonGanarator::Tick(float DeltaTime)
 void ADungeonGanarator::SpawnStarterRooms()
 {
     //시작 방 생성
-	ADungeonRoom1* SpawnStartRoom = this->GetWorld()->SpawnActor<ADungeonRoom1>(StartRoom[0]);
+    ARoomBase* SpawnStartRoom = this->GetWorld()->SpawnActor<ARoomBase>(StartRoom[0]);
 	if (SpawnStartRoom)
 	{
 		SpawnStartRoom->SetActorLocation(this->GetActorLocation());
@@ -277,11 +277,11 @@ void ADungeonGanarator::ClosingUnuusedWall()
     {
         //막을 벽 설정
         AClosingWall* LastestClosingWallSpawned = GetWorld()->SpawnActor<AClosingWall>(ClosingWall[0]);
-        FVector RelativeOffset(0.0f, -55.0f, 15.0f);//여기 나중에 수정해야 함(하드코딩)
+        FVector RelativeOffset(LastestClosingWallSpawned->GetLoc());//여기 나중에 수정해야 함(하드코딩)
         FVector WorldOffset = Element->GetComponentRotation().RotateVector(RelativeOffset);
 
         LastestClosingWallSpawned->SetActorLocation(Element->GetComponentLocation() + WorldOffset);
-        LastestClosingWallSpawned->SetActorRotation(Element->GetComponentRotation() + FRotator(0.0f, 90.0f, 0.0f));
+        LastestClosingWallSpawned->SetActorRotation(Element->GetComponentRotation() + LastestClosingWallSpawned->GetRot());
 
         GeneratedActors.Add(LastestClosingWallSpawned);
     }

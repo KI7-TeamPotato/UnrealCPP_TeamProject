@@ -7,7 +7,7 @@
 AClosingWall::AClosingWall()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	ClosingWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ClosingWall"));
 	SetRootComponent(ClosingWall);
 	//ClosingWall->SetupAttachment(RootComponent);
@@ -20,11 +20,3 @@ void AClosingWall::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-// Called every frame
-void AClosingWall::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
