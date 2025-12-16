@@ -2,7 +2,7 @@
 
 
 #include "Component/WeaponComponent.h"
-#include "GameFramework/Character.h"
+#include "Player/TestCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Item/Weapon/GunWeaponActor.h"
 
@@ -21,28 +21,28 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (!OwnerCharacter || !GunClass) return;
+	Owner = Cast<ATestCharacter>(GetOwner());
+	if (!Owner || !WeaponClass) return;
 
-	CurrentGun = GetWorld()->SpawnActor<AGunWeaponActor>(GunClass);
-	if (CurrentGun)
+	CurrentWeapon = GetWorld()->SpawnActor<AGunWeaponActor>(WeaponClass);
+	if (CurrentWeapon)
 	{
-		CurrentGun->SetOwner(OwnerCharacter);
-		CurrentGun->SetOwnerComponent(this);
+		CurrentWeapon->SetOwner(Owner);
+		CurrentWeapon->SetOwnerComponent(this);
 
-		CurrentGun->AttachToComponent(
-			OwnerCharacter->GetMesh(),
+		CurrentWeapon->AttachToComponent(
+			Owner->GetMesh(),
 			FAttachmentTransformRules::SnapToTargetIncludingScale,
 			TEXT("Weapon_R")
 		);
 	}
 }
 
-void UWeaponComponent::FireWeapon()
+void UWeaponComponent::WeaponAttack()
 {
-	if (CurrentGun)
+	if (CurrentWeapon)
 	{
-		CurrentGun->Fire();
+		CurrentWeapon->Attack(Owner);
 	}
 }
 
@@ -50,20 +50,19 @@ void UWeaponComponent::EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon)
 {
 	if (!InWeapon) return;
 
-	if (CurrentGun)
+	if (CurrentWeapon)
 	{
-		CurrentGun->Destroy();
+		CurrentWeapon->Destroy();
 	}
 
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (!OwnerCharacter) return;
+	if (!Owner) return;
 
-	CurrentGun = GetWorld()->SpawnActor<AGunWeaponActor>(InWeapon);
-	CurrentGun->SetOwner(OwnerCharacter);
-	CurrentGun->SetOwnerComponent(this);
+	CurrentWeapon = GetWorld()->SpawnActor<AGunWeaponActor>(InWeapon);
+	CurrentWeapon->SetOwner(Owner);
+	CurrentWeapon->SetOwnerComponent(this);
 
-	CurrentGun->AttachToComponent(
-		OwnerCharacter->GetMesh(),
+	CurrentWeapon->AttachToComponent(
+		Owner->GetMesh(),
 		FAttachmentTransformRules::SnapToTargetIncludingScale,
 		TEXT("Weapon_R")
 	);

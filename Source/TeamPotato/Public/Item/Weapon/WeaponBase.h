@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
+class UWeaponComponent;
+
 UCLASS()
 class TEAMPOTATO_API AWeaponBase : public AActor
 {
@@ -19,11 +21,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+public:
 	virtual void Attack(class ATestCharacter* OwningPlayer) {};
+
+	inline void SetOwnerComponent(UWeaponComponent* InWeaponComponent) { OwnerWeaponComponent = InWeaponComponent; }
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UWeaponComponent> OwnerWeaponComponent = nullptr;
 
 public:
 	bool bIsActivated = false;

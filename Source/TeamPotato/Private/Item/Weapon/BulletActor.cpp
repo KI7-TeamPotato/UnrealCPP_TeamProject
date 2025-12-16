@@ -39,11 +39,12 @@ ABulletActor::ABulletActor()
 	InitialLifeSpan = 5.0f;
 }
 
-void ABulletActor::ShootInDirection(const FVector& ShootDirection, float Speed)
+void ABulletActor::GunFire(const FVector& ShootDirection, float Speed, float Damage)
 {
 	ProjectileMovementComponent->InitialSpeed = Speed;
 	ProjectileMovementComponent->MaxSpeed = Speed;
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+	BulletDamage = Damage;
 }
 
 // Called when the game starts or when spawned
@@ -77,7 +78,7 @@ void ABulletActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 		);
 	}
 
-	float finalDamage = AttackDamage;
+	float finalDamage = BulletDamage;
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
 

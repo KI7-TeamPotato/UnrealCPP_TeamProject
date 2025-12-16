@@ -5,7 +5,7 @@
 #include "Item/Weapon/BulletActor.h"
 #include "Component/WeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/Character.h"
+#include "Player/TestCharacter.h"
 
 // Sets default values
 AGunWeaponActor::AGunWeaponActor()
@@ -17,18 +17,15 @@ AGunWeaponActor::AGunWeaponActor()
 	RootComponent = GunMesh;
 }
 
-void AGunWeaponActor::Fire()
+void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 {
 	// 오류 검사
 	if (!OwnerWeaponComponent || !BulletClass) return;
 
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (!OwnerCharacter) return;
+	OwningPlayer = Cast<ATestCharacter>(GetOwner());
+	if (!OwningPlayer) return;
 
-	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
-	if (!OwnerMesh) return;
-
-	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
+	APlayerController* PC = Cast<APlayerController>(OwningPlayer->GetController());
 	if (!PC) return;
 
 	// 총구 위치 계산
@@ -74,7 +71,7 @@ void AGunWeaponActor::Fire()
 	if (Bullet)
 	{
 		Bullet->SetOwner(GetOwner());
-		Bullet->ShootInDirection(ShootDirection, BulletSpeed);
+		Bullet->GunFire(ShootDirection, BulletSpeed, AttackDamage);
 	}
 }
 

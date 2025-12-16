@@ -169,8 +169,7 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 void ATestCharacter::OnAttackInput()
 {
 	UE_LOG(LogTemp, Log, TEXT("Attack Input Succed"));
-	//WeaponManager->WeaponAttack(this);
-	WeaponComponent->FireWeapon();
+	WeaponComponent->WeaponAttack();
 }
 
 void ATestCharacter::OnInteract()

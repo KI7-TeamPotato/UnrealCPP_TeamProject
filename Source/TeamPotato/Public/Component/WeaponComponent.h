@@ -7,7 +7,9 @@
 #include "Data/EnumBase.h"
 #include "WeaponComponent.generated.h"
 
+class ATestCharacter;
 class AGunWeaponActor;
+class AWeaponBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAMPOTATO_API UWeaponComponent : public UActorComponent
@@ -19,7 +21,7 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void FireWeapon();
+	void WeaponAttack();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(TSubclassOf<AGunWeaponActor> InWeapon);
@@ -30,14 +32,14 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	EWeaponType WeaponData = EWeaponType::Gun;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<USkeletalMeshComponent> OwnerMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AGunWeaponActor> GunClass;
+	TSubclassOf<AGunWeaponActor> WeaponClass;
 
-	UPROPERTY()
-	TObjectPtr<AGunWeaponActor> CurrentGun = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TObjectPtr<AGunWeaponActor> CurrentWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TObjectPtr<ATestCharacter> Owner = nullptr;
 };

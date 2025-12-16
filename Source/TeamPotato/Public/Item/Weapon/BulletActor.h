@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	ABulletActor();
 
-	void ShootInDirection(const FVector& ShootDirection, float Speed);
+	void GunFire(const FVector& ShootDirection, float Speed, float Damage);
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,7 +41,7 @@ protected:
 
 	// 무기 공격 데미지
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
-	float AttackDamage = 10.0f;
+	float BulletDamage = 0.0f;
 
 	// 무기 데미지 타입
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
