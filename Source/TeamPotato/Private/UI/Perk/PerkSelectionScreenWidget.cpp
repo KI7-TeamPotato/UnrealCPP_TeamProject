@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Perk/PerkSelectionWidget.h"
-#include "Components/Button.h"
+#include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "Data/PerkDataTableRow.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/Perk/PerkCardWidget.h"
 
-void UPerkSelectionWidget::NativeConstruct()
+void UPerkSelectionScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -20,18 +20,14 @@ void UPerkSelectionWidget::NativeConstruct()
 		mVVMSubsystem->ResgisterPerkSelectionWidget(this);
 	}
 
-	if (PerkSelectButton1 && PerkSelectButton2 && PerkSelectButton3)
+	if (PerkCard1 && PerkCard2 && PerkCard3
+        && SelectedPerk)
 	{
-		// 버튼 1에 아이콘 세팅
-		FButtonStyle ButtonStyle;
-		ButtonStyle.Normal.SetResourceObject(SelectedPerk->Icon);
-		PerkSelectButton1->SetStyle(ButtonStyle);
-
-		PerkSelectButton1->OnClicked.AddDynamic(this, &UPerkSelectionWidget::OnPerkSelectButtonClicked);
+        PerkCard1->SetupPerkCard(SelectedPerk);
 	}
 }
 
-void UPerkSelectionWidget::SetupPerkButtons()
+void UPerkSelectionScreenWidget::SetupPerkButtons()
 {
 	TArray<FPerkSelectDataTableRow> SelectedPerkRows = GetRandomPerkDataRows(PerkDataRow, 3);
 	
@@ -45,7 +41,7 @@ void UPerkSelectionWidget::SetupPerkButtons()
 // -- Efraimidis-Spirakis 알고르즘 --
 // Score = Random(0, 1) ^ (1/Weight)으로 각 행에 대한 점수를 계산하여 상위 K를 선택
 //
-TArray<FPerkSelectDataTableRow> UPerkSelectionWidget::GetRandomPerkDataRows(UDataTable* InDataTable, int32 NumSelect)
+TArray<FPerkSelectDataTableRow> UPerkSelectionScreenWidget::GetRandomPerkDataRows(UDataTable* InDataTable, int32 NumSelect)
 {
 	TArray<FPerkSelectDataTableRow> ResultRows;
 
@@ -96,7 +92,7 @@ TArray<FPerkSelectDataTableRow> UPerkSelectionWidget::GetRandomPerkDataRows(UDat
 	return ResultRows;
 }
 
-void UPerkSelectionWidget::OnPerkSelectButtonClicked()
+void UPerkSelectionScreenWidget::OnPerkSelectButtonClicked()
 {
 	if (OnTryEquippedPerk.IsBound() && SelectedPerk)
 	{

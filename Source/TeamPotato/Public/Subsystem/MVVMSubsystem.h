@@ -9,7 +9,7 @@
 class UPlayerStatusViewModel;
 class USkillViewModel;
 class UPlayerStatWidget;
-class UPerkSelectionWidget;
+class UPerkSelectionScreenWidget;
 class UPlayerResource;
 class UPerkComponent;
 /**
@@ -54,9 +54,9 @@ public:
 	void UnregisterPlayerStatWidget(class UPlayerStatWidget* ExitingWidget);
 
 	UFUNCTION()
-	void ResgisterPerkSelectionWidget(class UPerkSelectionWidget* NewWidget);
+	void ResgisterPerkSelectionWidget(class UPerkSelectionScreenWidget* NewWidget);
 	UFUNCTION()
-	void UnregisterPerkSelectionWidget(class UPerkSelectionWidget* ExitingWidget);
+	void UnregisterPerkSelectionWidget(class UPerkSelectionScreenWidget* ExitingWidget);
 
 private:
 	UPROPERTY()
