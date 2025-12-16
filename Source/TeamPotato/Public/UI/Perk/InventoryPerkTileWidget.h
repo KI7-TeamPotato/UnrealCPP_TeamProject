@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PerkPanelWidget.generated.h"
+#include "InventoryPerkTileWidget.generated.h"
 
 class UTileView;
 class UPerkDataAsset;
@@ -14,7 +14,7 @@ class UPerkViewModel;
  * 
  */
 UCLASS()
-class TEAMPOTATO_API UPerkPanelWidget : public UUserWidget
+class TEAMPOTATO_API UInventoryPerkTileWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

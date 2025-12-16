@@ -4,26 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MainHud.generated.h"
+#include "MainHUDWidget.generated.h"
 
+class UMVVMSubsystem;
 /**
  * 
  */
 UCLASS()
-class TEAMPOTATO_API UMainHud : public UUserWidget
+class TEAMPOTATO_API UMainHUDWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
-    //UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
-    //void ShowPerkSelectionScreen();
-
-protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+    UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
+    void InitializeViewModels(UMVVMSubsystem* Subsystem);
 
 protected:
 	// --- 플레이어 스탯 위젯 ---
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UPlayerStatWidget> PlayerStatPanel;
+
 };

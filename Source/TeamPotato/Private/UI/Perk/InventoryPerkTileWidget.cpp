@@ -1,25 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Perk/PerkPanelWidget.h"
+#include "UI/Perk/InventoryPerkTileWidget.h"
 #include "Data/Object/PerkDataObject.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
 #include "Components/TileView.h"
 
-void UPerkPanelWidget::NativeConstruct()
+void UInventoryPerkTileWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	if (PerkTileView)
 	{
 		PerkTileView->ClearListItems();
-		PerkTileView->OnItemIsHoveredChanged().AddUObject(this, &UPerkPanelWidget::OnPerkitemHoveredChanged);
+		PerkTileView->OnItemIsHoveredChanged().AddUObject(this, &UInventoryPerkTileWidget::OnPerkitemHoveredChanged);
 	}
 
     BindViewModel();
 }
 
-void UPerkPanelWidget::NativeDestruct()
+void UInventoryPerkTileWidget::NativeDestruct()
 {
 	if (PerkTileView)
 	{
@@ -31,7 +31,7 @@ void UPerkPanelWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPerkPanelWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
+void UInventoryPerkTileWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
 {
     if (!InData || !PerkTileView) return;
 
@@ -41,7 +41,7 @@ void UPerkPanelWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
 }
 
 
-void UPerkPanelWidget::OnPerkitemHoveredChanged(UObject* Item, bool bIsHovered)
+void UInventoryPerkTileWidget::OnPerkitemHoveredChanged(UObject* Item, bool bIsHovered)
 {
 	if (Item)
 	{
@@ -54,25 +54,25 @@ void UPerkPanelWidget::OnPerkitemHoveredChanged(UObject* Item, bool bIsHovered)
 	}
 }
 
-void UPerkPanelWidget::SetViewModel(UPerkViewModel* InViewModel)
+void UInventoryPerkTileWidget::SetViewModel(UPerkViewModel* InViewModel)
 {
     UnbindViewModel();
     PerkViewModel = InViewModel;
     BindViewModel();
 }
 
-void UPerkPanelWidget::BindViewModel()
+void UInventoryPerkTileWidget::BindViewModel()
 {
     if (PerkViewModel)
     {
         // Model -> ViewModel 바인딩
-        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkPanelWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
     }
 }
-void UPerkPanelWidget::UnbindViewModel()
+void UInventoryPerkTileWidget::UnbindViewModel()
 {
     if (PerkViewModel)
     {
-        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkPanelWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
     }
 }

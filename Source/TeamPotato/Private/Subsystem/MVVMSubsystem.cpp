@@ -38,16 +38,11 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 	UnregisterPlayerResourceComp(NewComp);
 
 	// 뷰모델 가져오기
-	GetPlayerStatusViewModel();
+	UPlayerStatusViewModel* VM = GetPlayerStatusViewModel();
 
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
 	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
 	NewComp->OnResourceChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
-	
-	// 초기 값 설정
-	PlayerStatusViewModel->SetHealth(NewComp->GetCurrentHealth(), NewComp->GetMaxHealth());
-	PlayerStatusViewModel->SetResource(NewComp->GetCurrentResource(), NewComp->GetMaxResource());
-	PlayerStatusViewModel->SetPlayerIcon(NewComp->GetPlayerIcon()); // 아이콘 설정은 플레이어 셀렉션 위젯에서 처리
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
