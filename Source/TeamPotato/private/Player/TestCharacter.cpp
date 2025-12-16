@@ -5,9 +5,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Weapon/WeaponManagerActor.h"
-#include "Weapon/WeaponComponent.h"
-#include "Weapon/WeaponPickupActor.h"
+#include "Item/Weapon/WeaponManagerActor.h"
+#include "Component/WeaponComponent.h"
+#include "Item/Weapon/WeaponPickupActor.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Player/PlayerAnimation.h"
 
@@ -99,6 +99,15 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	{
 		PickupWeapon = nullptr;
 	}
+}
+
+UWeaponComponent* ATestCharacter::GetWeaponComponent()
+{
+	if (WeaponComponent)
+	{
+		return WeaponComponent;
+	}
+	return nullptr;
 }
 
 void ATestCharacter::InvincibleActivate()
