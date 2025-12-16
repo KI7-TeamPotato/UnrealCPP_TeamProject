@@ -20,8 +20,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "MainMenu")
 	void OnNewGameClicked();
-	UFUNCTION(BlueprintCallable, Category = "MainMenu")
-	void OnContinueGameClicked();
+	//UFUNCTION(BlueprintCallable, Category = "MainMenu")
+	//void OnContinueGameClicked();
 	UFUNCTION(BlueprintCallable, Category = "MainMenu")
 	void OnSettingClicked();
 	UFUNCTION(BlueprintCallable, Category = "MainMenu")
@@ -31,8 +31,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UMainMenuButtonWidget> NewGameButton;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UMainMenuButtonWidget> ContinueGameButton;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	//TObjectPtr<UMainMenuButtonWidget> ContinueGameButton;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UMainMenuButtonWidget> SettingsButton;

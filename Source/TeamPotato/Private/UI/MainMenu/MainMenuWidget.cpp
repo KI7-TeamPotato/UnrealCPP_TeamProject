@@ -15,10 +15,10 @@ void UMainMenuWidget::NativeConstruct()
 	{
 		NewGameButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnNewGameClicked);
 	}
-	if (ContinueGameButton)
-	{
-		ContinueGameButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueGameClicked);
-	}
+	//if (ContinueGameButton)
+	//{
+	//	ContinueGameButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueGameClicked);
+	//}
 	if (SettingsButton)
 	{
 		SettingsButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnSettingClicked);
@@ -42,10 +42,10 @@ void UMainMenuWidget::OnNewGameClicked()
 	}
 }
 
-void UMainMenuWidget::OnContinueGameClicked()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Continue Game Clicked"));
-}
+//void UMainMenuWidget::OnContinueGameClicked()
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("Continue Game Clicked"));
+//}
 
 void UMainMenuWidget::OnSettingClicked()
 {

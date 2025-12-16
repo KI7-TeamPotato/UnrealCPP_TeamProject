@@ -20,7 +20,8 @@ void UPerkSelectionWidget::NativeConstruct()
 		mVVMSubsystem->ResgisterPerkSelectionWidget(this);
 	}
 
-	if (PerkSelectButton1 && PerkSelectButton2 && PerkSelectButton3)
+	if (PerkSelectButton1 && PerkSelectButton2 && PerkSelectButton3
+        && SelectedPerk)
 	{
 		// 버튼 1에 아이콘 세팅
 		FButtonStyle ButtonStyle;
