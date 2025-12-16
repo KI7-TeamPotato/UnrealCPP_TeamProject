@@ -21,12 +21,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	//getter
 	inline float GetHealthAmount() { return Health; }
 	inline float GetStaminaAmount() { return Stamina; }
 
+	//리소스 사용
 	void TakeDamage(float InDamage);
 	void Heal(float InHeal);
 	void UseStamina(float InUseStaminaAmount);
+
+private:
+	void CheckDeath();
 
 private:
 	//체력

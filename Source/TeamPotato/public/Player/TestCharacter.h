@@ -24,6 +24,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -87,6 +89,9 @@ public:
 	// 획득할 수 잇는 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
 	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sight")
+	float SightDegree;
 
 protected:
 	//IA
@@ -173,5 +178,8 @@ private:
 	//ABP
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimInstance> AnimInstance = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
 };

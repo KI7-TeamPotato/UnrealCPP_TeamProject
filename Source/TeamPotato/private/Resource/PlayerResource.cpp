@@ -46,3 +46,12 @@ void UPlayerResource::UseStamina(float InUseStaminaAmount)
 {
 	Stamina -= InUseStaminaAmount;
 }
+
+void UPlayerResource::CheckDeath()
+{
+	if (Health <= 0)
+	{
+		bIsAlive = false;
+	}
+	UE_LOG(LogTemp, Log, TEXT("dead"));
+}
