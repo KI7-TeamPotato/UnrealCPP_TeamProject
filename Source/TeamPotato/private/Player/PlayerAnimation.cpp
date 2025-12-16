@@ -30,19 +30,19 @@ void UPlayerAnimation::PlayRollMontage()
 {
 	if (MainPlayer.IsValid())
 	{
-		PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
+		/*PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
 		if (PlayerWeapon == EWeaponType::Sword)
 		{
-			MainPlayer->PlaySwordRollMontage();
-		}
-		else if (PlayerWeapon == EWeaponType::Gun)
+		}*/
+		MainPlayer->PlaySwordRollMontage();
+		/*else if (PlayerWeapon == EWeaponType::Gun)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Roll with Gun"));
 		}
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("No Weapon Avaliable"));
-		}
+		}*/
 	}
 }
 
@@ -57,7 +57,7 @@ void UPlayerAnimation::PlayAttackAnimation()
 		}
 		else if (PlayerWeapon == EWeaponType::Gun)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Shoot Gun"));
+			MainPlayer->PlayGunShootingMontage();
 		}
 		else
 		{

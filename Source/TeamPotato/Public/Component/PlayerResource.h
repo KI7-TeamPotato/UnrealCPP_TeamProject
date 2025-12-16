@@ -28,10 +28,11 @@ public:
 	//리소스 사용
 	void TakeDamage(float InDamage);
 	void Heal(float InHeal);
-	void UseStamina(float InUseStaminaAmount);
+	bool UseStamina(float InUseStaminaAmount);
+
 
 private:
-	void CheckDeath();
+	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > InUseStaminaAmount); }
 
 private:
 	//체력
@@ -49,6 +50,6 @@ private:
 	//최소 공격력(이 이하로 내려가지 않음)
 	float MinAttackPower = 0.1f;
 
-	//살아있는지
+	//살아있는지 죽었는지
 	bool bIsAlive = true;
 };

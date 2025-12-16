@@ -110,23 +110,48 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
+void ATestCharacter::KillPlayer()
+{
+	// 1. 캐릭터 이동 중지
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+
+	// 2. 캡슐 충돌 끄기 (중요!!)
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 3. 메시를 Ragdoll 프로파일로
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	// 4. 물리 활성화
+	MeshComp->SetSimulatePhysics(true);
+
+	// 5. 캡슐에서 분리 (선택이지만 거의 필수)
+	MeshComp->DetachFromComponent(
+		FDetachmentTransformRules::KeepWorldTransform
+	);
+}
+
 void ATestCharacter::InvincibleActivate()
 {
 	//콜리전 끔
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	UE_LOG(LogTemp, Log, TEXT("Player Collision Disabled"));
 }
 
 void ATestCharacter::InvincibleDeactivate()
 {
 	//콜리전 켬
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	UE_LOG(LogTemp, Log, TEXT("Player Collision Enabled"));
 }
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
 	PlayAnimMontage(SwordAttackMontage);
+}
+
+void ATestCharacter::PlayGunShootingMontage()
+{
+	PlayAnimMontage(GunShootMontage);
 }
 
 void ATestCharacter::PlaySwordRollMontage()
@@ -169,8 +194,11 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttackInput()
 {
-	PlayerAnimation->PlayAttackAnimation();
-	WeaponComponent->FireWeapon();
+	if(!bIsOnActing)
+	{
+		PlayerAnimation->PlayAttackAnimation();
+		WeaponComponent->FireWeapon();
+	}
 }
 
 void ATestCharacter::OnInteract()
@@ -184,9 +212,13 @@ void ATestCharacter::OnInteract()
 
 void ATestCharacter::OnRollInput()
 {
-	if(AnimInstance.IsValid() && !AnimInstance->IsAnyMontagePlaying())
+	KillPlayer();
+	/*if (!bIsOnActing)
 	{
-		PlayerAnimation->PlayRollMontage();
-	}
+		if (ResourceManager->UseStamina(RollStamina))
+		{
+			PlayerAnimation->PlayRollMontage();
+		}
+	}*/
 }
 
