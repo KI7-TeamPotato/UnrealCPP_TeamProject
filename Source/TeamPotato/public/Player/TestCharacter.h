@@ -51,7 +51,11 @@ public:
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+	UFUNCTION()
 	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+
+	UFUNCTION(BlueprintCallable, Category = "Sight")
+	inline float GetSightDegree() { return SightDegree; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
@@ -90,8 +94,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
 	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sight")
-	float SightDegree;
 
 protected:
 	//IA
@@ -170,7 +172,8 @@ private:
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
 
-
+	//시야각
+	float SightDegree;
 	
 	UPROPERTY()
 	TObjectPtr<class UPlayerAnimation> PlayerAnimation = nullptr;

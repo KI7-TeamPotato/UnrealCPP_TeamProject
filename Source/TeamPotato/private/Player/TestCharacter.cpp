@@ -5,11 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Weapon/WeaponManagerActor.h"
-#include "Weapon/WeaponComponent.h"
-#include "Weapon/WeaponPickupActor.h"
+#include "Item/Weapon/WeaponManagerActor.h"
+#include "Component/WeaponComponent.h"
+#include "Item/Weapon/WeaponPickupActor.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Resource/PlayerResource.h"
+#include "Component/PlayerResource.h"
 #include "Player/PlayerAnimation.h"
 
 // Sets default values

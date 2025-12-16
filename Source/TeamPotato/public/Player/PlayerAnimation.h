@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/EnumBase.h"
 #include "Components/ActorComponent.h"
 #include "PlayerAnimation.generated.h"
 
@@ -24,10 +25,12 @@ public:
 	UFUNCTION()
 	void PlayRollMontage();
 
-	
+	UFUNCTION()
+	void PlayAttackAnimation();
 
 private:
 	
+	EWeaponType PlayerWeapon = EWeaponType::None;
 
 	//메인 플레이어 포인터
 	UPROPERTY()
