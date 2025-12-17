@@ -48,14 +48,15 @@ void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-void UPlayerResource::TakeDamage(float InDamage)
+void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
 	Health -= InDamage;
 
     // 체력 변경 브로드캐스트 시도
     BroadcastHealthChanged();
 
-	if (Health <= 0)
+    UE_LOG(LogTemp, Log, TEXT("UPlayerResource::PlayerTakeDamage | Left Health: %f"), Health);
+	if (Health <= MinHealth)
 	{
 		AActor* OwnerCharacter = GetOwner();
 		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
