@@ -25,10 +25,11 @@ void UPlayerResource::BeginPlay()
 	Stamina = MaxStamina;
 }
 
-void UPlayerResource::TakeDamage(float InDamage)
+void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
 	Health -= InDamage;
-	if (Health <= 0)
+    UE_LOG(LogTemp, Log, TEXT("UPlayerResource::PlayerTakeDamage | Left Health: %f"), Health);
+	if (Health <= MinHealth)
 	{
 		AActor* OwnerCharacter = GetOwner();
 		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();

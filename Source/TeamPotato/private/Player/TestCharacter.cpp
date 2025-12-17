@@ -44,6 +44,9 @@ ATestCharacter::ATestCharacter()
 
 	ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
 
+    //데미지 받는 함수 바인딩
+    OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);
+
     ActivatedWeapon = EWeaponType::Gun;
 }
 
@@ -117,6 +120,12 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 		PickupWeapon = nullptr;
 	}
 }
+
+void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+    ResourceManager->PlayerTakeDamage(InDamage);
+}
+
 
 void ATestCharacter::KillPlayer()
 {

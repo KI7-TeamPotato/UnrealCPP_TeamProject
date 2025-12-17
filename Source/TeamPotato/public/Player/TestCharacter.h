@@ -57,12 +57,16 @@ public:
 	//총 발사 몽타주 재생
 	void PlayGunShootingMontage();
 	
-
-
+    //주울 아이템과 오버랩 됐을때 호출
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-
+    //주울 아이템과 오버랩이 끝났을때 호출
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+    //데미지 받는 델리게이트
+    UFUNCTION(BlueprintCallable, Category = "Damage")
+    void TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+    //사망 처리
 	UFUNCTION(BlueprintCallable, Category = "Kill")
 	void KillPlayer();
 
@@ -70,7 +74,9 @@ public:
     UFUNCTION()
     void RotatePlayer(EMovingDirection TurnDirection);
 
+    //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
     void SetAnimRootMotionIgnore();
+    //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
     void SetAnimRootMotionFromMontage();
     
     //Getter
@@ -247,6 +253,7 @@ private:
 	float RollStamina = 10;
 	float AttackStamina = 5;
 	
+    //무기, 상황별로 구분해서 맞는 애니메이션 호출하는 함수
 	UPROPERTY()
 	TObjectPtr<class UPlayerAnimation> PlayerAnimation = nullptr;
 
@@ -254,6 +261,7 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimInstance> AnimInstance = nullptr;
 
+    //리소스(체력, 마나 등)의 정보가 들어있음
 	UPROPERTY()
 	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
