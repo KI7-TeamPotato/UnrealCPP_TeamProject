@@ -2,10 +2,11 @@
 
 
 #include "Item/Weapon/WeaponPickupActor.h"
+#include "Item/Weapon/WeaponBoxActor.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
-#include "Player/TestCharacter.h"
 #include "Component/WeaponComponent.h"
+#include "Player/TestCharacter.h"
 
 AWeaponPickupActor::AWeaponPickupActor()
 {
@@ -32,6 +33,12 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 
 	// 플레이어의 웨폰 컴포넌트를 가져와 무기 장착 실행
 	WeaponComponent->EquipWeapon(WeaponClass);
+
+    // 상자 파괴
+    if (SourceBox)
+    {
+        SourceBox->Destroy();
+    }
 
 	Destroy();
 }

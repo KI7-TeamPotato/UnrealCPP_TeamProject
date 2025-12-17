@@ -9,6 +9,7 @@
 
 class AWeaponBase;
 class UWidgetComponent;
+class AWeaponBoxActor;
 
 /**
  * 
@@ -32,6 +33,12 @@ public:
         WeaponClass = InWeaponClass;
     }
 
+    // 무기 획득 후 파괴를 위한 스폰 상자를 설정
+    void SetSourceBox(AWeaponBoxActor* InBox)
+    {
+        SourceBox = InBox;
+    }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -52,4 +59,8 @@ protected:
 	// 상호작용 위젯
 	UPROPERTY(VisibleAnywhere)
 	UWidgetComponent* InteractionWidget;
+
+    // 이 무기를 스폰한 상자
+    UPROPERTY()
+    TObjectPtr<AWeaponBoxActor> SourceBox;
 };

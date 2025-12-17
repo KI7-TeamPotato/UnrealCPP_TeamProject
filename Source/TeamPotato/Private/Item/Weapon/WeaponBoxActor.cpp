@@ -43,7 +43,7 @@ AWeaponBoxActor::AWeaponBoxActor()
 
 void AWeaponBoxActor::Interact_Implementation(AActor* InTarget)
 {
-    BoxOpen();
+    PlayOpenAnimation();
 }
 
 // Called when the game starts or when spawned
@@ -87,6 +87,9 @@ void AWeaponBoxActor::SpawnRandomWeapon()
             if (Pickup)
             {
                 Pickup->SetWeaponClass(Row->WeaponClass);
+
+                // 이 상자를 무기에게 알려줌
+                Pickup->SetSourceBox(this);
             }
             return;
         }
@@ -112,8 +115,32 @@ void AWeaponBoxActor::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 void AWeaponBoxActor::BoxOpen()
 {
     if (bOpened) return;
+
     bOpened = true;
+
+    // 상자 열림 상태 처리
     InteractionWidget->SetVisibility(false);
+    SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     OnBoxOpen.Broadcast();
+}
+
+void AWeaponBoxActor::PlayOpenAnimation()
+{
+    if (!Mesh || !OpenMontage)
+    {
+        BoxOpen();
+        return;
+    }
+
+    UAnimInstance* AnimInstance = Mesh->GetAnimInstance();
+    if (!AnimInstance) return;
+
+    AnimInstance->Montage_Play(OpenMontage);
+}
+
+void AWeaponBoxActor::OnSpawnWeaponNotify()
+{
+    // 실제 스폰 로직
+    BoxOpen();
 }

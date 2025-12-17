@@ -31,6 +31,9 @@ public:
     UFUNCTION()
     void SpawnRandomWeapon();
 
+    UFUNCTION()
+    void OnSpawnWeaponNotify();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,6 +46,8 @@ protected:
     UFUNCTION()
     void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    void PlayOpenAnimation();
 
     void BoxOpen();
     
@@ -61,7 +66,10 @@ protected:
     TObjectPtr<UWidgetComponent> InteractionWidget = nullptr;
 
     UPROPERTY(EditAnywhere, Category = "Weapon")
-    UDataTable* WeaponDataTable;
+    TObjectPtr<UDataTable> WeaponDataTable = nullptr;
+
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    TObjectPtr<UAnimMontage> OpenMontage = nullptr;
 
 private:
     UPROPERTY()
