@@ -10,7 +10,6 @@ void UPerkSelectionScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-    BindViewModel();
 	// Add Viewport마다 랜덤한 3개의 퍽 데이터를 가져와서 카드에 세팅
     SetupPerkCards();
 }
@@ -41,7 +40,7 @@ void UPerkSelectionScreenWidget::NativeDestruct()
 
 void UPerkSelectionScreenWidget::SetupPerkCards()
 {
-	TArray<FPerkSelectDataTableRow> SelectedPerkRows = GetRandomPerkDataRows(PerkDataRow, PerkNum);
+	TArray<FPerkSelectDataTableRow> SelectedPerkRows = GetRandomPerkDataRows(PerkDataTable, PerkNum);
 	
     // 카드에 정보를 등록하고 카드 선택시에 델리게이트 바인딩
 	if (PerkCard1 && SelectedPerkRows.IsValidIndex(0))
@@ -130,23 +129,5 @@ void UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel(UPerkDataAsset* Equ
 
 void UPerkSelectionScreenWidget::SetViewModel(UPerkViewModel* InViewModel)
 {
-    UnbindViewModel();
     PerkViewModel = InViewModel;
-    BindViewModel();
-}
-
-void UPerkSelectionScreenWidget::BindViewModel()
-{
-    if (PerkViewModel)
-    {
-        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
-    }
-}
-
-void UPerkSelectionScreenWidget::UnbindViewModel()
-{
-    if (PerkViewModel)
-    {
-        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
-    }
 }

@@ -24,4 +24,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UPlayerStatWidget> PlayerStatPanel;
 
+    // --- 인벤토리 퍽 위젯 ---
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UInventoryPerkTileWidget> InventoryPerkPanel;
 };

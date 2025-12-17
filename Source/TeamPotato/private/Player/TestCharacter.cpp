@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Component/PlayerResource.h"
 #include "Player/PlayerAnimation.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()

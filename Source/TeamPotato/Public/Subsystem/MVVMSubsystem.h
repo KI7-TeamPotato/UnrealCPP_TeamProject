@@ -31,10 +31,10 @@ public:
 	// ==============================================================================
 	
 	// --- 캐릭터, 컴포넌트 등록 및 해제 함수 ---
-	//UFUNCTION()
-	//void RegisterPlayerResourceComp(class UPlayerResource* NewComp);
-	//UFUNCTION()
-	//void UnregisterPlayerResourceComp(class UPlayerResource* ExitingComp);
+	UFUNCTION()
+	void RegisterPlayerResourceComp(class UPlayerResource* NewComp);
+	UFUNCTION()
+	void UnregisterPlayerResourceComp(class UPlayerResource* ExitingComp);
 	
 
 	// --- 퍽 컴포넌트 등록 및 해제 함수 ---

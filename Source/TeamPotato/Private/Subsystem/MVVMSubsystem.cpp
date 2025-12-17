@@ -3,6 +3,7 @@
 
 #include "Subsystem/MVVMSubsystem.h"
 #include "Component/PerkComponent.h"
+#include "Component/PlayerResource.h"
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
 
@@ -29,7 +30,7 @@ UPerkViewModel* UMVVMSubsystem::GetPerkViewModel()
 // 컴포넌트 등록 및 해제 함수들
 // ==============================================================================
 
-/*
+
 void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 {
 	if (!NewComp) return;
@@ -42,19 +43,19 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
 	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
-	NewComp->OnResourceChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
+	NewComp->OnEnergyChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
 {
-	//if (ExitingComp && PlayerStatusViewModel)
-	//{
-	//	// 델리게이트 언바인딩
-	//	ExitingComp->OnHealthChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
-	//	ExitingComp->OnResourceChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
-	//}
+	if (ExitingComp && PlayerStatusViewModel)
+	{
+		// 델리게이트 언바인딩
+		ExitingComp->OnHealthChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
+		ExitingComp->OnEnergyChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
+	}
 }
-*/
+
 
 void UMVVMSubsystem::RegisterPerkComp(UPerkComponent* NewComp)
 {

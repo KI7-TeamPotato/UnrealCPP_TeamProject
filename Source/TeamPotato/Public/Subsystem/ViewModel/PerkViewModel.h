@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(bool, FOnEquipPerkRequest, UPerkDataAs
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class TEAMPOTATO_API UPerkViewModel : public UObject
 {
 	GENERATED_BODY()

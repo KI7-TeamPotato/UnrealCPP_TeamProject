@@ -29,8 +29,6 @@ protected:
 
 private:
 	void SetupPerkCards();
-    void BindViewModel();
-    void UnbindViewModel();
 
 	TArray<FPerkSelectDataTableRow> GetRandomPerkDataRows(UDataTable* InDataTable, int32 NumSelect);
     
@@ -56,7 +54,7 @@ private:
     TObjectPtr<UPerkViewModel> PerkViewModel;
 
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> PerkDataRow;
+	TObjectPtr<UDataTable> PerkDataTable;
 
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
 	int32 PerkNum=3;

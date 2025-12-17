@@ -15,8 +15,6 @@ void UInventoryPerkTileWidget::NativeConstruct()
 		PerkTileView->ClearListItems();
 		PerkTileView->OnItemIsHoveredChanged().AddUObject(this, &UInventoryPerkTileWidget::OnPerkitemHoveredChanged);
 	}
-
-    BindViewModel();
 }
 
 void UInventoryPerkTileWidget::NativeDestruct()
@@ -34,6 +32,10 @@ void UInventoryPerkTileWidget::NativeDestruct()
 void UInventoryPerkTileWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
 {
     if (!InData || !PerkTileView) return;
+
+    UE_LOG(LogTemp, Warning, TEXT("InventoryPerkTileWidget::LoadPerkDataFromDataAsset - 퍽 데이터 로드 시작"));
+    UE_LOG(LogTemp, Warning, TEXT("My Widget Name: %s"), *this->GetName());
+    
 
 	UPerkDataObject* PerDataObject = NewObject<UPerkDataObject>(this);
 	PerDataObject->InitFromDataTableAsset(InData);

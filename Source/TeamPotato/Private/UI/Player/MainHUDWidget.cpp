@@ -4,6 +4,7 @@
 #include "UI/Player/MainHUDWidget.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "UI/Player/PlayerStatWidget.h"
+#include "UI/Perk/InventoryPerkTileWidget.h"
 
 void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
 {
@@ -13,5 +14,9 @@ void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
     if (PlayerStatPanel)
     {
         PlayerStatPanel->SetViewModel(Subsystem->GetPlayerStatusViewModel());
+    }
+    if (InventoryPerkPanel)
+    {
+        InventoryPerkPanel->SetViewModel(Subsystem->GetPerkViewModel());
     }
 }
