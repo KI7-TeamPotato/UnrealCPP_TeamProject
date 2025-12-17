@@ -9,7 +9,7 @@
 APickupActor::APickupActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// 아이템 획득 범위 초기화
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
@@ -21,6 +21,13 @@ APickupActor::APickupActor()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void APickupActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    Mesh->AddWorldRotation(FRotator(0, RotateSpeed * DeltaTime, 0));
 }
 
 // Called when the game starts or when spawned
