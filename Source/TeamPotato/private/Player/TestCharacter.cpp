@@ -20,9 +20,9 @@ ATestCharacter::ATestCharacter()
 
 	//컨트롤러 방향으로 회전
 	MovementComponent = GetCharacterMovement();
-	MovementComponent->bUseControllerDesiredRotation = false;
-	MovementComponent->bOrientRotationToMovement = true;
-	bUseControllerRotationYaw = false;
+	MovementComponent->bUseControllerDesiredRotation = true;
+	MovementComponent->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = true;
 
 	//스프링 암 생성
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -40,7 +40,7 @@ ATestCharacter::ATestCharacter()
 
 	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::Gun;			//테스트용
+	ActivatedWeapon = EWeaponType::Sword;			//테스트용
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
@@ -70,6 +70,11 @@ void ATestCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    /*if (bIsOnActing)
+    {
+        FRotator currentRotation = GetActorRotation();
+        SetActorRotation(currentRotation);
+    }*/
 }
 
 // Called to bind functionality to input
@@ -80,7 +85,10 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	if (enhancedInputComponent)
 	{
-		enhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ATestCharacter::OnMovementInput);
+		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
+		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete);
+		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnSideMovementInput);
+		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);
 		enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
 		enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
 		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
@@ -116,7 +124,7 @@ void ATestCharacter::KillPlayer()
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 
-	// 2. 캡슐 충돌 끄기 (중요!!)
+	// 2. 캡슐 충돌 끄기 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// 3. 메시를 Ragdoll 프로파일로
@@ -126,7 +134,7 @@ void ATestCharacter::KillPlayer()
 	// 4. 물리 활성화
 	MeshComp->SetSimulatePhysics(true);
 
-	// 5. 캡슐에서 분리 (선택이지만 거의 필수)
+	// 5. 캡슐에서 분리 
 	MeshComp->DetachFromComponent(
 		FDetachmentTransformRules::KeepWorldTransform
 	);
@@ -144,28 +152,89 @@ void ATestCharacter::InvincibleDeactivate()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
-void ATestCharacter::PlaySwordAttackMontage()
+void ATestCharacter::PlayAttackMontage_Sword()
 {
 	PlayAnimMontage(SwordAttackMontage);
 }
 
-void ATestCharacter::PlayGunShootingMontage()
+void ATestCharacter::PlayAttackMontage_Gun()
 {
 	PlayAnimMontage(GunShootMontage);
 }
 
-void ATestCharacter::PlaySwordRollMontage()
+void ATestCharacter::PlayDodgeMontage_Front_Sword()
 {
-	PlayAnimMontage(SwordRollMontage);
+	PlayAnimMontage(RollMontage_Sword);
 }
+
+void ATestCharacter::PlayDodgeMontage_Right_Sword()
+{
+    PlayAnimMontage(RightStepMontage_Sword);
+}
+
+void ATestCharacter::PlayDodgeMontage_Left_Sword()
+{
+    PlayAnimMontage(LeftStepMontage_Sword);
+}
+
+void ATestCharacter::PlayDodgeMontage_Back_Sword()
+{
+    PlayAnimMontage(BackStepMontage_Sword);
+}
+
 
 void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 {
-	FVector2D inputtedMovement = InValue.Get<FVector2D>();
-	FVector moveDirection(inputtedMovement.Y, inputtedMovement.X, 0.0f);
-	FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
-	moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
-	AddMovementInput(moveDirection);
+	//FVector2D inputtedMovement = InValue.Get<FVector2D>();
+	//FVector moveDirection(inputtedMovement.Y, inputtedMovement.X, 0.0f);
+	//FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
+	//moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
+
+
+	//AddMovementInput(moveDirection);
+}
+
+void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
+{
+    if(!bIsOnActing)
+    {
+        FrontBackMove = InValue.Get<float>();
+        if (Controller && FrontBackMove != 0.0f)
+        {
+            FRotator controllerRotation = Controller->GetControlRotation();
+            FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);
+
+            FVector Direction = FRotationMatrix(controllerYawRotation).GetUnitAxis(EAxis::X);
+            AddMovementInput(Direction, FrontBackMove);
+        }
+    }
+}
+
+
+void ATestCharacter::OnSideMovementInput(const FInputActionValue& InValue)
+{
+    if (!bIsOnActing)
+    {
+        SideMove = InValue.Get<float>();
+        if (Controller && SideMove != 0.0f)
+        {
+            FRotator controllerRotation = Controller->GetControlRotation();
+            FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);
+
+            FVector Direction = FRotationMatrix(controllerYawRotation).GetUnitAxis(EAxis::Y);
+            AddMovementInput(Direction, SideMove);
+        }
+    }
+}
+
+void ATestCharacter::OnFrontMovementComplete()
+{
+    FrontBackMove = 0.0f;
+}
+
+void ATestCharacter::OnSideMovementComplete()
+{
+    SideMove = 0.0f;
 }
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
@@ -210,15 +279,78 @@ void ATestCharacter::OnInteract()
 	}
 }
 
+void ATestCharacter::RotatePlayer(bool RightDirection)
+{
+    FRotator currentRotation = GetActorRotation();
+    if (RightDirection)
+    {
+        currentRotation.Yaw += AnimRotateDegree;
+    }
+    else
+    {
+        currentRotation.Yaw -= AnimRotateDegree;
+    }
+    SetActorRotation(currentRotation);
+    bIsOnActing = true;
+}
+
+EMovingDirection ATestCharacter::GetLastInput()
+{
+    EMovingDirection playerDirection;
+
+    if (FrontBackMove > 0)
+    {
+        if (SideMove > 0)
+            playerDirection = EMovingDirection::FrontRight;
+        else if (SideMove < 0)
+            playerDirection = EMovingDirection::FrontLeft;
+        else
+            playerDirection = EMovingDirection::Front;
+    }
+    else if (FrontBackMove < 0)
+    {
+        if (SideMove > 0)
+            playerDirection = EMovingDirection::BackRight;
+        else if (SideMove < 0)
+            playerDirection = EMovingDirection::BackLeft;
+        else
+            playerDirection = EMovingDirection::Back;
+    }
+    else
+    {
+        if (SideMove > 0)
+            playerDirection = EMovingDirection::Right;
+        else if (SideMove < 0)
+            playerDirection = EMovingDirection::Left;
+    }
+
+    return playerDirection;
+}
+
+void ATestCharacter::SetOnActing(bool InActing)
+{
+    bIsOnActing = InActing;
+    if(!bIsOnActing)
+    {
+        MovementComponent->bUseControllerDesiredRotation = true;
+        MovementComponent->bOrientRotationToMovement = false;
+        bUseControllerRotationYaw = true;
+    }
+}
+
 void ATestCharacter::OnRollInput()
 {
 	//KillPlayer();				//테스트용으로 사망 연출 실행해봄
 	if (!bIsOnActing)
 	{
-		if (ResourceManager->UseStamina(RollStamina))
+		/*if (ResourceManager->UseStamina(RollStamina))
 		{
 			PlayerAnimation->PlayRollMontage();
-		}
+		}*/
+        MovementComponent->bUseControllerDesiredRotation = false;
+        MovementComponent->bOrientRotationToMovement = true;
+        bUseControllerRotationYaw = false;
+		PlayerAnimation->PlayRollMontage();
 	}
 }
 

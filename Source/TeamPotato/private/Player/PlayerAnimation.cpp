@@ -33,9 +33,9 @@ void UPlayerAnimation::PlayRollMontage()
 		/*PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
 		if (PlayerWeapon == EWeaponType::Sword)
 		{
-		}*/
+		}
 		MainPlayer->PlaySwordRollMontage();
-		/*else if (PlayerWeapon == EWeaponType::Gun)
+		else if (PlayerWeapon == EWeaponType::Gun)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Roll with Gun"));
 		}
@@ -43,6 +43,130 @@ void UPlayerAnimation::PlayRollMontage()
 		{
 			UE_LOG(LogTemp, Log, TEXT("No Weapon Avaliable"));
 		}*/
+
+        if (PlayerWeapon == EWeaponType::Sword)
+        {
+            if (MainPlayer->GetLastInput() == EMovingDirection::Front)
+            {
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
+            {
+                MainPlayer->RotatePlayer(false);            //몸을 왼쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
+            {
+                MainPlayer->RotatePlayer(true);             //몸을 오른쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
+            {
+                MainPlayer->PlayDodgeMontage_Left_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Right)
+            {
+                MainPlayer->PlayDodgeMontage_Right_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Back)
+            {
+                MainPlayer->PlayDodgeMontage_Back_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
+            {
+                MainPlayer->RotatePlayer(false);            //몸을 왼쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Back_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
+            {
+                MainPlayer->RotatePlayer(true);             //몸을 오른쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Back_Sword();
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("UPlayerAnimation::UPlayerAnimation | Wrong Saved Input"));
+            }
+        }
+        else if (PlayerWeapon == EWeaponType::Gun)
+        {
+            if (MainPlayer->GetLastInput() == EMovingDirection::Front)
+            {
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
+            {
+                MainPlayer->RotatePlayer(false);
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
+            {
+                MainPlayer->RotatePlayer(true);
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Left Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Right)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Right Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Back)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Back Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play BackRight Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play BackLeft Dash"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("UPlayerAnimation::UPlayerAnimation | Wrong Saved Input"));
+            }
+        }
+        else
+        {
+            if (MainPlayer->GetLastInput() == EMovingDirection::Front)
+            {
+                MainPlayer->PlayDodgeMontage_Front_Sword();
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play FrontLeft Roll"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play FrontRight Roll"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Left Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Right)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Right Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::Back)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play Back Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play BackRight Dash"));
+            }
+            else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Play BackLeft Dash"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("UPlayerAnimation::UPlayerAnimation | Wrong Saved Input"));
+            }
+        }
 	}
 }
 
@@ -53,11 +177,11 @@ void UPlayerAnimation::PlayAttackAnimation()
 		PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
 		if (PlayerWeapon == EWeaponType::Sword)
 		{
-			MainPlayer->PlaySwordAttackMontage();
+			MainPlayer->PlayAttackMontage_Sword();
 		}
 		else if (PlayerWeapon == EWeaponType::Gun)
 		{
-			MainPlayer->PlayGunShootingMontage();
+			MainPlayer->PlayAttackMontage_Gun();
 		}
 		else
 		{

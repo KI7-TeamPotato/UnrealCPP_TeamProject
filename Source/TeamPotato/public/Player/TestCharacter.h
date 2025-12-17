@@ -40,41 +40,74 @@ public:
 
 	//애니메이션만 재생하는 함수
 	//구르기
-	void PlaySwordRollMontage();
+	void PlayDodgeMontage_Front_Sword();
+    void PlayDodgeMontage_Right_Sword();
+    void PlayDodgeMontage_Left_Sword();
+    void PlayDodgeMontage_Back_Sword();
+
 
 	//검 공격 몽타주 재생
-	void PlaySwordAttackMontage();
+	void PlayAttackMontage_Sword();
 
 	//총 발사 몽타주 재생
-	void PlayGunShootingMontage();
+	void PlayAttackMontage_Gun();
 	
-	//현재 활성화된 무기 확인
-	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
-	//활성화 된 무기 설정
-	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
 
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	UFUNCTION()
-	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
-
 	UFUNCTION(BlueprintCallable, Category = "Kill")
 	void KillPlayer();
+
+    //대각선 방향 애니메이션 재생을 위해 몸 돌리기
+    UFUNCTION()
+    void RotatePlayer(bool RightDirection);
+    
+    //Getter
+	//현재 활성화된 무기 확인
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
+
+	UFUNCTION()
+	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
 
 	UFUNCTION(BlueprintCallable, Category = "Sight")
 	inline float GetSightDegree() { return SightDegree; }
 
-	inline void SetOnActing(bool InActing) { bIsOnActing = InActing; }
+    //마지막으로 입력받은 값을 enum으로 반환
+    UFUNCTION()
+    EMovingDirection GetLastInput();
+
+    //Setter
+    //행동중인지 설정
+    void SetOnActing(bool InActing);
+
+	//활성화 된 무기 설정
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
 	UFUNCTION()
 	void OnMovementInput(const FInputActionValue& InValue);
+
+    //앞뒤 움직임 입력
+    UFUNCTION()
+    void OnFrontMovementInput(const FInputActionValue& InValue);
+
+    //앞뒤 움직임 입력 종료
+    UFUNCTION()
+    void OnFrontMovementComplete();
+
+    //좌우 움직임 입력
+    UFUNCTION()
+    void OnSideMovementInput(const FInputActionValue& InValue);
+
+    //좌우 움직임 입력 종료
+    UFUNCTION()
+    void OnSideMovementComplete();
 
 	//고개 옆으로 돌리는 함수
 	UFUNCTION()
@@ -98,7 +131,6 @@ protected:
 
 private:
 
-
 public:
 	// 획득할 수 잇는 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
@@ -108,7 +140,9 @@ protected:
 	//IA
 	//이동 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
-	TObjectPtr<UInputAction> IA_Move = nullptr;
+	TObjectPtr<UInputAction> IA_FrontMove = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_SideMove = nullptr;
 	//횡방향 마우스 이동
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_HorizonSight = nullptr;
@@ -151,7 +185,13 @@ protected:
 	// 검
 	//구르기 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
-	TObjectPtr<class UAnimMontage> SwordRollMontage = nullptr;
+	TObjectPtr<class UAnimMontage> RollMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> BackStepMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> RightStepMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
 	//공격 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
 	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
@@ -208,4 +248,10 @@ private:
 	//플레이어가 현재 행동중인지 아닌지 확인
 	bool bIsOnActing = false;
 
+    //마지막 입력 저장하는 함수
+    float FrontBackMove = 0.0f;
+    float SideMove = 0.0f;
+
+    //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
+    float AnimRotateDegree = 45.0f;
 };
