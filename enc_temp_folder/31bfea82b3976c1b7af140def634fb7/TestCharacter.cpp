@@ -2,16 +2,15 @@
 
 
 #include "Player/TestCharacter.h"
-#include "Player/PlayerAnimation.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponManagerActor.h"
+#include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponPickupActor.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Component/PlayerResource.h"
-#include "Blueprint/UserWidget.h"
+#include "Player/PlayerAnimation.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -58,19 +57,7 @@ void ATestCharacter::BeginPlay()
 		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
-    if (CrosshairWidgetClass)
-    {
-        CrosshairWidget = CreateWidget<UUserWidget>(
-            GetWorld()->GetFirstPlayerController(),
-            CrosshairWidgetClass
-        );
-
-        if (CrosshairWidget)
-        {
-            CrosshairWidget->AddToViewport();
-            CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
-        }
-    }
+	
 }
 
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -100,18 +87,6 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
 	}
-}
-
-void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
-{
-    ActivatedWeapon = InActivatedWeapon;
-
-    if (!CrosshairWidget) return;
-
-    if (InActivatedWeapon == EWeaponType::Gun)
-        CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
-    else
-        CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -233,7 +208,6 @@ void ATestCharacter::OnInteract()
 		PickupWeapon->OnPickup(this);
 		PickupWeapon = nullptr;
 	}
-    
 }
 
 void ATestCharacter::OnRollInput()

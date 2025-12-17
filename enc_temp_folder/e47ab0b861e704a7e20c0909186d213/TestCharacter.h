@@ -53,7 +53,7 @@ public:
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
 	//활성화 된 무기 설정
 	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-    void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
+	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
 
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
@@ -166,12 +166,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-    TSubclassOf<UUserWidget> CrosshairWidgetClass;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-    TObjectPtr<UUserWidget> CrosshairWidget = nullptr;
 
 private:
 	//가로방향 마우스 감도

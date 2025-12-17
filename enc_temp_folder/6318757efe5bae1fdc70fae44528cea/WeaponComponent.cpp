@@ -62,6 +62,7 @@ void UWeaponComponent::EquipWeapon(TSubclassOf<AWeaponBase> InWeapon)
 	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(InWeapon);
 	if (!CurrentWeapon) return;
     Owner->SetPlayerActivatedWeapon(CurrentWeapon->GetWeaponType());
+    UE_LOG(LogTemp, Log, TEXT("현재 무기 타입 : %d"), CurrentWeapon->GetWeaponType());
 	CurrentWeapon->SetOwner(Owner);
 	CurrentWeapon->SetOwnerComponent(this);
 
