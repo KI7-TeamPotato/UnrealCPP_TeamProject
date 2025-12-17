@@ -5,6 +5,7 @@
 #include "Subsystem/MVVMSubsystem.h"
 #include "UI/Player/PlayerStatWidget.h"
 #include "UI/Perk/InventoryPerkTileWidget.h"
+#include "UI/Player/PlayerWeaponWidget.h"
 
 void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
 {
@@ -18,5 +19,9 @@ void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
     if (InventoryPerkPanel)
     {
         InventoryPerkPanel->SetViewModel(Subsystem->GetPerkViewModel());
+    }
+    if (PlayerWeaponPanel)
+    {
+        PlayerWeaponPanel->SetViewModel(Subsystem->GetWeaponViewModel());
     }
 }

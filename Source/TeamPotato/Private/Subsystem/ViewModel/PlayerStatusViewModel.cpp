@@ -14,12 +14,6 @@ void UPlayerStatusViewModel::SetHealth(float CurrentHealth, float MaxHealth)
 	//OnPlayerHealthChangedWithText.Broadcast(HealthPercent, HealthText);
 }
 
-void UPlayerStatusViewModel::SetResource(float CurrentResource, float MaxResource)
-{
-	ResourcePercent = FMath::Clamp(CurrentResource / MaxResource, 0.0f, 1.0f);
-	OnPlayerResourceChanged.Broadcast(ResourcePercent);
-}
-
 
 void UPlayerStatusViewModel::SetPlayerIcon(UTexture2D* NewIcon)
 {

@@ -6,6 +6,7 @@
 #include "Component/PlayerResource.h"
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
+#include "Subsystem/ViewModel/WeaponViewModel.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -25,11 +26,19 @@ UPerkViewModel* UMVVMSubsystem::GetPerkViewModel()
 	return PerkViewModel;
 }
 
+UWeaponViewModel* UMVVMSubsystem::GetWeaponViewModel()
+{
+    if (!WeaponViewModel)
+    {
+        WeaponViewModel = NewObject<UWeaponViewModel>(this);
+    }
+    return WeaponViewModel;
+}
+
 
 // ==============================================================================
 // 컴포넌트 등록 및 해제 함수들
 // ==============================================================================
-
 
 void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 {
@@ -43,7 +52,7 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
 	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
-	NewComp->OnEnergyChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
+    NewComp->OnEnergyChanged.AddDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
@@ -52,7 +61,7 @@ void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
 	{
 		// 델리게이트 언바인딩
 		ExitingComp->OnHealthChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
-		ExitingComp->OnEnergyChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetResource);
+        ExitingComp->OnEnergyChanged.RemoveDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);	
 	}
 }
 
@@ -81,4 +90,36 @@ void UMVVMSubsystem::UnregisterPerkComp(UPerkComponent* ExitingComp)
 		ExitingComp->OnEquipmentUpdated.RemoveDynamic(PerkViewModel, &UPerkViewModel::SetPerkDataAsset);
         PerkViewModel->OnEquipPerkRequest.Unbind();
 	}
+}
+
+void UMVVMSubsystem::RegisterWeaponComp(UWeaponComponent* NewComp)
+{
+    if (!NewComp) return;
+
+    UnregisterWeaponComp(NewComp);
+
+    // 뷰모델 가져오기
+    UWeaponViewModel* VM = GetWeaponViewModel();
+
+
+    // Model->ViewModel (무기가 바뀌면 뷰모델에 반영)
+    // 1. 메인 무기 변경
+    // 2. 서브 무기 변경
+    // 3. 무기 스왑
+    
+    //// Model->ViewModel (장착된 퍽이 바뀌면 뷰모델에 반영)
+    //NewComp->OnEquipmentUpdated.AddDynamic(VM, &UWeaponViewModel::SetPerkDataAsset);
+
+    //// ViewModel->Model (장착 요청시에 컴포넌트에서 장착)
+    //VM->OnEquipPerkRequest.BindDynamic(NewComp, &UWeaponViewModel::EquipPerk);
+}
+
+void UMVVMSubsystem::UnregisterWeaponComp(UWeaponComponent* ExitingComp)
+{
+    if (ExitingComp && WeaponViewModel)
+    {
+        //// 델리게이트 언바인딩
+        //ExitingComp->OnEquipmentUpdated.RemoveDynamic(PerkViewModel, &UPerkViewModel::SetPerkDataAsset);
+        //PerkViewModel->OnEquipPerkRequest.Unbind();
+    }
 }

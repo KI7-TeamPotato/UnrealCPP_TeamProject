@@ -28,14 +28,6 @@ void UPlayerStatWidget::SetPlayerHealthBar(float NewHealthPercent)
     }
 }
 
-void UPlayerStatWidget::SetPlayerResourceBar(float NewResourcePercent)
-{
-    if (PlayerResourceBar)
-    {
-        PlayerResourceBar->SetPercent(NewResourcePercent);
-    }
-}
-
 void UPlayerStatWidget::SetPlayerIcon(UTexture2D* NewPlayerIcon)
 {
     if (PlayerIconImage && NewPlayerIcon)
@@ -54,7 +46,6 @@ void UPlayerStatWidget::SetViewModel(UPlayerStatusViewModel* InViewModel)
     if (PlayerStatusViewModel)
     {
         SetPlayerHealthBar(PlayerStatusViewModel->GetHealthPercent());
-        SetPlayerResourceBar(PlayerStatusViewModel->GetResourcePercent());
 
         if (PlayerStatusViewModel->GetPlayerIcon())
         {
@@ -70,7 +61,6 @@ void  UPlayerStatWidget::BindViewModel()
     {
         // 모델 -> 뷰
         PlayerStatusViewModel->OnPlayerHealthChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
-        PlayerStatusViewModel->OnPlayerResourceChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerResourceBar);
         PlayerStatusViewModel->OnPlayerIconChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
 
         bIsViewModelBound = true;
@@ -82,7 +72,6 @@ void  UPlayerStatWidget::UnbindViewModel()
     if (PlayerStatusViewModel && bIsViewModelBound)
     {
         PlayerStatusViewModel->OnPlayerHealthChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
-        PlayerStatusViewModel->OnPlayerResourceChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerResourceBar);
         PlayerStatusViewModel->OnPlayerIconChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
 
         bIsViewModelBound = false;

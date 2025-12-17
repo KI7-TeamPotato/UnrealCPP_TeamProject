@@ -34,8 +34,7 @@ private:
 	/// --- 뷰모델 바인딩 함수 ---
 	UFUNCTION()
 	void SetPlayerHealthBar(float NewHealthPercent);
-	UFUNCTION()
-	void SetPlayerResourceBar(float NewResourcePercent);
+
 	UFUNCTION()
 	void SetPlayerIcon(UTexture2D* NewPlayerIcon);
 
@@ -45,10 +44,6 @@ protected:
 	// --- 플레이어의 체력 프로그레스바---
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> PlayerHealthBar;
-
-	// --- 플레이어의 자원 프로그레스바---
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UProgressBar> PlayerResourceBar;
 
 	// --- 플레이어의 아이콘 이미지 ---
 	UPROPERTY(meta = (BindWidget))

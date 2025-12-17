@@ -8,9 +8,11 @@
 
 class UPlayerStatusViewModel;
 class UPerkViewModel;
+class UWeaponViewModel;
 
 class UPlayerResource;
 class UPerkComponent;
+class UWeaponComponent;
 /**
  * 
  */
@@ -25,7 +27,8 @@ public:
 	UPlayerStatusViewModel* GetPlayerStatusViewModel();
 	UFUNCTION(BlueprintPure)
     UPerkViewModel* GetPerkViewModel();
-
+    UFUNCTION(BlueprintPure)
+    UWeaponViewModel* GetWeaponViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
@@ -43,10 +46,19 @@ public:
 	UFUNCTION()
 	void UnregisterPerkComp(class UPerkComponent* ExitingComp);
 
+    // --- 무기 컴포넌트 등록 및 해제 함수 ---
+    UFUNCTION()
+    void RegisterWeaponComp(class UWeaponComponent* NewComp);
+    UFUNCTION()
+    void UnregisterWeaponComp(class UWeaponComponent* ExitingComp);
+
 private:
 	UPROPERTY()
 	TObjectPtr<UPlayerStatusViewModel> PlayerStatusViewModel;
 
 	UPROPERTY()
 	TObjectPtr<UPerkViewModel> PerkViewModel;
+
+    UPROPERTY()
+    TObjectPtr<UWeaponViewModel> WeaponViewModel;
 };
