@@ -26,10 +26,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<ABulletActor> BulletClass;
 
-	// 무기 공격 데미지
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
-	float AttackDamage = 10.0f;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float BulletSpeed = 3000.f;
 };

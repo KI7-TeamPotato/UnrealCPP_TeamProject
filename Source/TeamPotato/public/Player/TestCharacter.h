@@ -10,6 +10,7 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
+class AWeaponBoxActor;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -53,7 +54,7 @@ public:
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
 	//활성화 된 무기 설정
 	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
+    void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
@@ -62,6 +63,9 @@ public:
 
 	UFUNCTION()
 	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+
+    UFUNCTION()
+    inline UPlayerResource* GetResource() { return ResourceManager; }
 
 	UFUNCTION(BlueprintCallable, Category = "Kill")
 	void KillPlayer();
@@ -100,9 +104,9 @@ private:
 
 
 public:
-	// 획득할 수 잇는 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
-	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
+    // 상호작용 대상
+    UPROPERTY()
+    AActor* CurrentInteractTarget = nullptr;
 
 protected:
 	//IA
@@ -166,6 +170,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<UUserWidget> CrosshairWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    TObjectPtr<UUserWidget> CrosshairWidget = nullptr;
 
 private:
 	//가로방향 마우스 감도

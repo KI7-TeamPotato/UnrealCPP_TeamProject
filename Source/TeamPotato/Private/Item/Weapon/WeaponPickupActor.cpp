@@ -2,10 +2,11 @@
 
 
 #include "Item/Weapon/WeaponPickupActor.h"
+#include "Item/Weapon/WeaponBoxActor.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
-#include "Player/TestCharacter.h"
 #include "Component/WeaponComponent.h"
+#include "Player/TestCharacter.h"
 
 AWeaponPickupActor::AWeaponPickupActor()
 {
@@ -17,6 +18,16 @@ AWeaponPickupActor::AWeaponPickupActor()
 	InteractionWidget->SetVisibility(false);
 }
 
+void AWeaponPickupActor::SetWeaponData(UWeaponDataAsset* InData)
+{
+    WeaponData = InData;
+}
+
+void AWeaponPickupActor::Interact_Implementation(AActor* InTarget)
+{
+    OnPickup(InTarget);
+}
+
 void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 {
 	ATestCharacter* player = Cast<ATestCharacter>(InPlayer);
@@ -26,7 +37,13 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 	if (!WeaponComponent) return;
 
 	// 플레이어의 웨폰 컴포넌트를 가져와 무기 장착 실행
-	WeaponComponent->EquipWeapon(WeaponClass);
+	WeaponComponent->EquipWeapon(WeaponData);
+
+    // 상자 파괴
+    if (SourceBox)
+    {
+        SourceBox->Destroy();
+    }
 
 	Destroy();
 }
@@ -43,22 +60,17 @@ void AWeaponPickupActor::BeginPlay()
 void AWeaponPickupActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 플레이어가 오버랩 시 위젯 출력
-	if (OtherActor && OtherActor->IsA<ACharacter>())
-	{
-		InteractionWidget->SetVisibility(true);
-	}
+    if (OtherActor && OtherActor->IsA<ATestCharacter>())
+    {
+        InteractionWidget->SetVisibility(true);
+    }
 }
 
 void AWeaponPickupActor::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// 플레이어가 오버랩 종료 시 위젯 출력 종료
-	ATestCharacter* Character = Cast<ATestCharacter>(OtherActor);
-	if (!Character) return;
-
-	InteractionWidget->SetVisibility(false);
-
-	if (Character->PickupWeapon == this)
-	{
-		Character->PickupWeapon = nullptr;
-	}
+    if (OtherActor && OtherActor->IsA<ATestCharacter>())
+    {
+        InteractionWidget->SetVisibility(false);
+    }
 }

@@ -2,16 +2,19 @@
 
 
 #include "Player/TestCharacter.h"
+#include "Player/PlayerAnimation.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Item/Weapon/WeaponManagerActor.h"
-#include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponPickupActor.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Item/Weapon/WeaponBoxActor.h"
+#include "Component/WeaponComponent.h"
 #include "Component/PlayerResource.h"
-#include "Player/PlayerAnimation.h"
 #include "Components/CapsuleComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "IntetFace/Interactable.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -41,7 +44,7 @@ ATestCharacter::ATestCharacter()
 
 	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::Gun;			//테스트용
+	ActivatedWeapon = EWeaponType::None;			//테스트용
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
@@ -58,7 +61,19 @@ void ATestCharacter::BeginPlay()
 		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
 	}
 	
-	
+    if (CrosshairWidgetClass)
+    {
+        CrosshairWidget = CreateWidget<UUserWidget>(
+            GetWorld()->GetFirstPlayerController(),
+            CrosshairWidgetClass
+        );
+
+        if (CrosshairWidget)
+        {
+            CrosshairWidget->AddToViewport();
+            CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
 }
 
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -90,25 +105,37 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 }
 
+void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
+{
+    ActivatedWeapon = InActivatedWeapon;
+
+    if (!CrosshairWidget) return;
+
+    if (InActivatedWeapon == EWeaponType::Gun)
+        CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
+    else
+        CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	AWeaponPickupActor* WeaponPickup = Cast<AWeaponPickupActor>(OtherActor);
-	if (WeaponPickup)
-	{
-		PickupWeapon = WeaponPickup;
-	}
+    if (OtherActor &&
+        OtherActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+    {
+        CurrentInteractTarget = OtherActor;
+    }
 }
 
 void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
-	if (OtherActor == PickupWeapon)
-	{
-		PickupWeapon = nullptr;
-	}
+    if (OtherActor == CurrentInteractTarget)
+    {
+        CurrentInteractTarget = nullptr;
+    }
 }
 
 void ATestCharacter::KillPlayer()
@@ -204,11 +231,13 @@ void ATestCharacter::OnAttackInput()
 
 void ATestCharacter::OnInteract()
 {
-	if (PickupWeapon)
-	{
-		PickupWeapon->OnPickup(this);
-		PickupWeapon = nullptr;
-	}
+    if (!CurrentInteractTarget) return;
+
+    if (CurrentInteractTarget->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+    {
+        IInteractable::Execute_Interact(CurrentInteractTarget, this);
+        CurrentInteractTarget = nullptr;
+    }
 }
 
 void ATestCharacter::OnRollInput()
