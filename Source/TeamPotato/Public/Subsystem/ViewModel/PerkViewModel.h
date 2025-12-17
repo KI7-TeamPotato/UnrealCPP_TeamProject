@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Data/PerkDataAsset.h"
-#include "SkillViewModel.generated.h"
+#include "PerkViewModel.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkDataAssetChanged, UPerkDataAsset*, NewPerkDataAsset);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkEquipped, UPerkDataAsset*, NewPerkDataAsset);
 DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(bool, FOnEquipPerkRequest, UPerkDataAsset*, PerkToEquip, int32, InIndex);
 /**
  * 
  */
-UCLASS()
-class TEAMPOTATO_API USkillViewModel : public UObject
+UCLASS(Blueprintable)
+class TEAMPOTATO_API UPerkViewModel : public UObject
 {
 	GENERATED_BODY()
 
@@ -21,13 +21,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetPerkDataAsset(UPerkDataAsset* NewData);
 
+    // 퍽 장착 요청(View to Model)
 	UFUNCTION(BlueprintCallable)
-	void EquippedPerkInPerkComp(UPerkDataAsset* NewData);
+    bool RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex = -1);
 
 	// --- 컴포넌트 -> PerPanelWidget ---
 	UPROPERTY(BlueprintAssignable)
-	FOnPerkDataAssetChanged OnPerkDataAssetChanged;
+	FOnPerkEquipped OnPerkEquipped;
 	
 	UPROPERTY()
 	FOnEquipPerkRequest OnEquipPerkRequest;
+
+private:
+    UPROPERTY()
+    TArray<TObjectPtr<UPerkDataAsset>> CachedEquippedPerks;
 };

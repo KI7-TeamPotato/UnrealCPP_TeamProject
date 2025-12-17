@@ -3,6 +3,8 @@
 
 #include "Component/PlayerResource.h"
 #include "Player/TestCharacter.h"
+#include "Subsystem/MVVMSubsystem.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UPlayerResource::UPlayerResource()
@@ -21,13 +23,38 @@ void UPlayerResource::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	Health = MaxHealth;
-	Stamina = MaxStamina;
+	
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->RegisterPlayerResourceComp(this);
+    }
+
+    Health = MaxHealth;
+    Energy = MaxEnergy;
+
+    // 초기 체력, 에너지 값 브로드캐스트
+    BroadcastHealthChanged();
+    BroadcastEnergyChanged();
+    
+	//Stamina = MaxStamina;
+}
+
+void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->UnregisterPlayerResourceComp(this);
+    }
+    Super::EndPlay(EndPlayReason);
 }
 
 void UPlayerResource::TakeDamage(float InDamage)
 {
 	Health -= InDamage;
+
+    // 체력 변경 브로드캐스트 시도
+    BroadcastHealthChanged();
+
 	if (Health <= 0)
 	{
 		AActor* OwnerCharacter = GetOwner();
@@ -42,11 +69,27 @@ void UPlayerResource::Heal(float InHeal)
 	{
 		Health = MaxHealth;
 	}
+    // 체력 변경 브로드캐스트 시도
+    BroadcastHealthChanged();
 }
 
 bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 {
-	if (IsStaminaRemain(InUseStaminaAmount))
+    if (IsEnergyRemain(InUseStaminaAmount))
+    {
+        Energy -= InUseStaminaAmount;
+        
+        // 에너지 변경 브로드캐스트 시도
+        BroadcastEnergyChanged();
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("No Stamina"));
+        return false;
+    }
+
+	/*if (IsStaminaRemain(InUseStaminaAmount))
 	{
 		Stamina -= InUseStaminaAmount;
 		return true;
@@ -55,5 +98,22 @@ bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 	{
 		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
 		return false;
-	}
+	}*/
+}
+
+// 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
+void UPlayerResource::BroadcastHealthChanged()
+{
+    if (OnHealthChanged.IsBound())
+    {
+        OnHealthChanged.Broadcast(Health, MaxHealth);
+    }
+}
+
+void UPlayerResource::BroadcastEnergyChanged()
+{
+    if (OnEnergyChanged.IsBound())
+    {
+        OnEnergyChanged.Broadcast(Energy, MaxEnergy);
+    }
 }

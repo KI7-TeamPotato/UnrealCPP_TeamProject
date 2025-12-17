@@ -5,18 +5,34 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/Border.h"
 #include "Data/PerkDataAsset.h"
 
 void UPerkCardWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    SelectButton->OnClicked.AddDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    if (SelectButton)
+    {
+        // 버튼 클릭 및 호버 이벤트 바인딩
+        SelectButton->OnClicked.AddDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+        SelectButton->OnHovered.AddDynamic(this, &UPerkCardWidget::OnPerkButtonHovered);
+        SelectButton->OnUnhovered.AddDynamic(this, &UPerkCardWidget::OnPerkButtonUnhovered);
+    }
+
+    if (BackgroundImage)
+    {
+        BackgroundImage->ContentColorAndOpacity = DefaultBackgroundColor;
+        BackgroundImage->SetBrushColor(DefaultBackgroundColor);
+    }
 }
 
 void UPerkCardWidget::NativeDestruct()
 {
-    SelectButton->OnClicked.RemoveDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    if (SelectButton)
+    {
+        SelectButton->OnClicked.RemoveDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+    }
 
     Super::NativeDestruct();
 }
@@ -26,16 +42,45 @@ void UPerkCardWidget::SetupPerkCard(UPerkDataAsset* InPerkDataAsset)
     if (!InPerkDataAsset) return;
 
     PerkDataAsset = InPerkDataAsset;
-
-    PerkImage->SetBrushFromTexture(PerkDataAsset->Icon);
-    PerkName->SetText(PerkDataAsset->PerkName);
-    PerkDescript->SetText(PerkDataAsset->Description);
+    
+    if (PerkImage && PerkDataAsset->Icon)
+    {
+        PerkImage->SetBrushFromTexture(PerkDataAsset->Icon);
+    }
+    if (PerkName)
+    {
+        PerkName->SetText(PerkDataAsset->PerkName);
+    }
+    if (PerkDescript)
+    {
+        PerkDescript->SetText(PerkDataAsset->Description);
+    }
 }
 
 void UPerkCardWidget::OnPerkSelectButtonClicked()
 {
-    //if (OnTryEquippedPerk.IsBound() && SelectedPerk)
-    //{
-    //    OnTryEquippedPerk.Broadcast(SelectedPerk);
-    //}
+    if (PerkDataAsset)
+    {
+        // 버튼 클릭 시 뷰(This) -> 모델(PerkComponent) 전달
+        UE_LOG(LogTemp, Log, TEXT("PerkCardWidget:  Perk Selected - %s"), *PerkDataAsset->PerkName.ToString());
+        OnPerkCardSelected.Broadcast(PerkDataAsset);
+    }
+}
+
+void UPerkCardWidget::OnPerkButtonHovered()
+{
+    if (BackgroundImage)
+    {
+        BackgroundImage->ContentColorAndOpacity = HoveredBackgroundColor;
+        BackgroundImage->SetBrushColor(HoveredBackgroundColor);
+    }
+}
+
+void UPerkCardWidget::OnPerkButtonUnhovered()
+{
+    if (BackgroundImage)
+    {
+        BackgroundImage->ContentColorAndOpacity = DefaultBackgroundColor;
+        BackgroundImage->SetBrushColor(DefaultBackgroundColor);
+    }
 }

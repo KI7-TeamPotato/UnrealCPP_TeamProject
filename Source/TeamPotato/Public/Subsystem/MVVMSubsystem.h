@@ -7,11 +7,12 @@
 #include "MVVMSubsystem.generated.h"
 
 class UPlayerStatusViewModel;
-class USkillViewModel;
-class UPlayerStatWidget;
-class UPerkSelectionScreenWidget;
+class UPerkViewModel;
+class UWeaponViewModel;
+
 class UPlayerResource;
 class UPerkComponent;
+class UWeaponComponent;
 /**
  * 
  */
@@ -25,43 +26,39 @@ public:
 	UFUNCTION(BlueprintPure)
 	UPlayerStatusViewModel* GetPlayerStatusViewModel();
 	UFUNCTION(BlueprintPure)
-	USkillViewModel* GetSkillViewModel();
-
+    UPerkViewModel* GetPerkViewModel();
+    UFUNCTION(BlueprintPure)
+    UWeaponViewModel* GetWeaponViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
 	
-	/*
 	// --- 캐릭터, 컴포넌트 등록 및 해제 함수 ---
 	UFUNCTION()
 	void RegisterPlayerResourceComp(class UPlayerResource* NewComp);
 	UFUNCTION()
 	void UnregisterPlayerResourceComp(class UPlayerResource* ExitingComp);
-	*/
+	
 
-	// --- 스킬 뷰모델 관련 함수들 ---
+	// --- 퍽 컴포넌트 등록 및 해제 함수 ---
 	UFUNCTION()
 	void RegisterPerkComp(class UPerkComponent* NewComp);
 	UFUNCTION()
 	void UnregisterPerkComp(class UPerkComponent* ExitingComp);
 
-	// ==============================================================================
-	// 위젯 등록 및 해제 함수들
-	// ==============================================================================
-	UFUNCTION()
-	void ResgisterPlayerStatWidget(class UPlayerStatWidget* NewWidget);
-	UFUNCTION()
-	void UnregisterPlayerStatWidget(class UPlayerStatWidget* ExitingWidget);
-
-	UFUNCTION()
-	void ResgisterPerkSelectionWidget(class UPerkSelectionScreenWidget* NewWidget);
-	UFUNCTION()
-	void UnregisterPerkSelectionWidget(class UPerkSelectionScreenWidget* ExitingWidget);
+    // --- 무기 컴포넌트 등록 및 해제 함수 ---
+    UFUNCTION()
+    void RegisterWeaponComp(class UWeaponComponent* NewComp);
+    UFUNCTION()
+    void UnregisterWeaponComp(class UWeaponComponent* ExitingComp);
 
 private:
 	UPROPERTY()
 	TObjectPtr<UPlayerStatusViewModel> PlayerStatusViewModel;
 
 	UPROPERTY()
-	TObjectPtr<USkillViewModel> SkillViewModel;
+	TObjectPtr<UPerkViewModel> PerkViewModel;
+
+    UPROPERTY()
+    TObjectPtr<UWeaponViewModel> WeaponViewModel;
 };

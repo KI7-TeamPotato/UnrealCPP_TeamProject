@@ -8,7 +8,7 @@
 
 // --- 위젯에 체력 및 자원 변경을 알리기 위한 델리게이트 ---
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerHealthChanged, float, NewHealthPercent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerResourceChanged, float, NewResourcePercent);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerResourceChanged, float, NewResourcePercent);
 
 // --- 위젯에 플레이어 아이콘 변경을 알리기 위한 델리게이트 --- 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerIconChanged, UTexture2D*, NewPlayerIcon);
@@ -28,18 +28,13 @@ public:
 	// --- Getters ---
 	UFUNCTION(BlueprintPure)
 	float GetHealthPercent() const { return HealthPercent; }
-	UFUNCTION(BlueprintPure)
-	float GetResourcePercent() const { return ResourcePercent; }
+
 	UFUNCTION(BlueprintPure)
 	UTexture2D* GetPlayerIcon() const { return PlayerIcon; }
 
 	// --- 플레이어의 체력 설정 함수 ---
 	UFUNCTION(BlueprintCallable)
 	void SetHealth(float CurrentHealth, float MaxHealth);
-
-	// --- 플레이어의 자원 설정 함수 ---
-	UFUNCTION(BlueprintCallable)
-	void SetResource(float CurrentResource, float MaxResource);
 
 	// --- 플레이어 아이콘 설정 함수 ---
 	UFUNCTION(BlueprintCallable)
@@ -49,10 +44,6 @@ public:
 	// --- 플레이어의 체력 변경 델리게이트 ---
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerHealthChanged OnPlayerHealthChanged;
-
-	// --- 플레이어의 자원 변경 델리게이트 ---
-	UPROPERTY(BlueprintAssignable)
-	FOnPlayerResourceChanged OnPlayerResourceChanged;
 
 	// --- 플레이어 아이콘 변경 델리게이트 ---
 	UPROPERTY(BlueprintAssignable)
@@ -64,9 +55,6 @@ public:
 private:
 	// --- 플레이어의 체력 백분율 ---
 	float HealthPercent=1.f;
-
-	// --- 플레이어의 자원 백분율 ---
-	float ResourcePercent=1.f;
 
 	// --- 플레이어 아이콘 ---
 	UTexture2D* PlayerIcon=nullptr;

@@ -6,9 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "PerkSelectionScreenWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTryEquippedPerk, UPerkDataAsset*, NewPerkDataAsset);
-
 class UPerkCardWidget;
+class UPerkViewModel;
 class UDataTable;
 class UPerkDataAsset;
 struct FPerkSelectDataTableRow;
@@ -19,24 +18,26 @@ UCLASS()
 class TEAMPOTATO_API UPerkSelectionScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+    
 public:
-	UFUNCTION()
-    UPerkCardWidget* GetPerkCard1() const { return PerkCard1; }
+    UFUNCTION(BlueprintCallable, Category = "MVVM")
+    void SetViewModel(UPerkViewModel* InViewModel);
 
 protected:
 	virtual void NativeConstruct() override;
-
-	UFUNCTION()
-	void OnPerkSelectButtonClicked();
+    virtual void NativeDestruct() override;
 
 private:
-	void SetupPerkButtons();
-	TArray<FPerkSelectDataTableRow> GetRandomPerkDataRows(UDataTable* InDataTable, int32 NumSelect);
+	void SetupPerkCards();
 
-public:
-	UPROPERTY()
-	FOnTryEquippedPerk OnTryEquippedPerk;
+	TArray<FPerkSelectDataTableRow> GetRandomPerkDataRows(UDataTable* InDataTable, int32 NumSelect);
+    
+    UFUNCTION()
+    void HandlePerkSelected(UPerkDataAsset* SelectedPerkData);
+
+    UFUNCTION()
+    void OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk);
+
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -49,12 +50,12 @@ protected:
 	TObjectPtr<UPerkCardWidget> PerkCard3;
 
 private:
+    UPROPERTY()
+    TObjectPtr<UPerkViewModel> PerkViewModel;
+
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> PerkDataRow;
+	TObjectPtr<UDataTable> PerkDataTable;
 
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
 	int32 PerkNum=3;
-
-	UPROPERTY(VisibleAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPerkDataAsset> SelectedPerk;
 };
