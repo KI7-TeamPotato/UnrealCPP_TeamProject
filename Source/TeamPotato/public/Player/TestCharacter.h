@@ -39,18 +39,23 @@ public:
 	void InvincibleDeactivate();
 
 	//애니메이션만 재생하는 함수
-	//구르기
+	//검 상태 회피
 	void PlayDodgeMontage_Front_Sword();
     void PlayDodgeMontage_Right_Sword();
     void PlayDodgeMontage_Left_Sword();
     void PlayDodgeMontage_Back_Sword();
 
+    //총 상태 회피
+    void PlayDodgeMontage_Front_Gun();
+    void PlayDodgeMontage_Back_Gun();
+    void PlayDodgeMontage_Right_Gun();
+    void PlayDodgeMontage_Left_Gun();
 
 	//검 공격 몽타주 재생
-	void PlayAttackMontage_Sword();
+	void PlaySwordAttackMontage();
 
 	//총 발사 몽타주 재생
-	void PlayAttackMontage_Gun();
+	void PlayGunShootingMontage();
 	
 
 
@@ -63,7 +68,10 @@ public:
 
     //대각선 방향 애니메이션 재생을 위해 몸 돌리기
     UFUNCTION()
-    void RotatePlayer(bool RightDirection);
+    void RotatePlayer(EMovingDirection TurnDirection);
+
+    void SetAnimRootMotionIgnore();
+    void SetAnimRootMotionFromMontage();
     
     //Getter
 	//현재 활성화된 무기 확인
@@ -183,7 +191,7 @@ protected:
 
 	//Anim Montage
 	// 검
-	//구르기 몽타주
+	//회피(구르기)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
 	TObjectPtr<class UAnimMontage> RollMontage_Sword = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
@@ -192,13 +200,20 @@ protected:
 	TObjectPtr<class UAnimMontage> RightStepMontage_Sword = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
 	TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
-	//공격 몽타주
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
+	TObjectPtr<class UAnimMontage> AttackMontage_Sword = nullptr;
 
 	//총
+    //회피(구르기)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-	TObjectPtr<class UAnimMontage> GunShootMontage = nullptr;
+	TObjectPtr<class UAnimMontage> RollMontage_Gun = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> BackStepMontage_Gun = nullptr;
+    //공격
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
+
 
 	//무기 매니저
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -243,6 +258,7 @@ private:
 	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
 	//가지고 있는 무기 정보
+    UPROPERTY()
 	EWeaponType ActivatedWeapon = EWeaponType::None;
 
 	//플레이어가 현재 행동중인지 아닌지 확인
@@ -254,4 +270,7 @@ private:
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;
+
+    //회피 애니메이션 중 움직이지 않는 애니메이션 재생시 캐릭터를 움직일 정도
+    float LaunchPlayerPower = 1000.0f;
 };

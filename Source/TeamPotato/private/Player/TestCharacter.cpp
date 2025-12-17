@@ -40,11 +40,11 @@ ATestCharacter::ATestCharacter()
 
 	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::Sword;			//테스트용
-
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
 	ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
+
+    ActivatedWeapon = EWeaponType::Gun;
 }
 
 // Called when the game starts or when spawned
@@ -152,14 +152,14 @@ void ATestCharacter::InvincibleDeactivate()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
-void ATestCharacter::PlayAttackMontage_Sword()
+void ATestCharacter::PlaySwordAttackMontage()
 {
-	PlayAnimMontage(SwordAttackMontage);
+	PlayAnimMontage(AttackMontage_Sword);
 }
 
-void ATestCharacter::PlayAttackMontage_Gun()
+void ATestCharacter::PlayGunShootingMontage()
 {
-	PlayAnimMontage(GunShootMontage);
+	PlayAnimMontage(AttackMontage_Gun);
 }
 
 void ATestCharacter::PlayDodgeMontage_Front_Sword()
@@ -180,6 +180,35 @@ void ATestCharacter::PlayDodgeMontage_Left_Sword()
 void ATestCharacter::PlayDodgeMontage_Back_Sword()
 {
     PlayAnimMontage(BackStepMontage_Sword);
+}
+
+void ATestCharacter::PlayDodgeMontage_Front_Gun()
+{
+    PlayAnimMontage(RollMontage_Gun);
+}
+
+void ATestCharacter::PlayDodgeMontage_Back_Gun()
+{
+    SetAnimRootMotionIgnore();
+    FVector playerDirection = -GetActorForwardVector();                         //플레이어 기준 뒷쪽 방향 벡터
+    LaunchCharacter(playerDirection * LaunchPlayerPower, false, false);         //플레이어를 뒷쪽으로 이동
+    PlayAnimMontage(BackStepMontage_Gun); 
+}
+
+void ATestCharacter::PlayDodgeMontage_Right_Gun()
+{
+    SetAnimRootMotionIgnore();
+    FVector playerDirection = GetActorRightVector();                            //플레이어 기준 오른쪽 방향 벡터
+    LaunchCharacter(playerDirection * LaunchPlayerPower, false, false);         //플레이어를 오른쪽으로 이동
+    PlayAnimMontage(BackStepMontage_Gun);
+}
+
+void ATestCharacter::PlayDodgeMontage_Left_Gun()
+{
+    SetAnimRootMotionIgnore();
+    FVector playerDirection = -GetActorRightVector();                           //플레이어 기준 왼쪽 방향 벡터
+    LaunchCharacter(playerDirection * LaunchPlayerPower, false, false);         //플레이어를 왼쪽으로 이동
+    PlayAnimMontage(BackStepMontage_Gun);
 }
 
 
@@ -279,20 +308,35 @@ void ATestCharacter::OnInteract()
 	}
 }
 
-void ATestCharacter::RotatePlayer(bool RightDirection)
+void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
 {
     FRotator currentRotation = GetActorRotation();
-    if (RightDirection)
+    if (TurnDirection == EMovingDirection::Right)
     {
         currentRotation.Yaw += AnimRotateDegree;
     }
-    else
+    else if(TurnDirection == EMovingDirection::Left)
     {
         currentRotation.Yaw -= AnimRotateDegree;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::RotatePlayer | wrong direction"));
     }
     SetActorRotation(currentRotation);
     bIsOnActing = true;
 }
+
+void ATestCharacter::SetAnimRootMotionIgnore()
+{
+    AnimInstance->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+}
+
+void ATestCharacter::SetAnimRootMotionFromMontage()
+{
+    AnimInstance->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
+}
+
 
 EMovingDirection ATestCharacter::GetLastInput()
 {

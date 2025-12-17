@@ -52,12 +52,12 @@ void UPlayerAnimation::PlayRollMontage()
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
             {
-                MainPlayer->RotatePlayer(false);            //몸을 왼쪽으로 회전
+                MainPlayer->RotatePlayer(EMovingDirection::Left);            //몸을 왼쪽으로 회전
                 MainPlayer->PlayDodgeMontage_Front_Sword();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
             {
-                MainPlayer->RotatePlayer(true);             //몸을 오른쪽으로 회전
+                MainPlayer->RotatePlayer(EMovingDirection::Right);             //몸을 오른쪽으로 회전
                 MainPlayer->PlayDodgeMontage_Front_Sword();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
@@ -74,12 +74,12 @@ void UPlayerAnimation::PlayRollMontage()
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
             {
-                MainPlayer->RotatePlayer(false);            //몸을 왼쪽으로 회전
+                MainPlayer->RotatePlayer(EMovingDirection::Left);            //몸을 왼쪽으로 회전
                 MainPlayer->PlayDodgeMontage_Back_Sword();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
             {
-                MainPlayer->RotatePlayer(true);             //몸을 오른쪽으로 회전
+                MainPlayer->RotatePlayer(EMovingDirection::Right);             //몸을 오른쪽으로 회전
                 MainPlayer->PlayDodgeMontage_Back_Sword();
             }
             else
@@ -91,37 +91,39 @@ void UPlayerAnimation::PlayRollMontage()
         {
             if (MainPlayer->GetLastInput() == EMovingDirection::Front)
             {
-                MainPlayer->PlayDodgeMontage_Front_Sword();
+                MainPlayer->PlayDodgeMontage_Front_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
             {
-                MainPlayer->RotatePlayer(false);
-                MainPlayer->PlayDodgeMontage_Front_Sword();
+                MainPlayer->RotatePlayer(EMovingDirection::Left);        //몸을 왼쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Front_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
             {
-                MainPlayer->RotatePlayer(true);
-                MainPlayer->PlayDodgeMontage_Front_Sword();
+                MainPlayer->RotatePlayer(EMovingDirection::Right);         //몸을 오른쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Front_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
             {
-                UE_LOG(LogTemp, Log, TEXT("Play Left Dash"));
+                MainPlayer->PlayDodgeMontage_Left_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::Right)
             {
-                UE_LOG(LogTemp, Log, TEXT("Play Right Dash"));
+                MainPlayer->PlayDodgeMontage_Right_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::Back)
             {
-                UE_LOG(LogTemp, Log, TEXT("Play Back Dash"));
+                MainPlayer->PlayDodgeMontage_Back_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
             {
-                UE_LOG(LogTemp, Log, TEXT("Play BackRight Dash"));
+                MainPlayer->RotatePlayer(EMovingDirection::Left);         //몸을 왼쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Back_Gun();
             }
             else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
             {
-                UE_LOG(LogTemp, Log, TEXT("Play BackLeft Dash"));
+                MainPlayer->RotatePlayer(EMovingDirection::Right);         //몸을 오른쪽으로 회전
+                MainPlayer->PlayDodgeMontage_Back_Gun();
             }
             else
             {
@@ -177,11 +179,11 @@ void UPlayerAnimation::PlayAttackAnimation()
 		PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
 		if (PlayerWeapon == EWeaponType::Sword)
 		{
-			MainPlayer->PlayAttackMontage_Sword();
+			MainPlayer->PlaySwordAttackMontage();
 		}
 		else if (PlayerWeapon == EWeaponType::Gun)
 		{
-			MainPlayer->PlayAttackMontage_Gun();
+			MainPlayer->PlayGunShootingMontage();
 		}
 		else
 		{
