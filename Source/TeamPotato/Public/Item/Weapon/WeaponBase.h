@@ -8,6 +8,7 @@
 #include "WeaponBase.generated.h"
 
 class UWeaponComponent;
+class UPlayerResource;
 
 UCLASS()
 class TEAMPOTATO_API AWeaponBase : public AActor
@@ -23,8 +24,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// 공격 함수(가상 함수)
-	virtual void Attack(class ATestCharacter* OwningPlayer) {};
+	// 공격 함수
+    virtual void Attack(class ATestCharacter* OwningPlayer);
 
 	inline void SetOwnerComponent(UWeaponComponent* InWeaponComponent) { OwnerWeaponComponent = InWeaponComponent; }
 
@@ -38,6 +39,14 @@ protected:
 	// 무기 매쉬
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkeletalMeshComponent> WeaponMesh = nullptr;
+
+    // 무기 공격 데미지
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+    float AttackDamage = 10.0f;
+
+    // 무기 공격 소모 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+    float AttackCost = 1.0f;
 
 	// 웨폰 컴포넌트
 	UPROPERTY()

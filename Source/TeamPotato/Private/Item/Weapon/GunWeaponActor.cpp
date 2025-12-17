@@ -15,10 +15,14 @@ AGunWeaponActor::AGunWeaponActor()
 
 	// 무기 타입 설정
 	WeaponType = EWeaponType::Gun;
+    AttackDamage = 10.0f;
+    AttackCost = 1.0f;
 }
 
 void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 {
+    Super::Attack(OwningPlayer);
+
 	// 오류 검사
 	if (!OwnerWeaponComponent || !WeaponMesh || !BulletClass) return;
 

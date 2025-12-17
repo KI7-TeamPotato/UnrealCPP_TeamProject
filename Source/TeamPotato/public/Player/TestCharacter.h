@@ -64,6 +64,9 @@ public:
 	UFUNCTION()
 	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
 
+    UFUNCTION()
+    inline UPlayerResource* GetResource() { return ResourceManager; }
+
 	UFUNCTION(BlueprintCallable, Category = "Kill")
 	void KillPlayer();
 
