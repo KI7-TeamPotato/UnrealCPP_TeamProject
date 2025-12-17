@@ -12,6 +12,7 @@
 #include "Item/Weapon/WeaponBoxActor.h"
 #include "Component/WeaponComponent.h"
 #include "Component/PlayerResource.h"
+#include "Components/CapsuleComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "IntetFace/Interactable.h"
 

@@ -206,7 +206,7 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<class UAnimInstance> AnimInstance = nullptr;
 
-	UPROPERTY()
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
 	//가지고 있는 무기 정보

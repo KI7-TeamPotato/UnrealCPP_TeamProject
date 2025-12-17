@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "PlayerResource.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentHealth, float, InMaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAMPOTATO_API UPlayerResource : public UActorComponent
@@ -19,20 +21,38 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	//getter
 	inline float GetHealthAmount() { return Health; }
-	inline float GetStaminaAmount() { return Stamina; }
+    inline float GetEnergyAmount() { return Energy; }
+
+    //inline float GetStaminaAmount() { return Stamina; }
 
 	//리소스 사용
+    UFUNCTION(BlueprintCallable, Category = "Resource")
 	void TakeDamage(float InDamage);
+    UFUNCTION(BlueprintCallable, Category = "Resource")
 	void Heal(float InHeal);
+    UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool UseStamina(float InUseStaminaAmount);
 
 
 private:
-	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > InUseStaminaAmount); }
+    inline bool IsEnergyRemain(float InUseStaminaAmount) { return (Energy > InUseStaminaAmount); }
+
+    //inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > InUseStaminaAmount); }
+
+    void BroadcastHealthChanged();
+    void BroadcastEnergyChanged();
+
+public:
+    // --- 체력,자원 변경 델리게이트 ---
+    UPROPERTY(BlueprintAssignable, Category = "Resource")
+    FOnHealthChanged OnHealthChanged;
+    UPROPERTY(BlueprintAssignable, Category = "Resource")
+    FOnResourceChanged OnEnergyChanged;
 
 private:
 	//체력
@@ -40,11 +60,18 @@ private:
 	//최대 체력
 	const float MaxHealth = 100.0f;
 
-	//스태미나
-	float Stamina = 100.0f;
-	//최대 스태미나
-	const float MaxStamina = 100.0f;
+    //무기 공격에 사용되는 자원
+    float Energy = 100.0f;
+    //최대 에너지
+    const float MaxEnergy = 100.0f;
 
+
+    ////스태미나
+    //float Stamina = 100.0f;
+    ////최대 스태미나
+    //const float MaxStamina = 100.0f;
+ 
+ 
 	//공격력
 	float AttackPower = 10.0f;
 	//최소 공격력(이 이하로 내려가지 않음)

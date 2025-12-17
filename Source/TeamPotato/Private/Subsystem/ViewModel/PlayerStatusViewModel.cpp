@@ -6,6 +6,7 @@
 void UPlayerStatusViewModel::SetHealth(float CurrentHealth, float MaxHealth)
 {
 	HealthPercent = FMath::Clamp(CurrentHealth / MaxHealth, 0.0f, 1.0f);
+    //UE_LOG(LogTemp, Warning, TEXT("HealthPercent: %f"), HealthPercent);
 	OnPlayerHealthChanged.Broadcast(HealthPercent);
 
 	// --- 체력 텍스트 포함 버전 ---
