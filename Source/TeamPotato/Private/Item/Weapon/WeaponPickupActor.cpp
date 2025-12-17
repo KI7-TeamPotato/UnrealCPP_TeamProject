@@ -18,6 +18,11 @@ AWeaponPickupActor::AWeaponPickupActor()
 	InteractionWidget->SetVisibility(false);
 }
 
+void AWeaponPickupActor::SetWeaponData(UWeaponDataAsset* InData)
+{
+    WeaponData = InData;
+}
+
 void AWeaponPickupActor::Interact_Implementation(AActor* InTarget)
 {
     OnPickup(InTarget);
@@ -32,7 +37,7 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 	if (!WeaponComponent) return;
 
 	// 플레이어의 웨폰 컴포넌트를 가져와 무기 장착 실행
-	WeaponComponent->EquipWeapon(WeaponClass);
+	WeaponComponent->EquipWeapon(WeaponData);
 
     // 상자 파괴
     if (SourceBox)

@@ -23,7 +23,7 @@ public:
 	void WeaponAttack();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(TSubclassOf<AWeaponBase> InWeapon);
+	void EquipWeapon(UWeaponDataAsset* WeaponData);
 
 	EWeaponType GetCurrentWeaponType() const;
 
@@ -32,15 +32,11 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TObjectPtr<USkeletalMeshComponent> OwnerMesh = nullptr;
+    // 플레이어
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    TObjectPtr<ATestCharacter> Owner = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeaponBase> WeaponClass;
-
+    // 현재 무기
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TObjectPtr<AWeaponBase> CurrentWeapon = nullptr;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TObjectPtr<ATestCharacter> Owner = nullptr;
 };

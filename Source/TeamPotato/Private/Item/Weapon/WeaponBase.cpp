@@ -4,6 +4,7 @@
 #include "Item/Weapon/WeaponBase.h"
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
+#include "Data/WeaponDataAsset.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -38,4 +39,13 @@ void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
     }
 
     Resource->UseStamina(AttackCost);
+}
+
+void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)
+{
+    if (!InData) return;
+
+    WeaponType = InData->WeaponType;
+    AttackDamage = InData->AttackDamage;
+    AttackCost = InData->AttackCost;
 }

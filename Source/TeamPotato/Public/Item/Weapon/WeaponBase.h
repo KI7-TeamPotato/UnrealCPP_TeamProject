@@ -27,6 +27,9 @@ public:
 	// 공격 함수
     virtual void Attack(class ATestCharacter* OwningPlayer);
 
+    // 데이터 에셋에서 불러오는 함수
+    void InitializeFromData(class UWeaponDataAsset* InData);
+
 	inline void SetOwnerComponent(UWeaponComponent* InWeaponComponent) { OwnerWeaponComponent = InWeaponComponent; }
 
 	EWeaponType GetWeaponType() const { return WeaponType; }

@@ -13,6 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBoxOpen);
 class USkeletalMeshComponent;
 class USphereComponent;
 class UWidgetComponent;
+class UWeaponDataAsset;
 
 UCLASS()
 class TEAMPOTATO_API AWeaponBoxActor : public AActor, public IInteractable
@@ -30,6 +31,9 @@ public:
 
     UFUNCTION()
     void SpawnRandomWeapon();
+
+    UFUNCTION()
+    void SpawnPickup(UWeaponDataAsset* InWeaponData);
 
     UFUNCTION()
     void OnSpawnWeaponNotify();

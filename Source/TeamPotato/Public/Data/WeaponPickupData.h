@@ -17,11 +17,7 @@ struct FWeaponPickupData : public FTableRowBase
 public:
     // 픽업 액터 클래스
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
-    TSubclassOf<class AWeaponPickupActor> PickupActorClass;
-
-    // 장착할 무기 클래스
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
-    TSubclassOf<class AWeaponBase> WeaponClass;
+    TObjectPtr<class UWeaponDataAsset> WeaponData;
 
     // 등장 확률 가중치
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")

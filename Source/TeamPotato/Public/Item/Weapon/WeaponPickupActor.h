@@ -10,6 +10,7 @@
 class AWeaponBase;
 class UWidgetComponent;
 class AWeaponBoxActor;
+class UWeaponDataAsset;
 
 /**
  * 
@@ -22,16 +23,14 @@ class TEAMPOTATO_API AWeaponPickupActor : public APickupActor, public IInteracta
 public:
 	AWeaponPickupActor();
 
+    // 무기 데이터 설정
+    void SetWeaponData(UWeaponDataAsset* InData);
+
     // 상호작용 인터페이스
     virtual void Interact_Implementation(AActor* InTarget) override;
 
 	// 아이템 획득 함수
 	virtual void OnPickup(AActor* InPlayer) override;
-
-    inline void SetWeaponClass(TSubclassOf<AWeaponBase> InWeaponClass)
-    {
-        WeaponClass = InWeaponClass;
-    }
 
     // 무기 획득 후 파괴를 위한 스폰 상자를 설정
     void SetSourceBox(AWeaponBoxActor* InBox)
@@ -52,9 +51,9 @@ protected:
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-	// 무기 클래스
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<AWeaponBase> WeaponClass;
+    // 무기 데이터
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+    TObjectPtr<UWeaponDataAsset> WeaponData;
 
 	// 상호작용 위젯
 	UPROPERTY(VisibleAnywhere)

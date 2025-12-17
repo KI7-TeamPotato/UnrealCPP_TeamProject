@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Player/TestCharacter.h"
+#include "Data/WeaponDataAsset.h"
 
 // Sets default values
 AWeaponBoxActor::AWeaponBoxActor()
@@ -77,22 +78,27 @@ void AWeaponBoxActor::SpawnRandomWeapon()
         Pick += Row->WeaponWeight;
         if (Random <= Pick)
         {
-            TObjectPtr<AWeaponPickupActor> Pickup =
-                GetWorld()->SpawnActor<AWeaponPickupActor>(
-                    Row->PickupActorClass,
-                    SpawnLocation->GetComponentLocation(),
-                    GetActorRotation()
-                );
+            if (!Row->WeaponData) return;
 
-            if (Pickup)
-            {
-                Pickup->SetWeaponClass(Row->WeaponClass);
-
-                // 이 상자를 무기에게 알려줌
-                Pickup->SetSourceBox(this);
-            }
+            SpawnPickup(Row->WeaponData);
             return;
         }
+    }
+}
+
+void AWeaponBoxActor::SpawnPickup(UWeaponDataAsset* InWeaponData)
+{
+    if (!InWeaponData || !InWeaponData->PickupWeaponClass) return;
+
+    AWeaponPickupActor* Pickup =
+        GetWorld()->SpawnActor<AWeaponPickupActor>(
+            InWeaponData->PickupWeaponClass,
+            SpawnLocation->GetComponentTransform()
+        );
+
+    if (Pickup)
+    {
+        Pickup->SetWeaponData(InWeaponData);
     }
 }
 
