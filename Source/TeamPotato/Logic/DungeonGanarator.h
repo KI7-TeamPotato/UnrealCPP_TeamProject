@@ -31,6 +31,9 @@ struct FStageRoomConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class ARoomBase>> StartRooms;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<TSubclassOf<class ADoor>> Doors;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 StageRoomAmount = 10;
 
@@ -40,6 +43,7 @@ struct FStageRoomConfig
 class ADungeonRoom1;
 class ARoomBase;
 class AClosingWall;
+class ADoor;
 
 UCLASS()
 class TEAMPOTATO_API ADungeonGanarator : public AActor
@@ -81,9 +85,12 @@ public:
 	TArray<TSubclassOf<ARoomBase>> CorridorRooms;
 
 	//던전의 모든 방이 생성 끝나면 뚫린 벽 막아주는 클래스
-	UPROPERTY(EditAnywhere, Category = "UnusedExits")
+	UPROPERTY(EditAnywhere, Category = "Rooms|UnusedExits")
 	TArray<TSubclassOf<AClosingWall>> ClosingWall;
 
+    UPROPERTY(EditAnywhere, Category = "Rooms|Door")
+    //TArray<TSubclassOf<ADoor>> Doors;
+    TSubclassOf<ADoor> Doors;
 protected:
 	//마지막으로 생성된 방
 	ARoomBase* LastestSpawnRoom = nullptr;
@@ -93,6 +100,8 @@ protected:
 
 	//출구(다음방 통로)
 	TArray<USceneComponent*> Exits;
+
+	TArray<USceneComponent*> DoorList;
 
 	//Seed 시스템용 랜덤스트림
 	FRandomStream RandomStream;
@@ -140,6 +149,7 @@ protected:
 	//시드 설정하는 함수
 	void SetSeed();
 
+    void SpawnDoors();
 private:
 	//벽이랑 복도등 모든 요소 저장하는 배열(ResetDungeon에서 맵 리셋할떄 씀)
 	UPROPERTY()

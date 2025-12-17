@@ -32,6 +32,5 @@ EBTNodeResult::Type UBTT_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp, 
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(PatrolPosKey.SelectedKeyName, NextPatrolPos.Location);
 		return EBTNodeResult::Succeeded;
 	}
-
 	return EBTNodeResult::Failed;
 }

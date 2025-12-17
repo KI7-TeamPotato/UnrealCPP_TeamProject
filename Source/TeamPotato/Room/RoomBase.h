@@ -7,6 +7,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Component/WaveComponent.h"
+#include "TeamPotato/Logic/Door.h"
+#include "Kismet/GameplayStatics.h"
 #include "RoomBase.generated.h"
 
 UCLASS()
@@ -18,13 +21,47 @@ public:
 	// Sets default values for this actor's properties
 	ARoomBase();
 
+    // 이 방에 소속된 문들을 등록하는 배열
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Room Info")
+    TArray<ADoor*> RoomDoors;
+
+    // 문을 등록하는 함수
+    void RegisterDoor(ADoor* NewDoor);
+    void SetGlobalDoorState(bool bShouldClose);
+    // 모든 문을 동시에 여는 함수
+    UFUNCTION(BlueprintCallable)
+    void OpenAllRoomDoors();
+
+    UFUNCTION(BlueprintCallable)
+    void CloseAllRoomDoors();
+
+    bool GetRoomClear() { return bIsRoomClear; }
+    bool GetStartBattle() { return bIsStartBattle; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+    UFUNCTION()
+    void HandleBattleEnd();
+
+    bool bIsStartBattle = false;
+
+    bool bIsRoomClear = false;
+
+    // [추가] 플레이어가 방에 진입했는지 감지하는 오버랩 함수
+    UFUNCTION()
+    void OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp, 
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex, 
+        bool bFromSweep, 
+        const FHitResult& SweepResult);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UWaveComponent> WaveSystemComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> DefaultScenRoot;
@@ -54,6 +91,20 @@ public:
 	TObjectPtr<USceneComponent> SpawnPointsFolder;
 
 protected:
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint1;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint2;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint3;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint4;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint5;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> Wall1;
@@ -130,6 +181,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UArrowComponent> Arrow;
 
-
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UBoxComponent> OnEnterRoomCollision;
 
 };
