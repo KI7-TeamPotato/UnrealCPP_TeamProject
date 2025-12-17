@@ -17,6 +17,11 @@ AWeaponPickupActor::AWeaponPickupActor()
 	InteractionWidget->SetVisibility(false);
 }
 
+void AWeaponPickupActor::Interact_Implementation(AActor* InTarget)
+{
+    OnPickup(InTarget);
+}
+
 void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 {
 	ATestCharacter* player = Cast<ATestCharacter>(InPlayer);
@@ -43,22 +48,17 @@ void AWeaponPickupActor::BeginPlay()
 void AWeaponPickupActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 플레이어가 오버랩 시 위젯 출력
-	if (OtherActor && OtherActor->IsA<ACharacter>())
-	{
-		InteractionWidget->SetVisibility(true);
-	}
+    if (OtherActor && OtherActor->IsA<ATestCharacter>())
+    {
+        InteractionWidget->SetVisibility(true);
+    }
 }
 
 void AWeaponPickupActor::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// 플레이어가 오버랩 종료 시 위젯 출력 종료
-	ATestCharacter* Character = Cast<ATestCharacter>(OtherActor);
-	if (!Character) return;
-
-	InteractionWidget->SetVisibility(false);
-
-	if (Character->PickupWeapon == this)
-	{
-		Character->PickupWeapon = nullptr;
-	}
+    if (OtherActor && OtherActor->IsA<ATestCharacter>())
+    {
+        InteractionWidget->SetVisibility(false);
+    }
 }

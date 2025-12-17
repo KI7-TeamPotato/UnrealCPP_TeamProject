@@ -30,7 +30,6 @@ void APickupActor::BeginPlay()
 
 	// 오버랩 델리게이트 등록
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupActor::OnOverlap);
-	
 }
 
 void APickupActor::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

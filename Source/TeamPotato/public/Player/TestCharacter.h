@@ -10,6 +10,7 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
+class AWeaponBoxActor;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -100,9 +101,9 @@ private:
 
 
 public:
-	// 획득할 수 잇는 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
-	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
+    // 상호작용 대상
+    UPROPERTY()
+    AActor* CurrentInteractTarget = nullptr;
 
 protected:
 	//IA

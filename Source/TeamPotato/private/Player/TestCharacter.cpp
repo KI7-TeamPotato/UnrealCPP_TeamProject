@@ -7,11 +7,13 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponManagerActor.h"
 #include "Item/Weapon/WeaponPickupActor.h"
+#include "Item/Weapon/WeaponBoxActor.h"
+#include "Component/WeaponComponent.h"
 #include "Component/PlayerResource.h"
 #include "Blueprint/UserWidget.h"
+#include "IntetFace/Interactable.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -118,21 +120,21 @@ void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	AWeaponPickupActor* WeaponPickup = Cast<AWeaponPickupActor>(OtherActor);
-	if (WeaponPickup)
-	{
-		PickupWeapon = WeaponPickup;
-	}
+    if (OtherActor &&
+        OtherActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+    {
+        CurrentInteractTarget = OtherActor;
+    }
 }
 
 void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
-	if (OtherActor == PickupWeapon)
-	{
-		PickupWeapon = nullptr;
-	}
+    if (OtherActor == CurrentInteractTarget)
+    {
+        CurrentInteractTarget = nullptr;
+    }
 }
 
 void ATestCharacter::KillPlayer()
@@ -228,12 +230,13 @@ void ATestCharacter::OnAttackInput()
 
 void ATestCharacter::OnInteract()
 {
-	if (PickupWeapon)
-	{
-		PickupWeapon->OnPickup(this);
-		PickupWeapon = nullptr;
-	}
-    
+    if (!CurrentInteractTarget) return;
+
+    if (CurrentInteractTarget->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+    {
+        IInteractable::Execute_Interact(CurrentInteractTarget, this);
+        CurrentInteractTarget = nullptr;
+    }
 }
 
 void ATestCharacter::OnRollInput()

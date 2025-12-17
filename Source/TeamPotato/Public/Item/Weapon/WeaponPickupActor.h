@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IntetFace/Interactable.h"
 #include "Item/PickupActor.h"
 #include "WeaponPickupActor.generated.h"
 
@@ -13,15 +14,23 @@ class UWidgetComponent;
  * 
  */
 UCLASS()
-class TEAMPOTATO_API AWeaponPickupActor : public APickupActor
+class TEAMPOTATO_API AWeaponPickupActor : public APickupActor, public IInteractable
 {
 	GENERATED_BODY()
 	
 public:
 	AWeaponPickupActor();
 
+    // 상호작용 인터페이스
+    virtual void Interact_Implementation(AActor* InTarget) override;
+
 	// 아이템 획득 함수
 	virtual void OnPickup(AActor* InPlayer) override;
+
+    inline void SetWeaponClass(TSubclassOf<AWeaponBase> InWeaponClass)
+    {
+        WeaponClass = InWeaponClass;
+    }
 
 protected:
 	virtual void BeginPlay() override;
@@ -37,7 +46,7 @@ protected:
 
 protected:
 	// 무기 클래스
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<AWeaponBase> WeaponClass;
 
 	// 상호작용 위젯
