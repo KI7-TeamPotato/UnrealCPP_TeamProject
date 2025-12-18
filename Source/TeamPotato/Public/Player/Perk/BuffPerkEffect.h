@@ -18,8 +18,4 @@ public:
 	virtual void OnEquip(AActor* OwnerCharacter) override;
 
 	virtual void OnUnequip(AActor* OwnerCharacter) override;
-
-protected:
-	UPROPERTY(EditaNywhere, BlueprintReadOnly, Category = "Buff Perk Effect")
-	float BuffAmount = 10.f;
 };

@@ -21,4 +21,11 @@ public:
 
 	// when the perk is unequipped, this function is called
 	virtual void OnUnequip(AActor* OwnerCharacter) {};
+
+    // 퍽의 변경 가능한 효과 수치를 반환
+    float GetAmount() const { return Amount; }
+
+protected:
+    UPROPERTY(EditaNywhere, BlueprintReadOnly, Category = "Buff Perk Effect")
+    float Amount = 10.f;
 };
