@@ -91,6 +91,9 @@ public:
 	TObjectPtr<USceneComponent> SpawnPointsFolder;
 
 protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UActorComponent> Torch;
+
     UPROPERTY(VisibleAnywhere, Category = "Components")
     TObjectPtr<UArrowComponent> SpawnPoint1;
 
