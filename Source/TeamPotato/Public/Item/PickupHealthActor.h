@@ -15,9 +15,7 @@ class TEAMPOTATO_API APickupHealthActor : public APickupActor
 	GENERATED_BODY()
 	
 protected:
-    virtual void OnPickup(AActor* InPlayer) override;
-
-    void Heal(AActor* InPlayer);
+    virtual void UseItem(AActor* InPlayer) override;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")

@@ -5,15 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
 
-void APickupHealthActor::OnPickup(AActor* InPlayer)
-{
-    if (!InPlayer) return;
-
-    Heal(InPlayer);
-    Destroy();
-}
-
-void APickupHealthActor::Heal(AActor* InPlayer)
+void APickupHealthActor::UseItem(AActor* InPlayer)
 {
     ATestCharacter* Player = Cast<ATestCharacter>(InPlayer);
     if (!Player) return;

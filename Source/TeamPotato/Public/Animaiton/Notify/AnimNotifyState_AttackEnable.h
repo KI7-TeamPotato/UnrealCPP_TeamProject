@@ -25,9 +25,4 @@ public:
         USkeletalMeshComponent* MeshComp,
         UAnimSequenceBase* Animation,
         const FAnimNotifyEventReference& EventReference) override;
-
-private:
-    TObjectPtr<class ATestCharacter> Owner = nullptr;
-    
-    TObjectPtr<class AWeaponBase> Weapon = nullptr;
 };

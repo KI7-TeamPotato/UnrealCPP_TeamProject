@@ -5,15 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
 
-void APickupGoldActor::OnPickup(AActor* InPlayer)
-{
-    if (!InPlayer) return;
-
-    AddGold(InPlayer);
-    Destroy();
-}
-
-void APickupGoldActor::AddGold(AActor* InPlayer)
+void APickupGoldActor::UseItem(AActor* InPlayer)
 {
     ATestCharacter* Player = Cast<ATestCharacter>(InPlayer);
     if (!Player) return;

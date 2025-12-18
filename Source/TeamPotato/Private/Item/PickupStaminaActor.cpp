@@ -5,15 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
 
-void APickupStaminaActor::OnPickup(AActor* InPlayer)
-{
-    if (!InPlayer) return;
-
-    AddStamina(InPlayer);
-    Destroy();
-}
-
-void APickupStaminaActor::AddStamina(AActor* InPlayer)
+void APickupStaminaActor::UseItem(AActor* InPlayer)
 {
     ATestCharacter* Player = Cast<ATestCharacter>(InPlayer);
     if (!Player) return;

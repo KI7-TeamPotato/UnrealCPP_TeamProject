@@ -15,9 +15,7 @@ class TEAMPOTATO_API APickupGoldActor : public APickupActor
 	GENERATED_BODY()
 	
 protected:
-    virtual void OnPickup(AActor* InPlayer) override;
-
-    void AddGold(AActor* InPlayer);
+    virtual void UseItem(AActor* InPlayer) override;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")

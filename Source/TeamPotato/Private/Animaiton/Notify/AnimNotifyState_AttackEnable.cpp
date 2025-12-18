@@ -9,17 +9,14 @@
 void UAnimNotifyState_AttackEnable::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
-    if (!Owner)
-    {
-        Owner = Cast<ATestCharacter>(MeshComp->GetOwner());
-    }
-    if (Owner)
-    {
-        UWeaponComponent* WeaponComponent = Owner->GetWeaponComponent();
-        if (!WeaponComponent) return;
-        Weapon = WeaponComponent->GetCurrentWeapon();
-    }
-    if (Weapon)
+
+    ATestCharacter* Owner = Cast<ATestCharacter>(MeshComp->GetOwner());
+    if (!Owner) return;
+
+    UWeaponComponent* WeaponComponent = Owner->GetWeaponComponent();
+    if (!WeaponComponent) return;
+
+    if (AWeaponBase* Weapon = WeaponComponent->GetCurrentWeapon())
     {
         Weapon->BeginAttack();
     }
@@ -27,7 +24,13 @@ void UAnimNotifyState_AttackEnable::NotifyBegin(USkeletalMeshComponent* MeshComp
 
 void UAnimNotifyState_AttackEnable::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-    if (Weapon)
+    ATestCharacter* Owner = Cast<ATestCharacter>(MeshComp->GetOwner());
+    if (!Owner) return;
+
+    UWeaponComponent* WeaponComponent = Owner->GetWeaponComponent();
+    if (!WeaponComponent) return;
+
+    if (AWeaponBase* Weapon = WeaponComponent->GetCurrentWeapon())
     {
         Weapon->EndAttack();
     }
