@@ -37,6 +37,8 @@ public:
 	void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool UseStamina(float InUseStaminaAmount);
+    UFUNCTION(BlueprintCallable, Category = "Resource")
+    void AddGold(int32 InGold);
 
 
 private:
@@ -67,6 +69,8 @@ private:
     //최대 에너지
     const float MaxEnergy = 100.0f;
 
+    // 소지 골드
+    int32 Gold = 0;
 
     ////스태미나
     //float Stamina = 100.0f;

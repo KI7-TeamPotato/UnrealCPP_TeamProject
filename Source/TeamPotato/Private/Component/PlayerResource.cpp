@@ -31,6 +31,7 @@ void UPlayerResource::BeginPlay()
 
     Health = MaxHealth;
     Energy = MaxEnergy;
+    Gold = 0;
 
     // 초기 체력, 에너지 값 브로드캐스트
     BroadcastHealthChanged();
@@ -100,6 +101,11 @@ bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
 		return false;
 	}*/
+}
+
+void UPlayerResource::AddGold(int32 InGold)
+{
+    Gold += InGold;
 }
 
 // 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수

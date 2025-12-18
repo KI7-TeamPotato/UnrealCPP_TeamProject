@@ -29,6 +29,7 @@ public:
     void SwapWeapon();
 
 	EWeaponType GetCurrentWeaponType() const;
+    inline AWeaponBase* GetCurrentWeapon() { return CurrentWeapon; }
 
 protected:
 	// Called when the game starts
