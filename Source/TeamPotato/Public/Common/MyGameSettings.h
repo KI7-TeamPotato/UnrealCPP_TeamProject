@@ -33,4 +33,7 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Character")
 	TSoftObjectPtr<UDataTable> CharacterDataTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Character")
+    TSoftObjectPtr<UMaterialInterface> MinimapBaseMaterial;
 };

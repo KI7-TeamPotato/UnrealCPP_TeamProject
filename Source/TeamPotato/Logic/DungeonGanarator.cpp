@@ -8,6 +8,9 @@
 #include "Components/BoxComponent.h"
 #include "TimerManager.h"
 #include "Door.h"
+#include "Subsystem/MVVMSubsystem.h"
+#include "Kismet/KismetMathLibrary.h"
+
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
@@ -20,6 +23,13 @@ ADungeonGanarator::ADungeonGanarator()
 void ADungeonGanarator::BeginPlay()
 {
 	Super::BeginPlay();
+
+    // MVVM 서브시스템에 자신을 등록
+    if(UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->RegisterDungeonGeneratorActor(this);
+    }
+
     InitialRoomAmount = RoomAmount;
     FTimerHandle UnusedHandle;
     FTimerHandle DoorHandle;
@@ -76,8 +86,14 @@ void ADungeonGanarator::BeginPlay()
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
     GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
 
+}
 
-
+void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->UnregisterDungeonGeneratorActor(this);
+    }
 }
 
 // Called every frame
@@ -278,6 +294,10 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
     }
     //안쓰는 통로 닫는 함수
     ClosingUnuusedWall();
+
+    /// 보스방 생성 성공시에 처리(Minimap)
+    CalculateDungeonMinMaxPoint();
+
 }
 
 void ADungeonGanarator::ClosingUnuusedWall()
@@ -353,6 +373,7 @@ bool ADungeonGanarator::SpawnBossRoom()
             }
         }
     }
+
     return true;
 }
 
@@ -456,4 +477,34 @@ void ADungeonGanarator::SpawnDoors()
         }
     }
 
+}
+
+void ADungeonGanarator::CalculateDungeonMinMaxPoint()
+{
+    // 추가 작업
+    // 생성된 이 미로의 전체 크기를 저장하여 미니맵 생성에 활용(2D)
+    FVector2D MinPoint(FLT_MAX, FLT_MAX);
+    FVector2D MaxPoint(-FLT_MAX, -FLT_MAX);
+
+    for (AActor* actor : GeneratedActors)
+    {
+        FVector2D actorMin, actorMax;
+
+        FVector Origin, Extend;
+        actor->GetActorBounds(true, Origin, Extend);
+
+        actorMin.X = Origin.X - Extend.X;
+        actorMin.Y = Origin.Y - Extend.Y;
+        actorMax.X = Origin.X + Extend.X;
+        actorMax.Y = Origin.Y + Extend.Y;
+
+        MinPoint.X = FMath::Min(MinPoint.X, actorMin.X);
+        MinPoint.Y = FMath::Min(MinPoint.Y, actorMin.Y);
+
+        MaxPoint.X = FMath::Max(MaxPoint.X, actorMax.X);
+        MaxPoint.Y = FMath::Max(MaxPoint.Y, actorMax.Y);
+    }
+
+    // 로딩창 종료
+    OnDungeonGenerationCompleted.Broadcast(MinPoint, MaxPoint);
 }
