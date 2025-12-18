@@ -6,7 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-
+#include "AIController.h" 
+#include "BrainComponent.h"
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -132,31 +133,29 @@ float AEnemyCharacter::SetMovementSpeed_Implementation(EEnemySpeed State)
 
 void AEnemyCharacter::OnDie()
 {
-    //if (DeadMontage)
-    //{
-    //    PlayAnimMontage(DeadMontage);
-    //    
-    //}
+    if (OnDeath.IsBound())
+    {
+        OnDeath.Broadcast();
+    }
 
-    //if (OnDeath.IsBound())
-    //{
-    //    OnDeath.Broadcast();
-    //}
-
-    //if (CurrentWeapon)
-    //{
-    //    CurrentWeapon->SetLifeSpan(3.0f);
-    //}
-
-    //GetCharacterMovement()->DisableMovement();
-    //GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    //DetachFromControllerPendingDestroy();
-    //SetLifeSpan(2.0f);
+    AAIController* AIController = Cast<AAIController>(GetController());
+    if (AIController)
+    {
+        // 뇌(Behavior Tree)가 있다면 사고 정지. (더 이상 추적/공격 시도 안 함)
+        if (AIController->GetBrainComponent())
+        {
+            AIController->GetBrainComponent()->StopLogic("Dead");
+        }
+        AIController->StopMovement(); // 이동 명령 즉시 취소
+    }
 
     float AnimDuration = PlayAnimMontage(DeadMontage);
 
-    SetLifeSpan(AnimDuration > 0.0f ? AnimDuration : 0.1f);
-
+    SetLifeSpan(AnimDuration > 0.1f ? AnimDuration : 0.1f);
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->SetLifeSpan(AnimDuration > 0.1f ? AnimDuration : 0.1f);
+    }
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCharacterMovement()->DisableMovement();
 }

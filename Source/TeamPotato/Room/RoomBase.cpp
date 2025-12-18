@@ -99,7 +99,7 @@ ARoomBase::ARoomBase()
     OnEnterRoomCollision->SetupAttachment(SpawnPointsFolder);
 	Arrow->bHiddenInGame = false;
 
-
+    OnEnterRoomCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called when the game starts or when spawned
@@ -176,6 +176,16 @@ void ARoomBase::CloseAllRoomDoors()
             // 문 자체의 이동 로직만 호출 (재귀 호출 방지를 위해 OpenDoor 직접 호출)
             Door->CloseDoor();
         }
+    }
+}
+
+void ARoomBase::ActivateBattleTrigger()
+{
+    if (OnEnterRoomCollision)
+    {
+        OnEnterRoomCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+        OnEnterRoomCollision->UpdateOverlaps();
     }
 }
 

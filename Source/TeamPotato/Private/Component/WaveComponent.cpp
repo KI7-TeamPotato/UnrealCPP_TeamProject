@@ -49,6 +49,7 @@ void UWaveComponent::SpawnWave(int32 WaveIndex)
 void UWaveComponent::OnEnemyKilled()
 {
     RemainingEnemies--;
+    UE_LOG(LogTemp, Log, TEXT("%d"), RemainingEnemies);
     if (RemainingEnemies <= 0)
     {
         // 3초 뒤 다음 웨이브

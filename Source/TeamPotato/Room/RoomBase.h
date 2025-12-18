@@ -34,7 +34,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void CloseAllRoomDoors();
-
+    void ActivateBattleTrigger();
     bool GetRoomClear() { return bIsRoomClear; }
     bool GetStartBattle() { return bIsStartBattle; }
 protected:

@@ -8,6 +8,8 @@
 #include "Components/BoxComponent.h"
 #include "TimerManager.h"
 #include "Door.h"
+#include "Kismet/GameplayStatics.h"
+#include "Enemy/EnemyCharacter.h"
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
@@ -280,6 +282,15 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
     }
     //안쓰는 통로 닫는 함수
     ClosingUnuusedWall();
+
+    for (AActor* Actor : GeneratedActors)
+    {
+        ARoomBase* Room = Cast<ARoomBase>(Actor);
+        if (Room)
+        {
+            Room->ActivateBattleTrigger();
+        }
+    }
 }
 
 void ADungeonGanarator::ClosingUnuusedWall()
@@ -386,7 +397,20 @@ void ADungeonGanarator::ResetDungeon()
 {
     //현재 진행 중인 타이머 모두 중지
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+
+    TArray<AActor*> AllEnemies;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyCharacter::StaticClass(), AllEnemies);
+
+
+    for (AActor* EnemyActor : AllEnemies)
+    {
+        if (IsValid(EnemyActor))
+        {
+            EnemyActor->Destroy();
+        }
+    }
     //지금까지 생성된 모든 방/복도 파괴
+
     for (AActor* Actor : GeneratedActors)
     {
         if (IsValid(Actor))
