@@ -35,19 +35,20 @@ void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D In
     // 던전 촬영 위치 설정
     WorldMinPoint = InMinPoint;
     WorldMaxPoint = InMaxPoint;
-    FVector DungeonCenter = FVector(
+    FVector2D DungeonCenter = FVector2D(
         (InMinPoint.X + InMaxPoint.X) / 2.0f, 
-        (InMinPoint.Y + InMaxPoint.Y) / 2.0f, 
-        GetActorLocation().Z);
-    SetActorLocation(DungeonCenter);
+        (InMinPoint.Y + InMaxPoint.Y) / 2.0f);
+    SetActorLocation(FVector(DungeonCenter, GetActorLocation().Z));
     
     // 던전 촬영 크기 설정
-    FVector DungeonSize = FVector(InMaxPoint.X - InMinPoint.X, InMaxPoint.Y - InMinPoint.Y, 0.0f);
+    FVector2D DungeonSize = InMaxPoint - InMinPoint;
     CaptureOrthoWidth = FMath::Max(DungeonSize.X, DungeonSize.Y) * BorderRatio; // 약간 여유 공간 추가
     CaptureComp->OrthoWidth = CaptureOrthoWidth;
 
     // 씬 캡처 실행
     CaptureComp->CaptureScene();
+
+    FVector2D AdjustedMinPoint = DungeonCenter - FVector2D(CaptureOrthoWidth / 2.0f, CaptureOrthoWidth / 2.0f);
 
     // 미니맵 매니저 초기화 (미니맵 텍스처, 월드 최소 좌표(기준), 던전 길이)
     if (!MinimapManager)
@@ -57,7 +58,7 @@ void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D In
 
     MinimapManager->InitializeMinimapManager(
         CaptureComp->TextureTarget,
-        InMinPoint,
+        AdjustedMinPoint,
         CaptureOrthoWidth);
 
     // 뷰모델에 미니맵 매니저 설정

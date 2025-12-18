@@ -49,7 +49,7 @@ FVector2D UMinimapManager::WorldToMinimapUV(const FVector2D& InWorldLocation2D) 
     // 상대적인 위치를 UV 좌표로 변환 (0~1 범위)
     FVector2D UV;
     UV.X = RelativePosition.Y / OrthoWidth;
-    UV.Y = 1.0f-(RelativePosition.X / OrthoWidth);
+    UV.Y = 1 -(RelativePosition.X / OrthoWidth);
     
     // 혹시 범위 벗어나는 경우 클램프
     UV.X = FMath::Clamp(UV.X, 0.0f, 1.0f);
