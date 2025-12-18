@@ -29,10 +29,10 @@ public:
 	void PlayerTakeDamage(float InDamage);
 	void Heal(float InHeal);
 	bool UseStamina(float InUseStaminaAmount);
-
+    void FillStamina(float InStamina);
 
 private:
-	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > InUseStaminaAmount); }
+	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > (InUseStaminaAmount - StaminaEpsilon)); }
 
 private:
 	//체력
@@ -46,6 +46,7 @@ private:
 	float Stamina = 100.0f;
 	//최대 스태미나
 	const float MaxStamina = 100.0f;
+    const float StaminaEpsilon = 0.0001f;
 
 	//공격력
 	float AttackPower = 10.0f;

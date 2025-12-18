@@ -28,7 +28,7 @@ void UPlayerResource::BeginPlay()
 void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
 	Health -= InDamage;
-    UE_LOG(LogTemp, Log, TEXT("UPlayerResource::PlayerTakeDamage | Left Health: %f"), Health);
+    UE_LOG(LogTemp, Log, TEXT("Left Health: %f"), Health);
 	if (Health <= MinHealth)
 	{
 		AActor* OwnerCharacter = GetOwner();
@@ -47,14 +47,25 @@ void UPlayerResource::Heal(float InHeal)
 
 bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 {
-	if (IsStaminaRemain(InUseStaminaAmount))
+    bool bIsStaminaEnough = IsStaminaRemain(InUseStaminaAmount);
+	if (bIsStaminaEnough)
 	{
 		Stamina -= InUseStaminaAmount;
-		return true;
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
-		return false;
 	}
+    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
+    return bIsStaminaEnough;
+}
+
+void UPlayerResource::FillStamina(float InStamina)
+{
+    Stamina += InStamina;
+    if (Stamina > MaxStamina)
+    {
+        Stamina = MaxStamina;
+    }
+    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
 }

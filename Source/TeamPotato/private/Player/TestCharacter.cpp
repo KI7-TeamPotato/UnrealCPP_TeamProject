@@ -47,7 +47,7 @@ ATestCharacter::ATestCharacter()
     //데미지 받는 함수 바인딩
     OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);
 
-    ActivatedWeapon = EWeaponType::Gun;
+    ActivatedWeapon = EWeaponType::Gun;             //테스트용
 }
 
 // Called when the game starts or when spawned
@@ -303,8 +303,11 @@ void ATestCharacter::OnAttackInput()
 {
 	if(!bIsOnActing)
 	{
-		PlayerAnimation->PlayAttackAnimation();
-		WeaponComponent->WeaponAttack();
+        if(ResourceManager->UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
+        {
+            PlayerAnimation->PlayAttackAnimation();
+            WeaponComponent->WeaponAttack();
+        }
 	}
 }
 
@@ -346,6 +349,15 @@ void ATestCharacter::SetAnimRootMotionFromMontage()
     AnimInstance->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
 }
 
+bool ATestCharacter::UseStamina(float InStaminaUseAmount)
+{
+    return ResourceManager->UseStamina(InStaminaUseAmount);
+}
+
+void ATestCharacter::FillStamina(float InStamina)
+{
+    ResourceManager->FillStamina(InStamina);
+}
 
 EMovingDirection ATestCharacter::GetLastInput()
 {

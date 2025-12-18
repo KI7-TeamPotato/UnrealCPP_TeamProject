@@ -75,9 +75,18 @@ public:
     void RotatePlayer(EMovingDirection TurnDirection);
 
     //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
+    UFUNCTION()
     void SetAnimRootMotionIgnore();
     //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
+    UFUNCTION()
     void SetAnimRootMotionFromMontage();
+
+    //스태미너 사용 가능 여부 반환 및 스태미너 사용
+    UFUNCTION()
+    bool UseStamina(float InStaminaUseAmount);
+    //스태미너 충전
+    UFUNCTION(BlueprintCallable, Category = "Stamina")
+    void FillStamina(float InStamina);
     
     //Getter
 	//현재 활성화된 무기 확인
@@ -96,6 +105,7 @@ public:
 
     //Setter
     //행동중인지 설정
+    UFUNCTION()
     void SetOnActing(bool InActing);
 
 	//활성화 된 무기 설정
