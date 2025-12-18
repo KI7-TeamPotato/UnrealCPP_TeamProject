@@ -42,6 +42,10 @@ public:
     UPROPERTY(EditAnywhere, Category = "Combat")
     UAnimMontage* AttackMontage;
 
+    UPROPERTY(EditAnywhere, Category = "Combat")
+    UAnimMontage* DeadMontage;
+
+
     //소켓 이름(나중에 통일할 예정)
     UPROPERTY(EditAnywhere, Category = "Combat")
     FName WeaponSocketName = TEXT("RHandSoket");

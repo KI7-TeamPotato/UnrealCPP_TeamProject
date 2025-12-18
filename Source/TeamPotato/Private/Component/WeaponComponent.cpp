@@ -5,6 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Item/Weapon/GunWeaponActor.h"
+#include "Data/WeaponDataAsset.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -12,7 +13,6 @@ UWeaponComponent::UWeaponComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-	
 }
 
 
@@ -22,20 +22,6 @@ void UWeaponComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Owner = Cast<ATestCharacter>(GetOwner());
-	if (!Owner || !WeaponClass) return;
-
-	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->SetOwner(Owner);
-		CurrentWeapon->SetOwnerComponent(this);
-
-		CurrentWeapon->AttachToComponent(
-			Owner->GetMesh(),
-			FAttachmentTransformRules::SnapToTargetIncludingScale,
-			TEXT("Weapon_R")
-		);
-	}
 }
 
 void UWeaponComponent::WeaponAttack()
@@ -48,9 +34,9 @@ void UWeaponComponent::WeaponAttack()
 	}
 }
 
-void UWeaponComponent::EquipWeapon(TSubclassOf<AWeaponBase> InWeapon)
+void UWeaponComponent::EquipWeapon(UWeaponDataAsset* WeaponData)
 {
-	if (!Owner || !InWeapon) return;
+	if (!Owner || !WeaponData || !WeaponData->WeaponClass) return;
 
 	if (CurrentWeapon)
 	{
@@ -58,10 +44,14 @@ void UWeaponComponent::EquipWeapon(TSubclassOf<AWeaponBase> InWeapon)
 		CurrentWeapon = nullptr;
 	}
 
-	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(InWeapon);
+	CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponData->WeaponClass);
+
 	if (!CurrentWeapon) return;
+
+    Owner->SetPlayerActivatedWeapon(CurrentWeapon->GetWeaponType());
 	CurrentWeapon->SetOwner(Owner);
 	CurrentWeapon->SetOwnerComponent(this);
+    CurrentWeapon->InitializeFromData(WeaponData);
 
 	CurrentWeapon->AttachToComponent(
 		Owner->GetMesh(),

@@ -2,6 +2,9 @@
 
 
 #include "Item/Weapon/WeaponBase.h"
+#include "Player/TestCharacter.h"
+#include "Component/PlayerResource.h"
+#include "Data/WeaponDataAsset.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -24,3 +27,25 @@ void AWeaponBase::BeginPlay()
 	Super::BeginPlay();
 }
 
+void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
+{
+    if (!OwningPlayer) return;
+
+    UPlayerResource* Resource = OwningPlayer->GetResource();
+    if (!Resource)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Resource is NULL in Attack"));
+        return;
+    }
+
+    Resource->UseStamina(AttackCost);
+}
+
+void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)
+{
+    if (!InData) return;
+
+    WeaponType = InData->WeaponType;
+    AttackDamage = InData->AttackDamage;
+    AttackCost = InData->AttackCost;
+}

@@ -132,19 +132,33 @@ float AEnemyCharacter::SetMovementSpeed_Implementation(EEnemySpeed State)
 
 void AEnemyCharacter::OnDie()
 {
-    if (OnDeath.IsBound())
-    {
-        OnDeath.Broadcast();
-    }
+    //if (DeadMontage)
+    //{
+    //    PlayAnimMontage(DeadMontage);
+    //    
+    //}
 
-    if (CurrentWeapon)
-    {
-        CurrentWeapon->SetLifeSpan(3.0f);
-    }
+    //if (OnDeath.IsBound())
+    //{
+    //    OnDeath.Broadcast();
+    //}
 
-    GetCharacterMovement()->DisableMovement();
+    //if (CurrentWeapon)
+    //{
+    //    CurrentWeapon->SetLifeSpan(3.0f);
+    //}
+
+    //GetCharacterMovement()->DisableMovement();
+    //GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    //DetachFromControllerPendingDestroy();
+    //SetLifeSpan(2.0f);
+
+
+    float AnimDuration = PlayAnimMontage(DeadMontage);
+
+    SetLifeSpan(AnimDuration > 0.0f ? AnimDuration : 0.1f);
+
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    DetachFromControllerPendingDestroy();
-    SetLifeSpan(2.0f);
+    GetCharacterMovement()->DisableMovement();
 }
 

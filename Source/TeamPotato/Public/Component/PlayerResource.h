@@ -59,6 +59,8 @@ private:
 	float Health = 100.0f;
 	//최대 체력
 	const float MaxHealth = 100.0f;
+    //사망 확인 기준점. 체력이 이보다 작을 시 사망처리함
+    const float MinHealth = 0.0001;
 
     //무기 공격에 사용되는 자원
     float Energy = 100.0f;

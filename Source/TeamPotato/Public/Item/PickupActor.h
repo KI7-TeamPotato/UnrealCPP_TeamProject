@@ -16,6 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	APickupActor();
 
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,4 +39,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
 	TObjectPtr<class UStaticMeshComponent> Mesh;
 
+    // 아이템 회전 속도
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+    float RotateSpeed = 180.0f;
 };

@@ -7,7 +7,7 @@
 #include "TeamPotato/Logic/ClosingWall.h"
 #include "Components/BoxComponent.h"
 #include "TimerManager.h"
-
+#include "Door.h"
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
@@ -22,6 +22,7 @@ void ADungeonGanarator::BeginPlay()
 	Super::BeginPlay();
     InitialRoomAmount = RoomAmount;
     FTimerHandle UnusedHandle;
+    FTimerHandle DoorHandle;
 
     //시드 정하기
     SetSeed();
@@ -73,6 +74,7 @@ void ADungeonGanarator::BeginPlay()
 
     //방이 모두 생성되면 1초(임의로 정할 수 있음)후 실행(보스방 만들기, 벽 막기 등등)
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
 
 
 
@@ -197,6 +199,14 @@ void ADungeonGanarator::SpawnNextRoom()
 
     // 방 오버랩 검사
     LastestSpawnRoom = SpawnedRoom;
+
+    DoorList.Add(SelectedExitPoint);
+
+    if (IsValid(CorridorExitPoint))
+    {
+        DoorList.Add(CorridorExitPoint); // 2. 복도 -> 다음 방 사이의 문
+    }
+
     RemoveOverlappingRooms();
 
     if (IsValid(SpawnedRoom))
@@ -336,7 +346,7 @@ bool ADungeonGanarator::SpawnBossRoom()
                     // 성공
                     GeneratedActors.Add(BossRoom);
                     Exits.Remove(BossExit);
-                    UE_LOG(LogTemp, Warning, TEXT("Boss Room Spawned Successfully"));
+                    UE_LOG(LogTemp, Warning, TEXT("Boss Room Spawn"));
                     CurrentResetCount = 0;
                     GetWorld()->GetTimerManager().ClearTimer(GenerationTimeoutHandle);
                 }
@@ -366,7 +376,7 @@ void ADungeonGanarator::ResetDungeon()
     }
     GeneratedActors.Empty(); // 목록 비우기
     Exits.Empty();           // 출구 목록 비우기
-
+    DoorList.Empty();
     //변수 초기화
     CurrentSpecialRoomIndex = 0;
     SpecialRoomIndex = 0;
@@ -380,6 +390,9 @@ void ADungeonGanarator::ResetDungeon()
     //종료 타이머 다시 설정
     FTimerHandle UnusedHandle;
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
+
+    FTimerHandle DoorHandle;
+    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
 }
 
 void ADungeonGanarator::OnGenerationTimeout()
@@ -401,4 +414,46 @@ void ADungeonGanarator::SetSeed()//게임에 사용할 시드 정하는 함수
     }
     RandomStream.Initialize(Results);
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), Results));//디버그용 시드 출력
+}
+
+void ADungeonGanarator::SpawnDoors()
+{
+    if (!Doors)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Door is Null"));
+        return;
+    }
+
+    // 모든 출구에 대해 검사
+    for (USceneComponent* Element : DoorList)
+    {
+        if (!IsValid(Element)) continue;
+
+        ADoor* LastestDoorSpawn = GetWorld()->SpawnActor<ADoor>(Doors);
+
+        if (LastestDoorSpawn)
+        {
+            FVector RelativeOffset(LastestDoorSpawn->GetLoc());
+            FVector WorldOffset = Element->GetComponentRotation().RotateVector(RelativeOffset);
+
+            LastestDoorSpawn->SetActorLocation(Element->GetComponentLocation() + WorldOffset);
+            LastestDoorSpawn->SetActorRotation(Element->GetComponentRotation() + LastestDoorSpawn->GetRot());
+
+            GeneratedActors.Add(LastestDoorSpawn);
+
+            AActor* OwnerActor = Element->GetOwner();
+            ARoomBase* OwnerRoom = Cast<ARoomBase>(OwnerActor);
+
+            if (OwnerRoom)
+            {
+                // 방에 문을 등록 (이 함수 안에서 Door->SetOwningRoom도 호출됨)
+                OwnerRoom->RegisterDoor(LastestDoorSpawn);
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("SpawnDoors"));
+        }
+    }
+
 }

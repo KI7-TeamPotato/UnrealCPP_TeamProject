@@ -20,8 +20,6 @@ protected:
 public:
 	ADungeonRoom1();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UWaveComponent> WaveSystemComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UArrowComponent> ExitArrow1;
@@ -33,13 +31,4 @@ public:
 	TObjectPtr<UArrowComponent>  ExitArrow3;
 
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	TObjectPtr<UArrowComponent> SpawnPoint2;
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	TObjectPtr<UArrowComponent> SpawnPoint3;
-
-
-	UFUNCTION()
-	void HandleBattleEnd();
 };

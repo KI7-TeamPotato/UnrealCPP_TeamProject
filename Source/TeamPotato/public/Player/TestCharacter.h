@@ -10,6 +10,7 @@
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
+class AWeaponBoxActor;
 
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
@@ -39,8 +40,17 @@ public:
 	void InvincibleDeactivate();
 
 	//애니메이션만 재생하는 함수
-	//구르기
-	void PlaySwordRollMontage();
+	//검 상태 회피
+	void PlayDodgeMontage_Front_Sword();
+    void PlayDodgeMontage_Right_Sword();
+    void PlayDodgeMontage_Left_Sword();
+    void PlayDodgeMontage_Back_Sword();
+
+    //총 상태 회피
+    void PlayDodgeMontage_Front_Gun();
+    void PlayDodgeMontage_Back_Gun();
+    void PlayDodgeMontage_Right_Gun();
+    void PlayDodgeMontage_Left_Gun();
 
 	//검 공격 몽타주 재생
 	void PlaySwordAttackMontage();
@@ -53,15 +63,39 @@ public:
 	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
 	//활성화 된 무기 설정
 	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
-
+    void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-
+    //주울 아이템과 오버랩이 끝났을때 호출
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
+
+    //데미지 받는 델리게이트
+    UFUNCTION(BlueprintCallable, Category = "Damage")
+    void TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+    //사망 처리
+	UFUNCTION(BlueprintCallable, Category = "Kill")
+	void KillPlayer();
+
+    //대각선 방향 애니메이션 재생을 위해 몸 돌리기
+    UFUNCTION()
+    void RotatePlayer(EMovingDirection TurnDirection);
+
+    //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
+    void SetAnimRootMotionIgnore();
+    //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
+    void SetAnimRootMotionFromMontage();
+    
+    //Getter
+	//현재 활성화된 무기 확인
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
 
 	UFUNCTION()
 	inline UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+
+    UFUNCTION()
+    inline UPlayerResource* GetResource() { return ResourceManager; }
 
 	UFUNCTION(BlueprintCallable, Category = "Kill")
 	void KillPlayer();
@@ -69,12 +103,38 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Sight")
 	inline float GetSightDegree() { return SightDegree; }
 
-	inline void SetOnActing(bool InActing) { bIsOnActing = InActing; }
+    //마지막으로 입력받은 값을 enum으로 반환
+    UFUNCTION()
+    EMovingDirection GetLastInput();
+
+    //Setter
+    //행동중인지 설정
+    void SetOnActing(bool InActing);
+
+	//활성화 된 무기 설정
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수
 	UFUNCTION()
 	void OnMovementInput(const FInputActionValue& InValue);
+
+    //앞뒤 움직임 입력
+    UFUNCTION()
+    void OnFrontMovementInput(const FInputActionValue& InValue);
+
+    //앞뒤 움직임 입력 종료
+    UFUNCTION()
+    void OnFrontMovementComplete();
+
+    //좌우 움직임 입력
+    UFUNCTION()
+    void OnSideMovementInput(const FInputActionValue& InValue);
+
+    //좌우 움직임 입력 종료
+    UFUNCTION()
+    void OnSideMovementComplete();
 
 	//고개 옆으로 돌리는 함수
 	UFUNCTION()
@@ -98,17 +158,18 @@ protected:
 
 private:
 
-
 public:
-	// 획득할 수 잇는 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
-	TObjectPtr<AWeaponPickupActor> PickupWeapon = nullptr;
+    // 상호작용 대상
+    UPROPERTY()
+    AActor* CurrentInteractTarget = nullptr;
 
 protected:
 	//IA
 	//이동 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
-	TObjectPtr<UInputAction> IA_Move = nullptr;
+	TObjectPtr<UInputAction> IA_FrontMove = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_SideMove = nullptr;
 	//횡방향 마우스 이동
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_HorizonSight = nullptr;
@@ -149,16 +210,29 @@ protected:
 
 	//Anim Montage
 	// 검
-	//구르기 몽타주
+	//회피(구르기)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
-	TObjectPtr<class UAnimMontage> SwordRollMontage = nullptr;
-	//공격 몽타주
+	TObjectPtr<class UAnimMontage> RollMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> BackStepMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> RightStepMontage_Sword = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+	TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-	TObjectPtr<class UAnimMontage> SwordAttackMontage = nullptr;
+	TObjectPtr<class UAnimMontage> AttackMontage_Sword = nullptr;
 
 	//총
+    //회피(구르기)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-	TObjectPtr<class UAnimMontage> GunShootMontage = nullptr;
+	TObjectPtr<class UAnimMontage> RollMontage_Gun = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> BackStepMontage_Gun = nullptr;
+    //공격
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+	TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
+
 
 	//무기 매니저
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -166,6 +240,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<UUserWidget> CrosshairWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    TObjectPtr<UUserWidget> CrosshairWidget = nullptr;
 
 private:
 	//가로방향 마우스 감도
@@ -192,6 +272,7 @@ private:
 	float RollStamina = 10;
 	float AttackStamina = 5;
 	
+    //무기, 상황별로 구분해서 맞는 애니메이션 호출하는 함수
 	UPROPERTY()
 	TObjectPtr<class UPlayerAnimation> PlayerAnimation = nullptr;
 
@@ -203,9 +284,19 @@ private:
 	TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
 	//가지고 있는 무기 정보
+    UPROPERTY()
 	EWeaponType ActivatedWeapon = EWeaponType::None;
 
 	//플레이어가 현재 행동중인지 아닌지 확인
 	bool bIsOnActing = false;
 
+    //마지막 입력 저장하는 함수
+    float FrontBackMove = 0.0f;
+    float SideMove = 0.0f;
+
+    //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
+    float AnimRotateDegree = 45.0f;
+
+    //회피 애니메이션 중 움직이지 않는 애니메이션 재생시 캐릭터를 움직일 정도
+    float LaunchPlayerPower = 1000.0f;
 };
