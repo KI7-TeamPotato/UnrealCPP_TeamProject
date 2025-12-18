@@ -85,8 +85,22 @@ public:
     UFUNCTION()
     bool UseStamina(float InStaminaUseAmount);
     //스태미너 충전
-    UFUNCTION(BlueprintCallable, Category = "Stamina")
+    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
     void FillStamina(float InStamina);
+
+    //체력회복
+    UFUNCTION(BlueprintCallable, Category = "Resource|Health")
+    void Heal(float InHeal);
+    
+    //공격력 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Power")
+    void AddPower(float InPower);
+    //최대체력 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Health")
+    void AddMaxHealth(float InMaxHealth);
+    //최대 스태미나 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
+    void AddMaxStamina(float InMaxStamina);
     
     //Getter
 	//현재 활성화된 무기 확인
@@ -150,10 +164,15 @@ protected:
 	UFUNCTION()
 	void OnAttackInput();
 
+    UFUNCTION()
+    void OnSkillInput();
+
 	// 상호작용 함수
 	void OnInteract();
 
 private:
+    UFUNCTION()
+    bool IsActionAvailable();
 
 public:
 	// 획득할 수 잇는 무기
@@ -179,6 +198,8 @@ protected:
 	//구르기 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Roll = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_Skill = nullptr;
 
 	// 상호작용 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
@@ -278,9 +299,6 @@ private:
 	//가지고 있는 무기 정보
     UPROPERTY()
 	EWeaponType ActivatedWeapon = EWeaponType::None;
-
-	//플레이어가 현재 행동중인지 아닌지 확인
-	bool bIsOnActing = false;
 
     //마지막 입력 저장하는 함수
     float FrontBackMove = 0.0f;

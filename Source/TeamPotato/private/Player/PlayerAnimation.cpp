@@ -44,6 +44,8 @@ void UPlayerAnimation::PlayRollMontage()
 			UE_LOG(LogTemp, Log, TEXT("No Weapon Avaliable"));
 		}*/
 
+        PlayerWeapon = MainPlayer->GetPlayerActivatedWeapon();
+
         if (PlayerWeapon == EWeaponType::Sword)
         {
             if (MainPlayer->GetLastInput() == EMovingDirection::Front)
@@ -132,42 +134,7 @@ void UPlayerAnimation::PlayRollMontage()
         }
         else
         {
-            if (MainPlayer->GetLastInput() == EMovingDirection::Front)
-            {
-                MainPlayer->PlayDodgeMontage_Front_Sword();
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontLeft)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play FrontLeft Roll"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::FrontRight)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play FrontRight Roll"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::Left)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play Left Dash"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::Right)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play Right Dash"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::Back)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play Back Dash"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::BackRight)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play BackRight Dash"));
-            }
-            else if (MainPlayer->GetLastInput() == EMovingDirection::BackLeft)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Play BackLeft Dash"));
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("UPlayerAnimation::UPlayerAnimation | Wrong Saved Input"));
-            }
+             UE_LOG(LogTemp, Error, TEXT("UPlayerAnimation::UPlayerAnimation | Wrong Saved Input"));
         }
 	}
 }

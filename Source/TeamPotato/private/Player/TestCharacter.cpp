@@ -46,8 +46,6 @@ ATestCharacter::ATestCharacter()
 
     //데미지 받는 함수 바인딩
     OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);
-
-    ActivatedWeapon = EWeaponType::Gun;             //테스트용
 }
 
 // Called when the game starts or when spawned
@@ -97,6 +95,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
+		enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
 	}
 }
 
@@ -129,24 +128,25 @@ void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const U
 
 void ATestCharacter::KillPlayer()
 {
-	// 1. 캐릭터 이동 중지
+	//캐릭터 이동 중지
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 
-	// 2. 캡슐 충돌 끄기 
+	//캡슐 충돌 끄기 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// 3. 메시를 Ragdoll 프로파일로
+	//메시를 Ragdoll 프로파일로
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
 
-	// 4. 물리 활성화
+	//물리 활성화
 	MeshComp->SetSimulatePhysics(true);
 
-	// 5. 캡슐에서 분리 
-	MeshComp->DetachFromComponent(
-		FDetachmentTransformRules::KeepWorldTransform
-	);
+	//캡슐에서 분리 
+	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+    //애니메이션 재생을 막기 위함
+    bIsOnAction = true;
 }
 
 void ATestCharacter::InvincibleActivate()
@@ -234,10 +234,10 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
 {
-    if(!bIsOnActing)
+    if(!bIsOnAction)
     {
         FrontBackMove = InValue.Get<float>();
-        if (Controller && FrontBackMove != 0.0f)
+        if (Controller && (FrontBackMove != 0.0f))
         {
             FRotator controllerRotation = Controller->GetControlRotation();
             FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);
@@ -251,10 +251,10 @@ void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnSideMovementInput(const FInputActionValue& InValue)
 {
-    if (!bIsOnActing)
+    if (!bIsOnAction)
     {
         SideMove = InValue.Get<float>();
-        if (Controller && SideMove != 0.0f)
+        if (Controller && (SideMove != 0.0f))
         {
             FRotator controllerRotation = Controller->GetControlRotation();
             FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);
@@ -277,7 +277,7 @@ void ATestCharacter::OnSideMovementComplete()
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
 {
-	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	//마우스 움직이는 값 * 마우스 감도만큼 움직임
+	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	        //마우스 움직이는 값 * 마우스 감도만큼 움직임
 }
 
 void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
@@ -301,14 +301,25 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttackInput()
 {
-	if(!bIsOnActing)
-	{
-        if(ResourceManager->UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
-        {
-            PlayerAnimation->PlayAttackAnimation();
-            WeaponComponent->WeaponAttack();
-        }
-	}
+	//if(!bIsOnAction)
+	//{
+ //       if(UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
+ //       {
+ //           PlayerAnimation->PlayAttackAnimation();     
+ //           WeaponComponent->WeaponAttack();
+ //       }
+	//}
+
+    if (IsActionAvailable())
+    {
+        PlayerAnimation->PlayAttackAnimation();
+        WeaponComponent->WeaponAttack();
+    }
+}
+
+void ATestCharacter::OnSkillInput()
+{
+    UE_LOG(LogTemp, Log, TEXT("Player Skill Active"));
 }
 
 void ATestCharacter::OnInteract()
@@ -318,6 +329,16 @@ void ATestCharacter::OnInteract()
 		PickupWeapon->OnPickup(this);
 		PickupWeapon = nullptr;
 	}
+}
+
+bool ATestCharacter::IsActionAvailable()
+{
+    if (!bIsOnAction && (ActivatedWeapon != EWeaponType::None))
+    {
+        if(UseStamina(10))                      //테스트용
+            return true;
+    }
+    return false;
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
@@ -336,7 +357,7 @@ void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
         UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::RotatePlayer | wrong direction"));
     }
     SetActorRotation(currentRotation);
-    bIsOnActing = true;
+    bIsOnAction = true;
 }
 
 void ATestCharacter::SetAnimRootMotionIgnore()
@@ -357,6 +378,26 @@ bool ATestCharacter::UseStamina(float InStaminaUseAmount)
 void ATestCharacter::FillStamina(float InStamina)
 {
     ResourceManager->FillStamina(InStamina);
+}
+
+void ATestCharacter::Heal(float InHeal)
+{
+    ResourceManager->Heal(InHeal);
+}
+
+void ATestCharacter::AddPower(float InPower)
+{
+    ResourceManager->AddPower(InPower);
+}
+
+void ATestCharacter::AddMaxHealth(float InMaxHealth)
+{
+    ResourceManager->AddMaxHealth(InMaxHealth);
+}
+
+void ATestCharacter::AddMaxStamina(float InMaxStamina)
+{
+    ResourceManager->AddMaxStamina(InMaxStamina);
 }
 
 EMovingDirection ATestCharacter::GetLastInput()
@@ -394,19 +435,25 @@ EMovingDirection ATestCharacter::GetLastInput()
 
 void ATestCharacter::SetOnActing(bool InActing)
 {
-    bIsOnActing = InActing;
-    if(!bIsOnActing)
+    if(!InActing)
     {
         MovementComponent->bUseControllerDesiredRotation = true;
         MovementComponent->bOrientRotationToMovement = false;
         bUseControllerRotationYaw = true;
+
+        if(Controller)
+        {
+            FRotator controllerRotation = Controller->GetControlRotation();
+            SetActorRotation(controllerRotation);
+        }
     }
+    bIsOnAction = InActing;
 }
 
 void ATestCharacter::OnRollInput()
 {
 	//KillPlayer();				//테스트용으로 사망 연출 실행해봄
-	if (!bIsOnActing)
+	if (IsActionAvailable())
 	{
 		/*if (ResourceManager->UseStamina(RollStamina))
 		{

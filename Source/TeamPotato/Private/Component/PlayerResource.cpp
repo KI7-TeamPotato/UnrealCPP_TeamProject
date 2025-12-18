@@ -29,7 +29,7 @@ void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
 	Health -= InDamage;
     UE_LOG(LogTemp, Log, TEXT("Left Health: %f"), Health);
-	if (Health <= MinHealth)
+	if (Health <= HealthEpsilon)
 	{
 		AActor* OwnerCharacter = GetOwner();
 		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
@@ -68,4 +68,22 @@ void UPlayerResource::FillStamina(float InStamina)
         Stamina = MaxStamina;
     }
     UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
+}
+
+void UPlayerResource::AddPower(float InPower)
+{
+    AttackPower += InPower;
+    UE_LOG(LogTemp, Log, TEXT("Power : %f"), AttackPower);
+}
+
+void UPlayerResource::AddMaxHealth(float InMaxHealth)
+{
+    MaxHealth += InMaxHealth;
+    Health += InMaxHealth;
+}
+
+void UPlayerResource::AddMaxStamina(float InMaxStamina)
+{
+    MaxStamina += InMaxStamina;
+    Stamina += InMaxStamina;
 }
