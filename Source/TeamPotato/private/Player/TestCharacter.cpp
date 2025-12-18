@@ -115,6 +115,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
+        enhancedInputComponent->BindAction(IA_WeaponSwap, ETriggerEvent::Started, this, &ATestCharacter::OnWeaponSwap);
 	}
 }
 
@@ -347,6 +348,11 @@ void ATestCharacter::OnInteract()
         IInteractable::Execute_Interact(CurrentInteractTarget, this);
         CurrentInteractTarget = nullptr;
     }
+}
+
+void ATestCharacter::OnWeaponSwap()
+{
+    WeaponComponent->SwapWeapon();
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)

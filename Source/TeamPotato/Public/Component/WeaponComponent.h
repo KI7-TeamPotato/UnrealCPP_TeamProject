@@ -22,14 +22,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void WeaponAttack();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(UWeaponDataAsset* WeaponData);
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void PickupWeapon(UWeaponDataAsset* WeaponData);
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SwapWeapon();
 
 	EWeaponType GetCurrentWeaponType() const;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void EquipCurrentWeapon(AWeaponBase* InWeapon);
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SpawnPickupWeapon(UWeaponDataAsset* WeaponData);
 
 protected:
     // 플레이어
@@ -39,4 +48,8 @@ protected:
     // 현재 무기
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TObjectPtr<AWeaponBase> CurrentWeapon = nullptr;
+
+    // 보조 무기
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    TObjectPtr<AWeaponBase> SubWeapon = nullptr;
 };
