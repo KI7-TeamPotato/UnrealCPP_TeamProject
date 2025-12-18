@@ -33,22 +33,18 @@ void AMinimapSceneCapture2D::BeginPlay()
 void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D InMaxPoint)
 {
     // 던전 촬영 위치 설정
+    WorldMinPoint = InMinPoint;
+    WorldMaxPoint = InMaxPoint;
     FVector DungeonCenter = FVector((InMinPoint.X + InMaxPoint.X) / 2.0f, (InMinPoint.Y + InMaxPoint.Y) / 2.0f, 0.0f);
-    WorldCapturePoint = FVector2D(DungeonCenter.X, DungeonCenter.Y);
-    SetActorLocation(FVector(WorldCapturePoint, 0.0f));
+    SetActorLocation(DungeonCenter);
     
     // 던전 촬영 크기 설정
     FVector DungeonSize = FVector(InMaxPoint.X - InMinPoint.X, InMaxPoint.Y - InMinPoint.Y, 0.0f);
-    WorldCaptureLength = FMath::Max(DungeonSize.X, DungeonSize.Y) * BorderRatio; // 약간 여유 공간 추가
-    CaptureComp->OrthoWidth = WorldCaptureLength;
+    CaptureOrthoWidth = FMath::Max(DungeonSize.X, DungeonSize.Y) * BorderRatio; // 약간 여유 공간 추가
+    CaptureComp->OrthoWidth = CaptureOrthoWidth;
 
     // 씬 캡처 실행
     CaptureComp->CaptureScene();
-
-    // 캡처 후에 그 정보를 뷰모델에 설정
-    MinimapViewModel->SetMinimapSize(RenderTargetSize);
-    MinimapViewModel->SetWorldRenderPoint(WorldCapturePoint);
-    MinimapViewModel->SetWorldRenderSize(WorldCaptureLength);
 }
 
 void AMinimapSceneCapture2D::InitializeCaptureComponent()

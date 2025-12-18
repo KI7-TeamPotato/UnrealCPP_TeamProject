@@ -6,6 +6,8 @@
 #include "Engine/SceneCapture2D.h"
 #include "MinimapSceneCapture2D.generated.h"
 
+// 캡처한 미니맵 렌더 타깃과 
+
 class UMinimapViewModel;
 ;
 /**
@@ -25,7 +27,10 @@ protected:
     void OnMinimapCapture(FVector2D InMinPoint, FVector2D InMaxPoint);
 	
 private:
+    // --- 렌더 설정(렌더 방식) 함수 ---
     void InitializeCaptureComponent();
+
+    // --- 렌더 타깃 초기화 함수(크기) ---
     void InitializeRenderTarget();
 
 protected:
@@ -44,6 +49,7 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float BorderRatio = 1.1f;
 
-    float WorldCaptureLength = 0;
-    FVector2D WorldCapturePoint = FVector2D::ZeroVector;
+    float CaptureOrthoWidth = 0;
+    FVector2D WorldMinPoint = FVector2D::ZeroVector;
+    FVector2D WorldMaxPoint = FVector2D::ZeroVector;
 };
