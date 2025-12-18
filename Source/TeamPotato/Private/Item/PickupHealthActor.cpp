@@ -5,6 +5,11 @@
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
 
+APickupHealthActor::APickupHealthActor()
+{
+    ItemPrice = 20;
+}
+
 void APickupHealthActor::UseItem(AActor* InPlayer)
 {
     ATestCharacter* Player = Cast<ATestCharacter>(InPlayer);

@@ -48,6 +48,11 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 	Destroy();
 }
 
+int32 AWeaponPickupActor::GetPrice() const
+{
+    return WeaponData->WeaponPrice;
+}
+
 void AWeaponPickupActor::BeginPlay()
 {
 	Super::BeginPlay();

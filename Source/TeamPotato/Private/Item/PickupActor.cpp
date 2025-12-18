@@ -37,10 +37,10 @@ void APickupActor::Tick(float DeltaTime)
 // Called when the game starts or when spawned
 void APickupActor::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	// 오버랩 델리게이트 등록
-	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupActor::OnOverlap);
+    // 오버랩 델리게이트 등록
+    SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupActor::OnOverlap);
 
     if (PickupTimeline)
     {
@@ -59,9 +59,11 @@ void APickupActor::BeginPlay()
 
     FTimerManager& timerManager = GetWorldTimerManager();
     timerManager.ClearTimer(PickupableTimer);
+
     timerManager.SetTimer(
         PickupableTimer,
         [this]() {
+            if (bIsSell) return;
             SphereCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
         },
         PickupableTime, false);
@@ -96,6 +98,21 @@ void APickupActor::OnPickup(AActor* InPlayer)
     {
         PickupTimeline->PlayFromStart();	// 타임라인 시작
     }
+}
+
+void APickupActor::SetSellItem(bool IsSell)
+{
+    bIsSell = IsSell;
+
+    if (IsSell)
+    {
+        SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+}
+
+int32 APickupActor::GetPrice() const
+{
+    return ItemPrice;
 }
 
 void APickupActor::OnTimeLineUpdate(float Value)

@@ -13,6 +13,9 @@ UCLASS()
 class TEAMPOTATO_API APickupHealthActor : public APickupActor
 {
 	GENERATED_BODY()
+
+public:
+    APickupHealthActor();
 	
 protected:
     virtual void UseItem(AActor* InPlayer) override;

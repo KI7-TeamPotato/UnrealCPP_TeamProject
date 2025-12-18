@@ -37,4 +37,8 @@ public:
     // 무기 소모 에너지
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
     float AttackCost = 0.0f;
+
+    // 무기 가격
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    int32 WeaponPrice = 0;
 };

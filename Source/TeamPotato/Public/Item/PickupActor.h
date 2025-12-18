@@ -10,28 +10,33 @@
 UCLASS()
 class TEAMPOTATO_API APickupActor : public AActor, public IPickupable
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	APickupActor();
+    GENERATED_BODY()
+
+public:
+    // Sets default values for this actor's properties
+    APickupActor();
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    UFUNCTION()
+    void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
-	// 아이템 획득 함수
-	virtual void OnPickup(AActor* InPlayer) override;
+    // 아이템 획득 함수
+    virtual void OnPickup(AActor* InPlayer) override;
 
     // 아이템 적용 함수
     virtual void UseItem(AActor* InPlayer) {}
+
+    // 아이템 판매 상태 변화 함수
+    void SetSellItem(bool IsSell);
+
+    virtual int32 GetPrice() const;
 
 private:
     UFUNCTION()
@@ -43,6 +48,9 @@ private:
 public:
     UPROPERTY()
     bool bPickedUp = false;
+
+    UPROPERTY()
+    bool bIsSell = false;
 
 protected:
 	// 아이템 획득 범위
@@ -84,6 +92,10 @@ protected:
     // 아이템 획득 시 튀어오르는 높이
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
     float PickupHeight = 50.0f;
+
+    // 아이템 가격
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 ItemPrice = 0;
     
 private:
     // 이 픽업 아이템을 먹은 액터
