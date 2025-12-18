@@ -8,6 +8,8 @@
 
 class UImage;
 class UMinimapViewModel;
+class UMaterialInstanceDynamic;
+
 /**
  * 
  */
@@ -29,18 +31,14 @@ private:
     // 미니맵 업데이트 함수
     //===========================================
     UFUNCTION()
-    void UpdatePlayerIconPosition(const FVector2D& NewPosition);
+    void HandleMinimapInitialized();
 
-private:
     void BindViewModel();
     void UnbindViewModel();
 
 protected:
-    UPROPERTY(meta = (BindWidget))
+    UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
     TObjectPtr<UImage> MinimapImage;
-
-    UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UImage> PlayerIcon;
 
 private:
     // --- 미니맵 뷰모델 ---

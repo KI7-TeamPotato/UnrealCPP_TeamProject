@@ -9,7 +9,8 @@
 // 캡처한 미니맵 렌더 타깃과 
 
 class UMinimapViewModel;
-;
+class UMinimapManager;
+
 /**
  * 
  */
@@ -44,6 +45,11 @@ protected:
     // -- 타깃 렌더 X,Y 사이즈 --
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FVector2D RenderTargetSize = FVector2D(800.0f, 800.0f);
+
+    // --- 미니맵 매니저 ---
+    UPROPERTY()
+    TObjectPtr<UMinimapManager> MinimapManager = nullptr;
+
 
 private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

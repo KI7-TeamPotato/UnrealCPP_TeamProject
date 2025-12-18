@@ -2,11 +2,11 @@
 
 
 #include "UI/Minimap/MinimapSceneCapture2D.h"
-#include "Engine/SceneCapture2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "Subsystem/ViewModel/MinimapViewModel.h"
+#include "UI/Minimap/MinimapManager.h"
 
 AMinimapSceneCapture2D::AMinimapSceneCapture2D()
 {
@@ -35,7 +35,10 @@ void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D In
     // 던전 촬영 위치 설정
     WorldMinPoint = InMinPoint;
     WorldMaxPoint = InMaxPoint;
-    FVector DungeonCenter = FVector((InMinPoint.X + InMaxPoint.X) / 2.0f, (InMinPoint.Y + InMaxPoint.Y) / 2.0f, 0.0f);
+    FVector DungeonCenter = FVector(
+        (InMinPoint.X + InMaxPoint.X) / 2.0f, 
+        (InMinPoint.Y + InMaxPoint.Y) / 2.0f, 
+        GetActorLocation().Z);
     SetActorLocation(DungeonCenter);
     
     // 던전 촬영 크기 설정
@@ -45,6 +48,23 @@ void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D In
 
     // 씬 캡처 실행
     CaptureComp->CaptureScene();
+
+    // 미니맵 매니저 초기화 (미니맵 텍스처, 월드 최소 좌표(기준), 던전 길이)
+    if (!MinimapManager)
+    {
+        MinimapManager = NewObject<UMinimapManager>(this);
+    }
+
+    MinimapManager->InitializeMinimapManager(
+        CaptureComp->TextureTarget,
+        InMinPoint,
+        CaptureOrthoWidth);
+
+    // 뷰모델에 미니맵 매니저 설정
+    if (MinimapViewModel)
+    {
+        MinimapViewModel->SetMinimapManager(MinimapManager);
+    }
 }
 
 void AMinimapSceneCapture2D::InitializeCaptureComponent()

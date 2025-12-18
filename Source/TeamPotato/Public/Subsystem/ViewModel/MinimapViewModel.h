@@ -9,10 +9,11 @@
 // --- 신캡처2D에 미니맵 캡처 요청을 알림 ---
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMinimapCaptureRequested, FVector2D, InMinPoint, FVector2D, InMaxPoint);
 
-// --- 플레이어의 미니맵 좌표를 델리게이트로 알림 ---
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerMinimapCoordinateUpdated, FVector2D, InMinimapCoordinates);
+// --- 미니맵 초기화 델리게이트 ---
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMinimapInitialized);
 
 class UMinimapManager;
+class UMaterialInstanceDynamic;
 /**
  * 
  */
@@ -29,18 +30,27 @@ public:
     UFUNCTION(BlueprintCallable)
     void RequestMinimapCapture(FVector2D InMinPoint, FVector2D InMaxPoint);
 
-    // --- 미니맵 플레이어 위치 변경 함수 ---
-    void RequestPlayerMinimapCoordinateUpdate(const FVector& InWorldLocation);
+    // 플레이어 위치 업데이트 (Manager에서 Material 파라미터 설정)
+    UFUNCTION(BlueprintCallable)
+    void UpdatePlayerPosition(const FVector& InWorldLocation, float InYaw);
+
+    // --- 미니맵 매니저 설정 함수 ---
+    void SetMinimapManager(UMinimapManager* InMinimapManager);
+
+    // --- 머티리얼 인스턴스 반환 함수 ---
+    UFUNCTION(BlueprintPure)
+    UMaterialInstanceDynamic* GetMinimapMaterial() const;
 
 public:
     // --- 미니맵 캡처 요청 델리게이트 ---
     UPROPERTY(BlueprintAssignable)
     FOnMinimapCaptureRequested OnMinimapCaptureRequested;
 
-    // --- 플레이어의 미니맵 좌표를 델리게이트로 알림 ---
+    // --- 미니맵 초기화 완료 델리게이트 ---
     UPROPERTY(BlueprintAssignable)
-    FOnPlayerMinimapCoordinateUpdated OnPlayerMinimapCoordinateUpdated;
+    FOnMinimapInitialized OnMinimapInitialized;
 
 private:
+    UPROPERTY()
     TObjectPtr<UMinimapManager> MinimapManager = nullptr;
 };

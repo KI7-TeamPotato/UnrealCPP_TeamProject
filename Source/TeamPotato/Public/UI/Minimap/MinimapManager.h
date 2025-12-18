@@ -16,13 +16,17 @@ class TEAMPOTATO_API UMinimapManager : public UObject
 	
 public:
     void InitializeMinimapManager(UTextureRenderTarget2D* InRenderTarget,
-        FVector2D InMinPoint, FVector2D InMaxPoint, float InOrthoWidth);
+        FVector2D InMinPoint, float InOrthoWidth);
     
-    // 월드 좌표를 미니맵 UV 좌표로 변환
+    // --- 월드 좌표를 미니맵 UV 좌표로 변환 ---
     FVector2D WorldToMinimapUV(const FVector2D& InWorldLocation2D) const;
+   
+    // --- 플레이어 위치 / 회전 업데이트 ---
+    void UpdatePlayerPosition(const FVector& InWorldLocation, float InYaw);
 
-protected:
-
+    // --- 미니맵 머티리얼 인스턴스 반환 ---
+    UFUNCTION(BlueprintPure)
+    UMaterialInstanceDynamic* GetMinimapMaterial() const { return MinimapMaterial; }
 
 private:
     // 미니맵 머티리얼 인스턴스
@@ -30,7 +34,6 @@ private:
 
     // 찍고 있는 월드 좌표 범위
     FVector2D WorldMinPoint = FVector2D::ZeroVector;
-    FVector2D WorldMaxPoint = FVector2D::ZeroVector;
 
     // 오쏘의 한변 길이
     float OrthoWidth = 0.f;
