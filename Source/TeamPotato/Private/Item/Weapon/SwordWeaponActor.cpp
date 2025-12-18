@@ -29,6 +29,9 @@ void ASwordWeaponActor::BeginPlay()
 
 void ASwordWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+    if (OtherActor == GetOwner())
+        return;
+
 	UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"), *OtherActor->GetName());
 	DamageToTarget(OtherActor);
 }
