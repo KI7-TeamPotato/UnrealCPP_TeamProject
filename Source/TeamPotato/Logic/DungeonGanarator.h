@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "DungeonGanarator.generated.h"
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateDungeonEnded);
 
 USTRUCT(BlueprintType)
 struct FStageRoomConfig
@@ -24,6 +25,9 @@ struct FStageRoomConfig
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class ARoomBase>> BossRooms;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<TSubclassOf<class ARoomBase>> PotalRooms;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class AClosingWall>> ClosingWalls;
@@ -61,6 +65,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo")
 	int32 Stage = 1;
 
+    UPROPERTY(EditAnywhere, Category = "DungeonInfo")
+    int32 chapter = 1;
+
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo|Config")
 	TMap<int32, FStageRoomConfig> StageConfigMap;
 
@@ -75,6 +82,9 @@ public:
 	//보스방
 	UPROPERTY(EditAnywhere, Category = "Rooms")
 	TArray<TSubclassOf<ARoomBase>> BossRoomClass; // 연결할 보스 방 클래스
+
+    UPROPERTY(EditAnywhere, Category = "Rooms")
+    TArray<TSubclassOf<ARoomBase>> PotalRoomClass; // 연결할 포탈 방 클래스 
 
 	//생성할 특수방 목록
 	UPROPERTY(EditAnywhere, Category = "Rooms")
@@ -91,6 +101,9 @@ public:
     UPROPERTY(EditAnywhere, Category = "Rooms|Door")
     //TArray<TSubclassOf<ADoor>> Doors;
     TSubclassOf<ADoor> Doors;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnCreateDungeonEnded EndedCreate;
 protected:
 	//마지막으로 생성된 방
 	ARoomBase* LastestSpawnRoom = nullptr;
@@ -135,7 +148,7 @@ protected:
 	void SelectedSpecialRoom();
 
 	//보스방 생성
-	bool SpawnBossRoom();
+	bool SpawnLastRoom();
 
 	//모든 작업 끝나고 빈 통로 닫기
 	void ClosingUnuusedWall();

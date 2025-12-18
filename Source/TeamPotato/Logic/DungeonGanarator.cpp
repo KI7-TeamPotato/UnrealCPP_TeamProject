@@ -38,6 +38,7 @@ void ADungeonGanarator::BeginPlay()
             && SelectedConfig.StartRooms.Num() > 0
             && SelectedConfig.BossRooms.Num() > 0
             && SelectedConfig.ClosingWalls.Num() > 0
+            && SelectedConfig.PotalRooms.Num() > 0
             && RoomAmount > 0
             )
         {
@@ -46,6 +47,7 @@ void ADungeonGanarator::BeginPlay()
             CorridorRooms = SelectedConfig.Corridors;
             StartRoom = SelectedConfig.StartRooms;
             BossRoomClass = SelectedConfig.BossRooms;
+            PotalRoomClass = SelectedConfig.PotalRooms;
             ClosingWall = SelectedConfig.ClosingWalls;
             InitialRoomAmount = RoomAmount;
         }
@@ -74,7 +76,7 @@ void ADungeonGanarator::BeginPlay()
 
     //방이 모두 생성되면 1초(임의로 정할 수 있음)후 실행(보스방 만들기, 벽 막기 등등)
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
-    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.5f, false);
 
 
 
@@ -271,7 +273,7 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
     //보물방 같은 특수방 지정하는 함수, 단순히 현재 생성된 방들 중 고를거라 보스방 생성 전 돌려야함 아마 사용 안할듯
     //SelectedSpecialRoom();
     //보스방 생성
-    if (!SpawnBossRoom())
+    if (!SpawnLastRoom())
     {
         return;
         //통로 닫기 전 보스방 생성 성공여부 검사, 생성 실패하면 스테이지 다시 만드는 구조라 ClosingUnuusedWall 호출되지 않게 리턴
@@ -297,36 +299,53 @@ void ADungeonGanarator::ClosingUnuusedWall()
     }
     UE_LOG(LogTemp, Warning, TEXT("ClosingUnuusedWall"));
 
+    if (EndedCreate.IsBound())
+    {
+        EndedCreate.Broadcast();
+    }
 }
 
-bool ADungeonGanarator::SpawnBossRoom()
+bool ADungeonGanarator::SpawnLastRoom()
 {
     //보스방 생성
-    if (BossRoomClass.Num() > 0 && IsValid(LastestSpawnRoom))//안전검사
+    TArray<TSubclassOf<ARoomBase>>* TargetRoomArray;
+
+    if (chapter == 5)
     {
-        USceneComponent* BossExit = nullptr;
+        TargetRoomArray = &BossRoomClass;
+        UE_LOG(LogTemp, Warning, TEXT("Chapter 5: Preparing Boss Room..."));
+    }
+    else
+    {
+        TargetRoomArray = &PotalRoomClass;
+        UE_LOG(LogTemp, Warning, TEXT("Chapter %d: Preparing Potal Room..."), chapter);
+    }
+
+    if (TargetRoomArray->Num() > 0 && IsValid(LastestSpawnRoom))//안전검사
+    {
+        USceneComponent* LastExit = nullptr;
         for (USceneComponent* Exit : Exits)
         {
             if (Exit->GetOwner() == LastestSpawnRoom)
             {
-                BossExit = Exit;
+                LastExit = Exit;
                 break;
             }
         }
 
-        if (BossExit)
+        if (LastExit)
         {
-            ARoomBase* BossRoom = GetWorld()->SpawnActor<ARoomBase>(BossRoomClass[0]);
-            if (BossRoom)
+            ARoomBase* LastRoom = GetWorld()->SpawnActor<ARoomBase>((*TargetRoomArray)[0]);
+            if (LastRoom)
             {
-                BossRoom->SetActorLocation(BossExit->GetComponentLocation());
-                BossRoom->SetActorRotation(BossExit->GetComponentRotation());
+                LastRoom->SetActorLocation(LastExit->GetComponentLocation());
+                LastRoom->SetActorRotation(LastExit->GetComponentRotation());
 
                 ARoomBase* TempLast = LastestSpawnRoom;
-                LastestSpawnRoom = BossRoom;
+                LastestSpawnRoom = LastRoom;
                 RemoveOverlappingRooms();
 
-                if (!IsValid(BossRoom)) // 겹쳐서 파괴됨 -> 리셋 시도
+                if (!IsValid(LastRoom)) // 겹쳐서 파괴됨 -> 리셋 시도
                 {
                     LastestSpawnRoom = TempLast; // 복구
 
@@ -344,8 +363,9 @@ bool ADungeonGanarator::SpawnBossRoom()
                 else
                 {
                     // 성공
-                    GeneratedActors.Add(BossRoom);
-                    Exits.Remove(BossExit);
+                    DoorList.Add(LastExit);
+                    GeneratedActors.Add(LastRoom);
+                    Exits.Remove(LastExit);
                     UE_LOG(LogTemp, Warning, TEXT("Boss Room Spawn"));
                     CurrentResetCount = 0;
                     GetWorld()->GetTimerManager().ClearTimer(GenerationTimeoutHandle);

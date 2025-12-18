@@ -153,7 +153,6 @@ void AEnemyCharacter::OnDie()
     //DetachFromControllerPendingDestroy();
     //SetLifeSpan(2.0f);
 
-
     float AnimDuration = PlayAnimMontage(DeadMontage);
 
     SetLifeSpan(AnimDuration > 0.0f ? AnimDuration : 0.1f);
