@@ -32,7 +32,7 @@ public:
 
 	//리소스 사용
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	void TakeDamage(float InDamage);
+	void PlayerTakeDamage(float InDamage);
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")

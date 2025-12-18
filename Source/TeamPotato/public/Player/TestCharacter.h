@@ -57,13 +57,6 @@ public:
 
 	//총 발사 몽타주 재생
 	void PlayGunShootingMontage();
-	
-	//현재 활성화된 무기 확인
-	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-	inline EWeaponType GetPlayerActivatedWeapon() { return ActivatedWeapon; }
-	//활성화 된 무기 설정
-	UFUNCTION(BlueprintCallable, Category = "Weapopn")
-    void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
     //주울 아이템과 오버랩이 끝났을때 호출
@@ -97,9 +90,6 @@ public:
     UFUNCTION()
     inline UPlayerResource* GetResource() { return ResourceManager; }
 
-	UFUNCTION(BlueprintCallable, Category = "Kill")
-	void KillPlayer();
-
 	UFUNCTION(BlueprintCallable, Category = "Sight")
 	inline float GetSightDegree() { return SightDegree; }
 
@@ -113,7 +103,7 @@ public:
 
 	//활성화 된 무기 설정
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	inline void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon) { ActivatedWeapon = InActivatedWeapon; }
+    void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
 protected:
 	// 앞뒤양옆으로 움직이는 함수

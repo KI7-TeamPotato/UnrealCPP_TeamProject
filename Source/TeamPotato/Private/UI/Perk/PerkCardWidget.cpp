@@ -22,7 +22,7 @@ void UPerkCardWidget::NativeConstruct()
 
     if (BackgroundImage)
     {
-        BackgroundImage->ContentColorAndOpacity = DefaultBackgroundColor;
+        BackgroundImage->SetContentColorAndOpacity(DefaultBackgroundColor);
         BackgroundImage->SetBrushColor(DefaultBackgroundColor);
     }
 }
@@ -71,7 +71,7 @@ void UPerkCardWidget::OnPerkButtonHovered()
 {
     if (BackgroundImage)
     {
-        BackgroundImage->ContentColorAndOpacity = HoveredBackgroundColor;
+        BackgroundImage->SetContentColorAndOpacity(HoveredBackgroundColor);
         BackgroundImage->SetBrushColor(HoveredBackgroundColor);
     }
 }
@@ -80,7 +80,7 @@ void UPerkCardWidget::OnPerkButtonUnhovered()
 {
     if (BackgroundImage)
     {
-        BackgroundImage->ContentColorAndOpacity = DefaultBackgroundColor;
+        BackgroundImage->SetContentColorAndOpacity(DefaultBackgroundColor);
         BackgroundImage->SetBrushColor(DefaultBackgroundColor);
     }
 }
