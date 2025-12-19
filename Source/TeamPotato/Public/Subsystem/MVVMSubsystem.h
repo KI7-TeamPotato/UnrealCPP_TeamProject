@@ -9,6 +9,7 @@
 class UPlayerStatusViewModel;
 class UPerkViewModel;
 class UWeaponViewModel;
+class UItemViewModel;
 
 class UPlayerResource;
 class UPerkComponent;
@@ -29,6 +30,8 @@ public:
     UPerkViewModel* GetPerkViewModel();
     UFUNCTION(BlueprintPure)
     UWeaponViewModel* GetWeaponViewModel();
+    UFUNCTION(BlueprintPure)
+    UItemViewModel* GetItemViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
@@ -61,4 +64,8 @@ private:
 
     UPROPERTY()
     TObjectPtr<UWeaponViewModel> WeaponViewModel;
+
+    UPROPERTY()
+    TObjectPtr<UItemViewModel> ItemViewModel;
+
 };

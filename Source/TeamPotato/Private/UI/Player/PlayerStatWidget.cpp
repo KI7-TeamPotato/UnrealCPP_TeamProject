@@ -20,29 +20,13 @@ void UPlayerStatWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPlayerStatWidget::SetPlayerHealthBar(float NewHealthPercent)
-{
-    if (PlayerHealthBar)
-    {
-        PlayerHealthBar->SetPercent(NewHealthPercent);
-    }
-}
-
-void UPlayerStatWidget::SetPlayerIcon(UTexture2D* NewPlayerIcon)
-{
-    if (PlayerIconImage && NewPlayerIcon)
-    {
-        PlayerIconImage->SetBrushFromTexture(NewPlayerIcon);
-    }
-}
-
 void UPlayerStatWidget::SetViewModel(UPlayerStatusViewModel* InViewModel)
 {
     UnbindViewModel();
     PlayerStatusViewModel = InViewModel;
     BindViewModel();
 
-    // 현재 값으로 UI 초기화
+    // 현재 값으로 UI 초기화 (컴포넌트에서 이미 초기값을 보내주는 중, 나중에 제거해보고 확인)
     if (PlayerStatusViewModel)
     {
         SetPlayerHealthBar(PlayerStatusViewModel->GetHealthPercent());
@@ -77,3 +61,20 @@ void  UPlayerStatWidget::UnbindViewModel()
         bIsViewModelBound = false;
     }
 }
+
+void UPlayerStatWidget::SetPlayerHealthBar(float NewHealthPercent)
+{
+    if (PlayerHealthBar)
+    {
+        PlayerHealthBar->SetPercent(NewHealthPercent);
+    }
+}
+
+void UPlayerStatWidget::SetPlayerIcon(UTexture2D* NewPlayerIcon)
+{
+    if (PlayerIconImage && NewPlayerIcon)
+    {
+        PlayerIconImage->SetBrushFromTexture(NewPlayerIcon);
+    }
+}
+

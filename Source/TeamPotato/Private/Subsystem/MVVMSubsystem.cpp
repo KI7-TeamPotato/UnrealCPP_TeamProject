@@ -7,6 +7,7 @@
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
 #include "Subsystem/ViewModel/WeaponViewModel.h"
+#include "Subsystem/ViewModel/ItemViewModel.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -35,6 +36,15 @@ UWeaponViewModel* UMVVMSubsystem::GetWeaponViewModel()
     return WeaponViewModel;
 }
 
+UItemViewModel* UMVVMSubsystem::GetItemViewModel()
+{
+    if (!ItemViewModel)
+    {
+        ItemViewModel = NewObject<UItemViewModel>(this);
+    }
+    return ItemViewModel;
+}
+
 
 // ==============================================================================
 // 컴포넌트 등록 및 해제 함수들
@@ -53,6 +63,7 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
 	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
     NewComp->OnEnergyChanged.AddDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);
+    //NewComp->OnGoldChanged.AddDynamic(PlayerStatusViewModel, &UItemViewModel::SetCurrentGold);
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)

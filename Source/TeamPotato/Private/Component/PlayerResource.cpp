@@ -32,10 +32,10 @@ void UPlayerResource::BeginPlay()
     Health = MaxHealth;
     Energy = MaxEnergy;
 
-    // 초기 체력, 에너지 값 브로드캐스트
+    // 초기 체력, 에너지 값, 골드 브로드캐스트
     BroadcastHealthChanged();
     BroadcastEnergyChanged();
-    
+    BroadcastGoldChanged();
 	//Stamina = MaxStamina;
 }
 
@@ -145,4 +145,12 @@ void UPlayerResource::AddMaxStamina(float InMaxStamina)
 {
     MaxStamina += InMaxStamina;
     Stamina += InMaxStamina;
+}
+
+void UPlayerResource::BroadcastGoldChanged()
+{
+    if (OnGoldChanged.IsBound())
+    {
+        //OnGoldChanged.Broadcast();
+    }
 }

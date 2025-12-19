@@ -37,4 +37,10 @@ public:
     // 무기 소모 에너지
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
     float AttackCost = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    FText WeaponName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    UTexture2D* WeaponIcon;
 };

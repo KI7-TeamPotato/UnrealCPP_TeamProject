@@ -7,6 +7,8 @@
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
 #include "Data/PerkDataAsset.h"
+#include "Data/EPerkRarity.h"
+#include "Data/PerkHelperAsset.h"
 
 void UPerkCardWidget::NativeConstruct()
 {
@@ -47,13 +49,19 @@ void UPerkCardWidget::SetupPerkCard(UPerkDataAsset* InPerkDataAsset)
     {
         PerkImage->SetBrushFromTexture(PerkDataAsset->Icon);
     }
+    if (BackgroundImage)
+    {
+        UTexture2D* PerkFrame = PerkHelperAsset->GetPerkFrameByRarity(InPerkDataAsset->PerkRarity);
+        BackgroundImage->SetBrushFromTexture(PerkFrame);
+    }
     if (PerkName)
     {
         PerkName->SetText(PerkDataAsset->PerkName);
     }
     if (PerkDescript)
     {
-        PerkDescript->SetText(PerkDataAsset->Description);
+        FText FormattedDescription = PerkDataAsset->GetFormattedDescription();
+        PerkDescript->SetText(FormattedDescription);
     }
 }
 

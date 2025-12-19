@@ -72,4 +72,7 @@ private:
     // --- 퍽 데이터를 가지고 있다가 OnClicked 이벤트 발생 시 퍽 컴포넌트에 전달 ---
     UPROPERTY(VisibleAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UPerkDataAsset> PerkDataAsset = nullptr;
+
+    UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UPerkHelperAsset> PerkHelperAsset = nullptr;
 };
