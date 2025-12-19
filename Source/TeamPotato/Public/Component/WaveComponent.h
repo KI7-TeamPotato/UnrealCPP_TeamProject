@@ -65,6 +65,8 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnAllWavesCleared OnAllWavesCleared;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<AActor> EnemyEffect;
 private:
     void SpawnWave(int32 WaveIndex);
 
