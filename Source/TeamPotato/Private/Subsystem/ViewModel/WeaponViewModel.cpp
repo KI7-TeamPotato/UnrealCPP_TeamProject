@@ -2,6 +2,7 @@
 
 
 #include "Subsystem/ViewModel/WeaponViewModel.h"
+#include "Data/WeaponDataAsset.h"
 
 void UWeaponViewModel::SetResource(float CurrentResource, float MaxResource)
 {
@@ -9,18 +10,25 @@ void UWeaponViewModel::SetResource(float CurrentResource, float MaxResource)
     OnPlayerResourceChanged.Broadcast(ResourcePercent);
 }
 
-void UWeaponViewModel::SetMainWeapon(FText InWeaponName, UTexture2D* InWeaponIcon)
+void UWeaponViewModel::SetMainWeapon(UWeaponDataAsset* InWeaponData)
 {
-    MainWeapon.WeaponName = InWeaponName;
-    MainWeapon.WeaponIcon = InWeaponIcon;
-    OnMainWeaponChanged.Broadcast(MainWeapon.WeaponName, MainWeapon.WeaponIcon);
+    if (!InWeaponData) return;
+
+    if (OnMainWeaponChanged.IsBound())
+    {
+        OnMainWeaponChanged.Broadcast(InWeaponData->WeaponName, InWeaponData->WeaponIcon);
+    
+    }
 }
 
-void UWeaponViewModel::SetSubWeapon(FText InWeaponName, UTexture2D* InWeaponIcon)
+void UWeaponViewModel::SetSubWeapon(UWeaponDataAsset* InWeaponData)
 {
-    MainWeapon.WeaponName = InWeaponName;
-    MainWeapon.WeaponIcon = InWeaponIcon;
-    OnSubWeaponChanged.Broadcast(MainWeapon.WeaponName, MainWeapon.WeaponIcon);
+    if (!InWeaponData) return;
+
+    if (OnSubWeaponChanged.IsBound())
+    {
+        OnSubWeaponChanged.Broadcast(InWeaponData->WeaponIcon);
+    }
 }
 
 void UWeaponViewModel::SwapMainAndSubWeapon()

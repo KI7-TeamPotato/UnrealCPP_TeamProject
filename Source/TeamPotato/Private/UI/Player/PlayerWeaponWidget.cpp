@@ -21,11 +21,31 @@ void UPlayerWeaponWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
-void UPlayerWeaponWidget::SetPlayerResourceBar(float NewResourcePercent)
+void UPlayerWeaponWidget::UpdatePlayerResourceBar(float NewResourcePercent)
 {
     if (PlayerResourceBar)
     {
         PlayerResourceBar->SetPercent(NewResourcePercent);
+    }
+}
+
+void UPlayerWeaponWidget::UpdateMainWeaponInfo(FText InWeaponName, UTexture2D* InWeaponIcon)
+{
+    if(WeaponIconImage)
+    {
+        WeaponIconImage->SetBrushFromTexture(InWeaponIcon);
+    }
+    if(WeaponName)
+    {
+        WeaponName->SetText(InWeaponName);
+    }
+}
+
+void UPlayerWeaponWidget::UpdateSubWeaponInfo(UTexture2D* InSubWeaponIcon)
+{
+    if (SubWeaponIconImage)
+    {
+        SubWeaponIconImage->SetBrushFromTexture(InSubWeaponIcon);
     }
 }
 
@@ -42,8 +62,10 @@ void UPlayerWeaponWidget::BindViewModel()
     if (WeaponViewModel && !bIsViewModelBound)
     {
         // Model -> ViewModel 바인딩
-        WeaponViewModel->OnPlayerResourceChanged.AddDynamic(this, &UPlayerWeaponWidget::SetPlayerResourceBar);
-    
+        WeaponViewModel->OnPlayerResourceChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
+        WeaponViewModel->OnMainWeaponChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdateMainWeaponInfo);
+        WeaponViewModel->OnSubWeaponChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdateSubWeaponInfo);
+
         bIsViewModelBound = true;
     }
 }
@@ -52,7 +74,7 @@ void UPlayerWeaponWidget::UnbindViewModel()
 {
     if (WeaponViewModel && bIsViewModelBound)
     {
-        WeaponViewModel->OnPlayerResourceChanged.RemoveDynamic(this, &UPlayerWeaponWidget::SetPlayerResourceBar);
+        WeaponViewModel->OnPlayerResourceChanged.RemoveDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
     
         bIsViewModelBound = false;
     }

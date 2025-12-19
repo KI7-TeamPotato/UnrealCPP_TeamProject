@@ -35,21 +35,24 @@ private:
     // --- 뷰모델 바인딩 함수 ---
     // 플레이어에게 있는 무기 공격 가능 자원 변경 함수
     UFUNCTION()
-    void SetPlayerResourceBar(float NewResourcePercent);
+    void UpdatePlayerResourceBar(float NewResourcePercent);
 
     // 플레이어의 메인 무기 정보 변경 함수 (데이터 에셋 혹은 테이블도 생각)
-    /*UFUNCTION()
-    void SetMainWeaponInfo(FText InWeaponName, UTexture2D* InWeapon);*/
+     UFUNCTION()
+    void UpdateMainWeaponInfo(FText InWeaponName, UTexture2D* InWeaponIcon);
+
+    UFUNCTION()
+    void UpdateSubWeaponInfo(UTexture2D* InSubWeaponIcon);
 
 protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UImage> WeaponIconImage;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UImage> SubWeaponIconImage;
+    TObjectPtr<UTextBlock> WeaponName;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UTextBlock> WeaponName;
+    TObjectPtr<UImage> SubWeaponIconImage;
 
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UProgressBar> PlayerResourceBar;
