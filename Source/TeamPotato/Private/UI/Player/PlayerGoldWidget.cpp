@@ -30,7 +30,7 @@ void UPlayerGoldWidget::BindViewModel()
 {
     if (ItemViewModel && !bIsViewModelBound)
     {
-        ItemViewModel->OnPlayerGoldChanged.AddDynamic(this, &UPlayerGoldWidget::UpdatePlayerGold);
+        ItemViewModel->OnPlayerGoldUpdate.AddDynamic(this, &UPlayerGoldWidget::UpdatePlayerGold);
 
         bIsViewModelBound = true;
     }
@@ -41,7 +41,7 @@ void UPlayerGoldWidget::UnbindViewModel()
 {
     if (ItemViewModel && bIsViewModelBound)
     {
-        ItemViewModel->OnPlayerGoldChanged.RemoveDynamic(this, &UPlayerGoldWidget::UpdatePlayerGold);
+        ItemViewModel->OnPlayerGoldUpdate.RemoveDynamic(this, &UPlayerGoldWidget::UpdatePlayerGold);
 
         bIsViewModelBound = false;
     }

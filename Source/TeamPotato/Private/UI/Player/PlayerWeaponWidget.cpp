@@ -62,9 +62,9 @@ void UPlayerWeaponWidget::BindViewModel()
     if (WeaponViewModel && !bIsViewModelBound)
     {
         // Model -> ViewModel 바인딩
-        WeaponViewModel->OnPlayerResourceChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
-        WeaponViewModel->OnMainWeaponChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdateMainWeaponInfo);
-        WeaponViewModel->OnSubWeaponChanged.AddDynamic(this, &UPlayerWeaponWidget::UpdateSubWeaponInfo);
+        WeaponViewModel->OnPlayerResourceUpdate.AddDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
+        WeaponViewModel->OnMainWeaponUpdate.AddDynamic(this, &UPlayerWeaponWidget::UpdateMainWeaponInfo);
+        WeaponViewModel->OnSubWeaponUpdate.AddDynamic(this, &UPlayerWeaponWidget::UpdateSubWeaponInfo);
 
         bIsViewModelBound = true;
     }
@@ -74,7 +74,7 @@ void UPlayerWeaponWidget::UnbindViewModel()
 {
     if (WeaponViewModel && bIsViewModelBound)
     {
-        WeaponViewModel->OnPlayerResourceChanged.RemoveDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
+        WeaponViewModel->OnPlayerResourceUpdate.RemoveDynamic(this, &UPlayerWeaponWidget::UpdatePlayerResourceBar);
     
         bIsViewModelBound = false;
     }

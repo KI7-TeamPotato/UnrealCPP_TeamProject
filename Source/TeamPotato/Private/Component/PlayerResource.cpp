@@ -37,7 +37,6 @@ void UPlayerResource::BeginPlay()
     BroadcastHealthChanged();
     BroadcastEnergyChanged();
     BroadcastGoldChanged();
-	//Stamina = MaxStamina;
 }
 
 void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -90,21 +89,44 @@ bool UPlayerResource::UseStamina(float InUseStaminaAmount)
         UE_LOG(LogTemp, Log, TEXT("No Stamina"));
         return false;
     }
-
-	/*if (IsStaminaRemain(InUseStaminaAmount))
-	{
-		Stamina -= InUseStaminaAmount;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
-		return false;
-	}*/
 }
 
 void UPlayerResource::AddGold(int32 InGold)
 {
     Gold += InGold;
+
+    BroadcastGoldChanged();
+}
+
+void UPlayerResource::FillStamina(float InStamina)
+{
+    Stamina += InStamina;
+    if (Stamina > MaxStamina)
+    {
+        Stamina = MaxStamina;
+    }
+    BroadcastEnergyChanged();
+    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
+}
+
+void UPlayerResource::AddPower(float InPower)
+{
+    AttackPower += InPower;
+    UE_LOG(LogTemp, Log, TEXT("Power : %f"), AttackPower);
+}
+
+void UPlayerResource::AddMaxHealth(float InMaxHealth)
+{
+    MaxHealth += InMaxHealth;
+    Health += InMaxHealth;
+    BroadcastHealthChanged();
+}
+
+void UPlayerResource::AddMaxStamina(float InMaxStamina)
+{
+    MaxStamina += InMaxStamina;
+    Stamina += InMaxStamina;
+    BroadcastEnergyChanged();
 }
 
 // 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
@@ -125,38 +147,10 @@ void UPlayerResource::BroadcastEnergyChanged()
 
 }
 
-void UPlayerResource::FillStamina(float InStamina)
-{
-    Stamina += InStamina;
-    if (Stamina > MaxStamina)
-    {
-        Stamina = MaxStamina;
-    }
-    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
-}
-
-void UPlayerResource::AddPower(float InPower)
-{
-    AttackPower += InPower;
-    UE_LOG(LogTemp, Log, TEXT("Power : %f"), AttackPower);
-}
-
-void UPlayerResource::AddMaxHealth(float InMaxHealth)
-{
-    MaxHealth += InMaxHealth;
-    Health += InMaxHealth;
-}
-
-void UPlayerResource::AddMaxStamina(float InMaxStamina)
-{
-    MaxStamina += InMaxStamina;
-    Stamina += InMaxStamina;
-}
-
 void UPlayerResource::BroadcastGoldChanged()
 {
     if (OnGoldChanged.IsBound())
     {
-        //OnGoldChanged.Broadcast();
+        OnGoldChanged.Broadcast(Gold);
     }
 }

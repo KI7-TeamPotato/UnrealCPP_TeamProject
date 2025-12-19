@@ -29,8 +29,6 @@ public:
 	inline float GetHealthAmount() { return Health; }
     inline float GetEnergyAmount() { return Energy; }
 
-    //inline float GetStaminaAmount() { return Stamina; }
-
 	//리소스 사용
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	void PlayerTakeDamage(float InDamage);

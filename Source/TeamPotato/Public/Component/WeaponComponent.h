@@ -7,6 +7,9 @@
 #include "Data/EnumBase.h"
 #include "WeaponComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMainWeaponChanged, UWeaponDataAsset*, InNewWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSubWeaponChanged, UWeaponDataAsset*, InNewWeapon);
+
 class ATestCharacter;
 class AWeaponBase;
 
@@ -39,7 +42,22 @@ protected:
     void EquipCurrentWeapon(AWeaponBase* InWeapon);
 
     UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void EquipSubWeapon(AWeaponBase* InWeapon);
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SpawnPickupWeapon(UWeaponDataAsset* WeaponData);
+
+private:
+    void BroadcastMainWeaponChanged();
+    void BroadcastSubWeaponChanged();
+
+public:
+    // --- 델리게이트 ---
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnMainWeaponChanged OnMainWeaponChanged;
+    
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnSubWeaponChanged OnSubWeaponChanged;
 
 protected:
     // 플레이어

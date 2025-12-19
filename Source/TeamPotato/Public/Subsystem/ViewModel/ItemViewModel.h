@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "ItemViewModel.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerGoldChanged, int32, CurrentGold);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerGoldUpdate, int32, CurrentGold);
 
 /**
  * 
@@ -23,5 +23,5 @@ public:
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "Resource")
-    FOnPlayerGoldChanged OnPlayerGoldChanged;
+    FOnPlayerGoldUpdate OnPlayerGoldUpdate;
 };

@@ -4,10 +4,12 @@
 #include "Subsystem/MVVMSubsystem.h"
 #include "Component/PerkComponent.h"
 #include "Component/PlayerResource.h"
+#include "Component/WeaponComponent.h"
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
 #include "Subsystem/ViewModel/WeaponViewModel.h"
 #include "Subsystem/ViewModel/ItemViewModel.h"
+#include "Data/WeaponDataAsset.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -63,7 +65,7 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
 	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
     NewComp->OnEnergyChanged.AddDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);
-    //NewComp->OnGoldChanged.AddDynamic(PlayerStatusViewModel, &UItemViewModel::SetCurrentGold);
+    NewComp->OnGoldChanged.AddDynamic(ItemViewModel, &UItemViewModel::SetCurrentGold);
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
@@ -118,19 +120,17 @@ void UMVVMSubsystem::RegisterWeaponComp(UWeaponComponent* NewComp)
     // 2. 서브 무기 변경
     // 3. 무기 스왑
     
-    //// Model->ViewModel (장착된 퍽이 바뀌면 뷰모델에 반영)
-    //NewComp->OnEquipmentUpdated.AddDynamic(VM, &UWeaponViewModel::SetPerkDataAsset);
-
-    //// ViewModel->Model (장착 요청시에 컴포넌트에서 장착)
-    //VM->OnEquipPerkRequest.BindDynamic(NewComp, &UWeaponViewModel::EquipPerk);
+    // Model->ViewModel (장착된 무기가 바뀌면 뷰모델에 반영)
+    NewComp->OnMainWeaponChanged.AddDynamic(VM, &UWeaponViewModel::SetMainWeapon);
+    NewComp->OnSubWeaponChanged.AddDynamic(VM, &UWeaponViewModel::SetSubWeapon);
 }
 
 void UMVVMSubsystem::UnregisterWeaponComp(UWeaponComponent* ExitingComp)
 {
     if (ExitingComp && WeaponViewModel)
     {
-        //// 델리게이트 언바인딩
-        //ExitingComp->OnEquipmentUpdated.RemoveDynamic(PerkViewModel, &UPerkViewModel::SetPerkDataAsset);
-        //PerkViewModel->OnEquipPerkRequest.Unbind();
+        // 델리게이트 언바인딩
+        ExitingComp->OnMainWeaponChanged.RemoveDynamic(WeaponViewModel, &UWeaponViewModel::SetMainWeapon);
+        ExitingComp->OnSubWeaponChanged.RemoveDynamic(WeaponViewModel, &UWeaponViewModel::SetSubWeapon);
     }
 }
