@@ -10,47 +10,47 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentH
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, InCurrentGold);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TEAMPOTATO_API UPlayerResource : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UPlayerResource();
+public:
+    // Sets default values for this component's properties
+    UPlayerResource();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+    // Called when the game starts
+    virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	//getter
-	inline float GetHealthAmount() { return Health; }
+    //getter
+    inline float GetHealthAmount() { return Health; }
     inline float GetEnergyAmount() { return Energy; }
 
-	//리소스 사용
+    //inline float GetStaminaAmount() { return Stamina; }
+
+    //리소스 사용
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	void PlayerTakeDamage(float InDamage);
+    void PlayerTakeDamage(float InDamage);
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	void Heal(float InHeal);
+    void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	bool UseStamina(float InUseStaminaAmount);
+    bool UseEnergy(float InUseStaminaAmount);
     UFUNCTION(BlueprintCallable, Category = "Resource")
-    void FillStamina(float InStamina);
+    void FillEnergy(float InStamina);
     UFUNCTION(BlueprintCallable, Category = "Resource")
     void AddGold(int32 InGold);
 
     //스탯 변화
     void AddPower(float InPower);
     void AddMaxHealth(float InMaxHealth);
-    void AddMaxStamina(float InMaxStamina);
+    void AddMaxEnergy(float InMaxStamina);
 
 private:
-    inline bool IsEnergyRemain(float InUseStaminaAmount) { return (Energy > InUseStaminaAmount); }
-
     //스태미나가 사용할만큼 충분히 있는지 확인
-	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > (InUseStaminaAmount - StaminaEpsilon)); }
+    inline bool IsEnergyRemain(float InUseEnergyAmount) { return (Energy > (InUseEnergyAmount - EnergyEpsilon)); }
 
     void BroadcastHealthChanged();
     void BroadcastEnergyChanged();
@@ -66,35 +66,31 @@ public:
     FOnGoldChanged OnGoldChanged;
 
 private:
-	//체력
-	float Health = 100.0f;
-	//최대 체력
-	float MaxHealth = 100.0f;
+    //체력
+    float Health = 100.0f;
+    //최대 체력
+    float MaxHealth = 100.0f;
     //최대 체력의 최솟값. 최대체력 감소 효과 적용시 이 이하로 내려가지 않음
     const float MinHealth = 1.0f;
     //사망 확인 기준점. 체력이 이보다 작을 시 사망처리함
     const float HealthEpsilon = 0.0001;
 
-    //무기 공격에 사용되는 자원
+    //스태미나
     float Energy = 100.0f;
-    //최대 에너지
-    const float MaxEnergy = 100.0f;
-	//스태미나
-	float Stamina = 100.0f;
-	//최대 스태미나
-	float MaxStamina = 100.0f;
+    //최대 스태미나
+    float MaxEnergy = 100.0f;
     //최대 스태미나의 최솟값. 최대 스태미나 감소 효과 적용시 이 이하로 내려가지 않음
-    const float MinStamina = 10.0f;
+    const float MinEnergy = 10.0f;
     //스태미나가 충분히 있는지 계산할때 부동소수점 오차로 인해 사용
-    const float StaminaEpsilon = 0.0001f;
+    const float EnergyEpsilon = 0.0001f;
     // 소지 골드
     int32 Gold = 0;
- 
-	//공격력
-	float AttackPower = 10.0f;
-	//최소 공격력(이 이하로 내려가지 않음)
-	float MinAttackPower = 0.1f;
 
-	//살아있는지 죽었는지
-	bool bIsAlive = true;
+    //공격력
+    float AttackPower = 10.0f;
+    //최소 공격력(이 이하로 내려가지 않음)
+    float MinAttackPower = 0.1f;
+
+    //살아있는지 죽었는지
+    bool bIsAlive = true;
 };

@@ -18,5 +18,5 @@ void APickupStaminaActor::UseItem(AActor* InPlayer)
     UPlayerResource* Resource = Player->GetResource();
     if (!Resource) return;
 
-    Resource->UseStamina(-StaminaAmount);
+    Resource->UseEnergy(-StaminaAmount);
 }
