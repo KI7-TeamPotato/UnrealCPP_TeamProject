@@ -55,8 +55,8 @@ void UPlayerResource::PlayerTakeDamage(float InDamage)
     // 체력 변경 브로드캐스트 시도
     BroadcastHealthChanged();
 
-    UE_LOG(LogTemp, Log, TEXT("UPlayerResource::PlayerTakeDamage | Left Health: %f"), Health);
-	if (Health <= MinHealth)
+    UE_LOG(LogTemp, Log, TEXT("Left Health: %f"), Health);
+	if (Health <= HealthEpsilon)
 	{
 		AActor* OwnerCharacter = GetOwner();
 		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
@@ -93,7 +93,6 @@ bool UPlayerResource::UseStamina(float InUseStaminaAmount)
 	/*if (IsStaminaRemain(InUseStaminaAmount))
 	{
 		Stamina -= InUseStaminaAmount;
-		return true;
 	}
 	else
 	{
@@ -117,4 +116,33 @@ void UPlayerResource::BroadcastEnergyChanged()
     {
         OnEnergyChanged.Broadcast(Energy, MaxEnergy);
     }
+
+}
+
+void UPlayerResource::FillStamina(float InStamina)
+{
+    Stamina += InStamina;
+    if (Stamina > MaxStamina)
+    {
+        Stamina = MaxStamina;
+    }
+    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
+}
+
+void UPlayerResource::AddPower(float InPower)
+{
+    AttackPower += InPower;
+    UE_LOG(LogTemp, Log, TEXT("Power : %f"), AttackPower);
+}
+
+void UPlayerResource::AddMaxHealth(float InMaxHealth)
+{
+    MaxHealth += InMaxHealth;
+    Health += InMaxHealth;
+}
+
+void UPlayerResource::AddMaxStamina(float InMaxStamina)
+{
+    MaxStamina += InMaxStamina;
+    Stamina += InMaxStamina;
 }

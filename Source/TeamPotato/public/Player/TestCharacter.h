@@ -75,9 +75,32 @@ public:
     void RotatePlayer(EMovingDirection TurnDirection);
 
     //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
+    UFUNCTION()
     void SetAnimRootMotionIgnore();
     //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
+    UFUNCTION()
     void SetAnimRootMotionFromMontage();
+
+    //스태미너 사용 가능 여부 반환 및 스태미너 사용
+    UFUNCTION()
+    bool UseStamina(float InStaminaUseAmount);
+    //스태미너 충전
+    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
+    void FillStamina(float InStamina);
+
+    //체력회복
+    UFUNCTION(BlueprintCallable, Category = "Resource|Health")
+    void Heal(float InHeal);
+    
+    //공격력 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Power")
+    void AddPower(float InPower);
+    //최대체력 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Health")
+    void AddMaxHealth(float InMaxHealth);
+    //최대 스태미나 증가
+    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
+    void AddMaxStamina(float InMaxStamina);
     
     //Getter
 	//현재 활성화된 무기 확인
@@ -99,6 +122,7 @@ public:
 
     //Setter
     //행동중인지 설정
+    UFUNCTION()
     void SetOnActing(bool InActing);
 
 	//활성화 된 무기 설정
@@ -143,10 +167,18 @@ protected:
 	UFUNCTION()
 	void OnAttackInput();
 
+    UFUNCTION()
+    void OnSkillInput();
+
 	// 상호작용 함수
 	void OnInteract();
 
 private:
+    UFUNCTION()
+    bool IsActionAvailable();
+
+    UFUNCTION()
+    void OnHitInvincible();
 
 public:
     // 상호작용 대상
@@ -172,6 +204,8 @@ protected:
 	//구르기 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Roll = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_Skill = nullptr;
 
 	// 상호작용 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
@@ -258,9 +292,10 @@ private:
 	//시야각
 	float SightDegree = 0.0f;
 
-	//행동을 하는데 소모하는 스태미너
-	float RollStamina = 10;
-	float AttackStamina = 5;
+    //피격무적 시간
+    float OnHitInvincibleTime = 1.0f;
+
+    bool bIsCanTakeDamage = true;
 	
     //무기, 상황별로 구분해서 맞는 애니메이션 호출하는 함수
 	UPROPERTY()
@@ -276,9 +311,6 @@ private:
 	//가지고 있는 무기 정보
     UPROPERTY()
 	EWeaponType ActivatedWeapon = EWeaponType::None;
-
-	//플레이어가 현재 행동중인지 아닌지 확인
-	bool bIsOnActing = false;
 
     //마지막 입력 저장하는 함수
     float FrontBackMove = 0.0f;

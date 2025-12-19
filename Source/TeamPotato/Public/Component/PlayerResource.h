@@ -37,12 +37,18 @@ public:
 	void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool UseStamina(float InUseStaminaAmount);
+    void FillStamina(float InStamina);
 
+    //스탯 변화
+    void AddPower(float InPower);
+    void AddMaxHealth(float InMaxHealth);
+    void AddMaxStamina(float InMaxStamina);
 
 private:
     inline bool IsEnergyRemain(float InUseStaminaAmount) { return (Energy > InUseStaminaAmount); }
 
-    //inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > InUseStaminaAmount); }
+    //스태미나가 사용할만큼 충분히 있는지 확인
+	inline bool IsStaminaRemain(float InUseStaminaAmount) { return (Stamina > (InUseStaminaAmount - StaminaEpsilon)); }
 
     void BroadcastHealthChanged();
     void BroadcastEnergyChanged();
@@ -58,21 +64,24 @@ private:
 	//체력
 	float Health = 100.0f;
 	//최대 체력
-	const float MaxHealth = 100.0f;
+	float MaxHealth = 100.0f;
+    //최대 체력의 최솟값. 최대체력 감소 효과 적용시 이 이하로 내려가지 않음
+    const float MinHealth = 1.0f;
     //사망 확인 기준점. 체력이 이보다 작을 시 사망처리함
-    const float MinHealth = 0.0001;
+    const float HealthEpsilon = 0.0001;
 
     //무기 공격에 사용되는 자원
     float Energy = 100.0f;
     //최대 에너지
     const float MaxEnergy = 100.0f;
-
-
-    ////스태미나
-    //float Stamina = 100.0f;
-    ////최대 스태미나
-    //const float MaxStamina = 100.0f;
- 
+	//스태미나
+	float Stamina = 100.0f;
+	//최대 스태미나
+	float MaxStamina = 100.0f;
+    //최대 스태미나의 최솟값. 최대 스태미나 감소 효과 적용시 이 이하로 내려가지 않음
+    const float MinStamina = 10.0f;
+    //스태미나가 충분히 있는지 계산할때 부동소수점 오차로 인해 사용
+    const float StaminaEpsilon = 0.0001f;
  
 	//공격력
 	float AttackPower = 10.0f;
