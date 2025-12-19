@@ -50,7 +50,6 @@ protected:
     UPROPERTY()
     TObjectPtr<UMinimapManager> MinimapManager = nullptr;
 
-
 private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float BorderRatio = 1.1f;

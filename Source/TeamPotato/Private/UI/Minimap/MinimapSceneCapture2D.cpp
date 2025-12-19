@@ -28,6 +28,12 @@ void AMinimapSceneCapture2D::BeginPlay()
             MinimapViewModel->OnMinimapCaptureRequested.AddDynamic(this, &AMinimapSceneCapture2D::OnMinimapCapture);
         }
     }
+
+    // 미니맵 매니저 초기화 (미니맵 텍스처, 월드 최소 좌표(기준), 던전 길이)
+    if (!MinimapManager)
+    {
+        MinimapManager = NewObject<UMinimapManager>(this);
+    }
 }
 
 void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D InMaxPoint)
@@ -49,12 +55,6 @@ void AMinimapSceneCapture2D::OnMinimapCapture(FVector2D InMinPoint, FVector2D In
     CaptureComp->CaptureScene();
 
     FVector2D AdjustedMinPoint = DungeonCenter - FVector2D(CaptureOrthoWidth / 2.0f, CaptureOrthoWidth / 2.0f);
-
-    // 미니맵 매니저 초기화 (미니맵 텍스처, 월드 최소 좌표(기준), 던전 길이)
-    if (!MinimapManager)
-    {
-        MinimapManager = NewObject<UMinimapManager>(this);
-    }
 
     MinimapManager->InitializeMinimapManager(
         CaptureComp->TextureTarget,

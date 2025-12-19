@@ -64,8 +64,8 @@ void UMinimapManager::UpdatePlayerPosition(const FVector& InWorldLocation, float
 
     FVector2D PlayerUV = WorldToMinimapUV(FVector2D(InWorldLocation.X, InWorldLocation.Y));
 
-    UE_LOG(LogTemp, Log, TEXT("WorldMin: %s, OrthoWidth: %f"), *WorldMinPoint.ToString(), OrthoWidth);
-    UE_LOG(LogTemp, Log, TEXT("PlayerWorld: %s -> UV: %s"), *InWorldLocation.ToString(), *PlayerUV.ToString());
+    //UE_LOG(LogTemp, Log, TEXT("WorldMin: %s, OrthoWidth: %f"), *WorldMinPoint.ToString(), OrthoWidth);
+    //UE_LOG(LogTemp, Log, TEXT("PlayerWorld: %s -> UV: %s"), *InWorldLocation.ToString(), *PlayerUV.ToString());
 
     // Material 파라미터 업데이트
     MinimapMaterial->SetScalarParameterValue(TEXT("PlayerPosX"), PlayerUV.X);

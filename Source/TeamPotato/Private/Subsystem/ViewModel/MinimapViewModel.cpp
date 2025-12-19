@@ -14,6 +14,7 @@ void UMinimapViewModel::RequestMinimapCapture(FVector2D InMinPoint, FVector2D In
     }
 }
 
+// --- 미니맵 매니저에서 머티리얼의 플레이어 위치 업데이트 함수 ---
 void UMinimapViewModel::UpdatePlayerPosition(const FVector& InWorldLocation, float InYaw)
 {
     if (MinimapManager)
@@ -22,6 +23,7 @@ void UMinimapViewModel::UpdatePlayerPosition(const FVector& InWorldLocation, flo
     }
 }
 
+// --- 위젯에 미니맵 머티리얼 제공을 위한 함수 ---
 void UMinimapViewModel::SetMinimapManager(UMinimapManager* InMinimapManager)
 {
     MinimapManager = InMinimapManager;

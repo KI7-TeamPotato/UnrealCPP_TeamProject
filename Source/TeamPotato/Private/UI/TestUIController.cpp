@@ -37,16 +37,22 @@ void ATestUIController::BeginPlay()
 
         if (MinimapWidget)
         {
-            MinimapWidget->AddToViewport();
+            MinimapWidget->AddToViewport(10);
 
             // 뷰모델 설정
             if (UMVVMSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
             {
                 MinimapWidget->SetViewModel(Subsystem->GetMinimapViewModel());
+
+                if (!MinimapViewModel)
+                {
+                    MinimapViewModel = Subsystem->GetMinimapViewModel();
+                }
             }
         }
     }
 
+    // 플레이어 위치 업데이트 타이머
     GetWorldTimerManager().SetTimer(
         MinimapUpdateTimer,
         this,
@@ -61,6 +67,17 @@ void ATestUIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
     GetWorldTimerManager().ClearTimer(MinimapUpdateTimer);
 
     Super::EndPlay(EndPlayReason);
+}
+
+void ATestUIController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+    // 초기 위치 설정
+    if (InPawn)
+    {
+        LastPawnLocation = FVector::ZeroVector;
+        LastPawnYaw = 0;
+    }
 }
 
 void ATestUIController::InitializeViewModels(UMVVMSubsystem* Subsystem)
@@ -94,6 +111,8 @@ void ATestUIController::AddPerkSelectionScreenToViewport()
 
 void ATestUIController::UpdateMinimapPlayerPosition()
 {
+    UE_LOG(LogTemp, Log, TEXT("LastPawnLocation: %s, LastPawnYaw: %f"), *LastPawnLocation.ToString(), LastPawnYaw);
+
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn) return;
 
@@ -102,6 +121,8 @@ void ATestUIController::UpdateMinimapPlayerPosition()
 
     const float DistanceMoved = FVector::DistSquared(CurrentLocation, LastPawnLocation);
     const float YawDifference = FMath::Abs(CurrentYaw - LastPawnYaw);
+
+    UE_LOG(LogTemp, Warning, TEXT("DistanceMoved: %f, YawDifference: %f"), DistanceMoved, YawDifference);
 
     if(DistanceMoved < MinimapUpdateThreshold * MinimapUpdateThreshold &&
        YawDifference < MinimapYawUpdateThreshold)
