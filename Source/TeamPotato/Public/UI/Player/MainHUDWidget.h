@@ -7,6 +7,11 @@
 #include "MainHUDWidget.generated.h"
 
 class UMVVMSubsystem;
+class UPlayerStatWidget;
+class UInventoryPerkTileWidget;
+class UPlayerWeaponWidget;
+class UPlayerGoldWidget;
+
 /**
  * 
  */
@@ -22,13 +27,17 @@ public:
 protected:
 	// --- 플레이어 스탯 위젯 ---
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UPlayerStatWidget> PlayerStatPanel;
+	TObjectPtr<UPlayerStatWidget> PlayerStatPanel;
 
     // --- 인벤토리 퍽 위젯 ---
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UInventoryPerkTileWidget> InventoryPerkPanel;
+    TObjectPtr<UInventoryPerkTileWidget> InventoryPerkPanel;
 
     // --- 플레이어 무기 위젯 ---
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UPlayerWeaponWidget> PlayerWeaponPanel;
+    TObjectPtr<UPlayerWeaponWidget> PlayerWeaponPanel;
+
+    // --- 플레이어 골드 위젯 ---
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UPlayerGoldWidget> PlayerGoldPanel;
 };

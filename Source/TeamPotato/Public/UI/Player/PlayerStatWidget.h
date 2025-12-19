@@ -42,11 +42,11 @@ private:
 
 protected:
 	// --- 플레이어의 체력 프로그레스바---
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UProgressBar> PlayerHealthBar;
 
 	// --- 플레이어의 아이콘 이미지 ---
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> PlayerIconImage;
 
 private:

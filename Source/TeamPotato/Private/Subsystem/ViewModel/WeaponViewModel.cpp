@@ -6,8 +6,11 @@
 
 void UWeaponViewModel::SetResource(float CurrentResource, float MaxResource)
 {
-    ResourcePercent = FMath::Clamp(CurrentResource / MaxResource, 0.0f, 1.0f);
-    OnPlayerResourceChanged.Broadcast(ResourcePercent);
+    if (OnPlayerResourceChanged.IsBound())
+    {
+        ResourcePercent = FMath::Clamp(CurrentResource / MaxResource, 0.0f, 1.0f);
+        OnPlayerResourceChanged.Broadcast(ResourcePercent);
+    }
 }
 
 void UWeaponViewModel::SetMainWeapon(UWeaponDataAsset* InWeaponData)

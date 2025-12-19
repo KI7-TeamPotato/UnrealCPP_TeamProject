@@ -8,6 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentHealth, float, InMaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, InCurrentGold);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAMPOTATO_API UPlayerResource : public UActorComponent
@@ -46,6 +47,7 @@ private:
 
     void BroadcastHealthChanged();
     void BroadcastEnergyChanged();
+    void BroadcastGoldChanged();
 
 public:
     // --- 체력,자원 변경 델리게이트 ---
@@ -53,6 +55,8 @@ public:
     FOnHealthChanged OnHealthChanged;
     UPROPERTY(BlueprintAssignable, Category = "Resource")
     FOnResourceChanged OnEnergyChanged;
+    UPROPERTY(BlueprintAssignable, Category = "Resource")
+    FOnGoldChanged OnGoldChanged;
 
 private:
 	//체력
