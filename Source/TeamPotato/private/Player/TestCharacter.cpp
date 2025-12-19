@@ -341,8 +341,11 @@ void ATestCharacter::OnAttackInput()
 
     if (IsActionAvailable())
     {
-        PlayerAnimation->PlayAttackAnimation();
-        WeaponComponent->WeaponAttack();
+        if(UseEnergy(10))
+        {
+            PlayerAnimation->PlayAttackAnimation();
+            WeaponComponent->WeaponAttack();
+        }
     }
 }
 
@@ -366,8 +369,7 @@ bool ATestCharacter::IsActionAvailable()
 {
     if (!bIsOnAction && (ActivatedWeapon != EWeaponType::None))
     {
-        if(UseStamina(10))                      //테스트용
-            return true;
+        return true;
     }
     return false;
 }
@@ -424,14 +426,14 @@ void ATestCharacter::SetAnimRootMotionFromMontage()
     AnimInstance->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
 }
 
-bool ATestCharacter::UseStamina(float InStaminaUseAmount)
+bool ATestCharacter::UseEnergy(float InEnergyUseAmount)
 {
-    return ResourceManager->UseStamina(InStaminaUseAmount);
+    return ResourceManager->UseEnergy(InEnergyUseAmount);
 }
 
-void ATestCharacter::FillStamina(float InStamina)
+void ATestCharacter::FillEnergy(float InEnergy)
 {
-    ResourceManager->FillStamina(InStamina);
+    ResourceManager->FillEnergy(InEnergy);
 }
 
 void ATestCharacter::Heal(float InHeal)
@@ -449,9 +451,9 @@ void ATestCharacter::AddMaxHealth(float InMaxHealth)
     ResourceManager->AddMaxHealth(InMaxHealth);
 }
 
-void ATestCharacter::AddMaxStamina(float InMaxStamina)
+void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 {
-    ResourceManager->AddMaxStamina(InMaxStamina);
+    ResourceManager->AddMaxEnergy(InMaxEnergy);
 }
 
 EMovingDirection ATestCharacter::GetLastInput()

@@ -30,14 +30,13 @@ void UPlayerResource::BeginPlay()
     }
 
     Health = MaxHealth;
-    Energy = MaxEnergy;
+	Energy = MaxEnergy;
     Gold = 0;
 
     // 초기 체력, 에너지 값, 골드 브로드캐스트
     BroadcastHealthChanged();
     BroadcastEnergyChanged();
     BroadcastGoldChanged();
-	//Stamina = MaxStamina;
 }
 
 void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -75,12 +74,13 @@ void UPlayerResource::Heal(float InHeal)
     BroadcastHealthChanged();
 }
 
-bool UPlayerResource::UseStamina(float InUseStaminaAmount)
+bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
 {
     if (IsEnergyRemain(InUseStaminaAmount))
     {
         Energy -= InUseStaminaAmount;
         
+        UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Energy);
         // 에너지 변경 브로드캐스트 시도
         BroadcastEnergyChanged();
         return true;
@@ -125,14 +125,15 @@ void UPlayerResource::BroadcastEnergyChanged()
 
 }
 
-void UPlayerResource::FillStamina(float InStamina)
+void UPlayerResource::FillEnergy(float InEnergy)
 {
-    Stamina += InStamina;
-    if (Stamina > MaxStamina)
+    Energy += InEnergy;
+    if (Energy > MaxEnergy)
     {
-        Stamina = MaxStamina;
+        Energy = MaxEnergy;
     }
-    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Stamina);
+    UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Energy);
+    BroadcastEnergyChanged();
 }
 
 void UPlayerResource::AddPower(float InPower)
@@ -144,13 +145,13 @@ void UPlayerResource::AddPower(float InPower)
 void UPlayerResource::AddMaxHealth(float InMaxHealth)
 {
     MaxHealth += InMaxHealth;
-    Health += InMaxHealth;
+    Heal(InMaxHealth);
 }
 
-void UPlayerResource::AddMaxStamina(float InMaxStamina)
+void UPlayerResource::AddMaxEnergy(float InMaxStamina)
 {
-    MaxStamina += InMaxStamina;
-    Stamina += InMaxStamina;
+    MaxEnergy += InMaxStamina;
+    FillEnergy(InMaxStamina);
 }
 
 void UPlayerResource::BroadcastGoldChanged()
