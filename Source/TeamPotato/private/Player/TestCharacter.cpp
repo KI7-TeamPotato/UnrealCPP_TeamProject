@@ -70,13 +70,7 @@ void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ATestCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    /*if (bIsOnActing)
-    {
-        FRotator currentRotation = GetActorRotation();
-        SetActorRotation(currentRotation);
-    }*/
-}
+}   
 
 // Called to bind functionality to input
 void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -87,7 +81,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	if (enhancedInputComponent)
 	{
 		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
-		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete);
+		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete); 
 		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnSideMovementInput);
 		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);
 		enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
@@ -122,7 +116,11 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 
 void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-    ResourceManager->PlayerTakeDamage(InDamage);
+    if(bIsCanTakeDamage)
+    {
+        ResourceManager->PlayerTakeDamage(InDamage);
+        OnHitInvincible();
+    }
 }
 
 
@@ -339,6 +337,24 @@ bool ATestCharacter::IsActionAvailable()
             return true;
     }
     return false;
+}
+
+void ATestCharacter::OnHitInvincible()
+{
+    InvincibleActivate();
+    bIsCanTakeDamage = false;
+
+    FTimerHandle timerHandle;
+    GetWorldTimerManager().SetTimer(
+        timerHandle,
+        FTimerDelegate::CreateLambda([this]()
+            {
+                bIsCanTakeDamage = true;
+                InvincibleDeactivate();
+            }),
+        OnHitInvincibleTime,
+        false
+    );
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)

@@ -174,6 +174,9 @@ private:
     UFUNCTION()
     bool IsActionAvailable();
 
+    UFUNCTION()
+    void OnHitInvincible();
+
 public:
 	// 획득할 수 잇는 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
@@ -280,9 +283,10 @@ private:
 	//시야각
 	float SightDegree = 0.0f;
 
-	//행동을 하는데 소모하는 스태미너
-	float RollStamina = 10;
-	float AttackStamina = 5;
+    //피격무적 시간
+    float OnHitInvincibleTime = 1.0f;
+
+    bool bIsCanTakeDamage = true;
 	
     //무기, 상황별로 구분해서 맞는 애니메이션 호출하는 함수
 	UPROPERTY()
