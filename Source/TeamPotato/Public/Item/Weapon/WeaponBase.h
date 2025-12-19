@@ -30,18 +30,23 @@ public:
     // 데이터 에셋에서 불러오는 함수
     void InitializeFromData(class UWeaponDataAsset* InData);
 
+    // 애니메이션 노티파이에서 호출
+    virtual void BeginAttack() {}
+    virtual void EndAttack() {}
+
 	inline void SetOwnerComponent(UWeaponComponent* InWeaponComponent) { OwnerWeaponComponent = InWeaponComponent; }
 
 	EWeaponType GetWeaponType() const { return WeaponType; }
+    UWeaponDataAsset* GetWeaponData() const { return WeaponData; }
 
 protected:
-	// 무기 타입
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
-	EWeaponType WeaponType = EWeaponType::None;
+    // 무기 매쉬
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    TObjectPtr<USkeletalMeshComponent> WeaponMesh = nullptr;
 
-	// 무기 매쉬
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh = nullptr;
+	// 무기 타입
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	EWeaponType WeaponType = EWeaponType::None;
 
     // 무기 공격 데미지
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
@@ -50,6 +55,10 @@ protected:
     // 무기 공격 소모 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
     float AttackCost = 1.0f;
+
+    // 무기 데이터
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+    TObjectPtr<UWeaponDataAsset> WeaponData = nullptr;
 
 	// 웨폰 컴포넌트
 	UPROPERTY()

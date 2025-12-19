@@ -8,6 +8,7 @@
 #include "SwordWeaponActor.generated.h"
 
 class UCapsuleComponent;
+class UNiagaraComponent;
 
 /**
  * 
@@ -19,6 +20,9 @@ class TEAMPOTATO_API ASwordWeaponActor : public AWeaponBase
 
 public:
 	ASwordWeaponActor();
+
+    virtual void BeginAttack() override;
+    virtual void EndAttack() override;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -41,4 +45,8 @@ protected:
 	// 무기 데미지 타입
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
 	TSubclassOf<UDamageType> DamageType = nullptr;
+
+    // 무기 트레일 이펙트
+    UPROPERTY(VisibleAnywhere)
+    TObjectPtr<UNiagaraComponent> TrailEffect = nullptr;
 };

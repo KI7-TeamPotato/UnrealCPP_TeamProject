@@ -56,12 +56,15 @@ protected:
     void BoxOpen();
     
 protected:
+    // 상자 매쉬
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<USkeletalMeshComponent> Mesh = nullptr;
 
+    // 상호작용 범위
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<USphereComponent> SphereCollision = nullptr;
 
+    // 스폰 포인트
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<USceneComponent> SpawnLocation = nullptr;
 
@@ -69,9 +72,11 @@ protected:
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UWidgetComponent> InteractionWidget = nullptr;
 
+    // 무기 데이터 테이블
     UPROPERTY(EditAnywhere, Category = "Weapon")
     TObjectPtr<UDataTable> WeaponDataTable = nullptr;
 
+    // 상자 오픈 애니메이션
     UPROPERTY(EditAnywhere, Category = "Animation")
     TObjectPtr<UAnimMontage> OpenMontage = nullptr;
 

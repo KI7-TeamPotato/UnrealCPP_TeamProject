@@ -45,6 +45,7 @@ void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)
 {
     if (!InData) return;
 
+    WeaponData = InData;
     WeaponType = InData->WeaponType;
     AttackDamage = InData->AttackDamage;
     AttackCost = InData->AttackCost;

@@ -108,6 +108,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
 		enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
+        enhancedInputComponent->BindAction(IA_WeaponSwap, ETriggerEvent::Started, this, &ATestCharacter::OnWeaponSwap);
 	}
 }
 
@@ -387,6 +388,11 @@ void ATestCharacter::OnHitInvincible()
         OnHitInvincibleTime,
         false
     );
+}
+
+void ATestCharacter::OnWeaponSwap()
+{
+    WeaponComponent->SwapWeapon();
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)

@@ -173,6 +173,9 @@ protected:
 	// 상호작용 함수
 	void OnInteract();
 
+    // 무기 교체 함수
+    void OnWeaponSwap();
+
 private:
     UFUNCTION()
     bool IsActionAvailable();
@@ -204,12 +207,15 @@ protected:
 	//구르기 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Roll = nullptr;
+	// 스킬 입력
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
     TObjectPtr<UInputAction> IA_Skill = nullptr;
-
 	// 상호작용 입력
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_Interact = nullptr;
+    // 무기 교체 입력
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_WeaponSwap = nullptr;
 
 	//components
 	//스프링 암 컴포넌트

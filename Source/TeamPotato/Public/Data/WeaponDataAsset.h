@@ -43,4 +43,8 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
     UTexture2D* WeaponIcon;
+    
+    // 무기 가격
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    int32 WeaponPrice = 0;
 };

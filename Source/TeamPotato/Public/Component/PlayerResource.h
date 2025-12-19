@@ -38,7 +38,10 @@ public:
 	void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool UseStamina(float InUseStaminaAmount);
+    UFUNCTION(BlueprintCallable, Category = "Resource")
     void FillStamina(float InStamina);
+    UFUNCTION(BlueprintCallable, Category = "Resource")
+    void AddGold(int32 InGold);
 
     //스탯 변화
     void AddPower(float InPower);
@@ -86,6 +89,8 @@ private:
     const float MinStamina = 10.0f;
     //스태미나가 충분히 있는지 계산할때 부동소수점 오차로 인해 사용
     const float StaminaEpsilon = 0.0001f;
+    // 소지 골드
+    int32 Gold = 0;
  
 	//공격력
 	float AttackPower = 10.0f;

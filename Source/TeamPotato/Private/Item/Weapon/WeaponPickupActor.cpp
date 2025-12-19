@@ -36,8 +36,8 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
 	UWeaponComponent* WeaponComponent = player->GetWeaponComponent();
 	if (!WeaponComponent) return;
 
-	// 플레이어의 웨폰 컴포넌트를 가져와 무기 장착 실행
-	WeaponComponent->EquipWeapon(WeaponData);
+	// 플레이어의 웨폰 컴포넌트를 가져와 무기 획득 실행
+	WeaponComponent->PickupWeapon(WeaponData);
 
     // 상자 파괴
     if (SourceBox)
@@ -46,6 +46,11 @@ void AWeaponPickupActor::OnPickup(AActor* InPlayer)
     }
 
 	Destroy();
+}
+
+int32 AWeaponPickupActor::GetPrice() const
+{
+    return WeaponData->WeaponPrice;
 }
 
 void AWeaponPickupActor::BeginPlay()

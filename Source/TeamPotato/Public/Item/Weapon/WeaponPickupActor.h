@@ -32,6 +32,9 @@ public:
 	// 아이템 획득 함수
 	virtual void OnPickup(AActor* InPlayer) override;
 
+    // 가격 조회 함수
+    virtual int32 GetPrice() const override;
+
     // 무기 획득 후 파괴를 위한 스폰 상자를 설정
     void SetSourceBox(AWeaponBoxActor* InBox)
     {

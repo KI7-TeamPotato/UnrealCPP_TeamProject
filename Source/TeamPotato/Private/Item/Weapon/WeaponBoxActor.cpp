@@ -99,6 +99,7 @@ void AWeaponBoxActor::SpawnPickup(UWeaponDataAsset* InWeaponData)
     if (Pickup)
     {
         Pickup->SetWeaponData(InWeaponData);
+        Pickup->SetSourceBox(this);
     }
 }
 

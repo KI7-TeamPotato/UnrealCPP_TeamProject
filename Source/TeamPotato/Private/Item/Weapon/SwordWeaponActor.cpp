@@ -4,6 +4,7 @@
 #include "Item/Weapon/SwordWeaponActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraComponent.h"
 
 ASwordWeaponActor::ASwordWeaponActor()
 {
@@ -11,11 +12,37 @@ ASwordWeaponActor::ASwordWeaponActor()
 	WeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
 	WeaponCollision->SetupAttachment(WeaponMesh);
 	WeaponCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+    WeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    // 트레일 초기화
+    TrailEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Trail"));
+    TrailEffect->SetupAttachment(WeaponMesh);
+    TrailEffect->Deactivate();
 
 	// 무기 타입 설정
 	WeaponType = EWeaponType::Sword;
     AttackDamage = 20.0f;
     AttackCost = 5.0f;
+}
+
+void ASwordWeaponActor::BeginAttack()
+{
+    WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+    if (TrailEffect)
+    {
+        TrailEffect->Activate();
+    }
+}
+
+void ASwordWeaponActor::EndAttack()
+{
+    WeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    if (TrailEffect)
+    {
+        TrailEffect->Deactivate();
+    }
 }
 
 
@@ -29,6 +56,9 @@ void ASwordWeaponActor::BeginPlay()
 
 void ASwordWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+    if (OtherActor == GetOwner())
+        return;
+
 	UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"), *OtherActor->GetName());
 	DamageToTarget(OtherActor);
 }
