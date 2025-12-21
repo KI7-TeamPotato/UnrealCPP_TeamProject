@@ -10,6 +10,7 @@
 #include "Door.h"
 #include "Kismet/GameplayStatics.h"
 #include "Enemy/EnemyCharacter.h"
+#include "Item/Weapon/WeaponBoxActor.h"
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
@@ -26,47 +27,7 @@ void ADungeonGanarator::BeginPlay()
     FTimerHandle UnusedHandle;
 
     //시드 정하기
-    SetSeed();
-    if (StageConfigMap.Contains(Stage))
-    {
-        FStageRoomConfig& SelectedConfig = StageConfigMap[Stage];
-        RoomAmount = SelectedConfig.StageRoomAmount;
-
-        // 1. 일반 방 목록 교체
-        if (SelectedConfig.NormalRooms.Num() > 0 
-            && SelectedConfig.SpecialRooms.Num() > 0
-            && SelectedConfig.Corridors.Num() > 0
-            && SelectedConfig.StartRooms.Num() > 0
-            && SelectedConfig.BossRooms.Num() > 0
-            && SelectedConfig.ClosingWalls.Num() > 0
-            && SelectedConfig.PotalRooms.Num() > 0
-            && RoomAmount > 0
-            )
-        {
-            RoomsToBeSpawned = SelectedConfig.NormalRooms; 
-            SpecialRoomsToBeSpawned = SelectedConfig.SpecialRooms;
-            CorridorRooms = SelectedConfig.Corridors;
-            StartRoom = SelectedConfig.StartRooms;
-            BossRoomClass = SelectedConfig.BossRooms;
-            PotalRoomClass = SelectedConfig.PotalRooms;
-            ClosingWall = SelectedConfig.ClosingWalls;
-            InitialRoomAmount = RoomAmount;
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Stage %d : NormalRooms array is empty! Using default."), Stage);
-        }
-        //if (SelectedConfig.BossRooms.Num() > 0)
-        //{
-        //    BossRoomClass = SelectedConfig.BossRooms;
-        //}
-
-
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Stage %d config not found in StageConfigMap. Using default arrays."), Stage);
-    }
+    StageConfigSetting();
     //시작 방 생성
     SpawnStarterRooms();
 
@@ -401,13 +362,16 @@ void ADungeonGanarator::SelectedSpecialRoom()
 
 void ADungeonGanarator::ResetDungeon()
 {
+
     //현재 진행 중인 타이머 모두 중지
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
     TArray<AActor*> AllEnemies;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyCharacter::StaticClass(), AllEnemies);
+    TArray<AActor*> WeaponBoxes;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBoxActor::StaticClass(), WeaponBoxes);
 
-
+    StageConfigSetting();
     for (AActor* EnemyActor : AllEnemies)
     {
         if (IsValid(EnemyActor))
@@ -415,6 +379,15 @@ void ADungeonGanarator::ResetDungeon()
             EnemyActor->Destroy();
         }
     }
+
+    for (AActor* BoxActor : WeaponBoxes)
+    {
+        if (IsValid(BoxActor))
+        {
+            BoxActor->Destroy();
+        }
+    }
+
     //지금까지 생성된 모든 방/복도 파괴
 
     for (AActor* Actor : GeneratedActors)
@@ -506,4 +479,58 @@ void ADungeonGanarator::SpawnDoors()
         }
     }
 
+}
+
+void ADungeonGanarator::StageConfigSetting()
+{
+    SetSeed();
+    if (StageConfigMap.Contains(Stage))
+    {
+        FStageRoomConfig& SelectedConfig = StageConfigMap[Stage];
+        RoomAmount = SelectedConfig.StageRoomAmount;
+
+        // 1. 일반 방 목록 교체
+        if (SelectedConfig.NormalRooms.Num() > 0
+            && SelectedConfig.SpecialRooms.Num() > 0
+            && SelectedConfig.Corridors.Num() > 0
+            && SelectedConfig.StartRooms.Num() > 0
+            && SelectedConfig.BossRooms.Num() > 0
+            && SelectedConfig.ClosingWalls.Num() > 0
+            && SelectedConfig.PotalRooms.Num() > 0
+            && RoomAmount > 0
+            )
+        {
+            RoomsToBeSpawned = SelectedConfig.NormalRooms;
+            SpecialRoomsToBeSpawned = SelectedConfig.SpecialRooms;
+            CorridorRooms = SelectedConfig.Corridors;
+            StartRoom = SelectedConfig.StartRooms;
+            BossRoomClass = SelectedConfig.BossRooms;
+            PotalRoomClass = SelectedConfig.PotalRooms;
+            ClosingWall = SelectedConfig.ClosingWalls;
+            InitialRoomAmount = RoomAmount;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Stage %d : NormalRooms array is empty! Using default."), Stage);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Stage %d config not found in StageConfigMap. Using default arrays."), Stage);
+    }
+}
+
+void ADungeonGanarator::GoToNextStage()
+{
+    if (chapter == 5)
+    {
+        chapter = 1;
+        Stage++;
+        ResetDungeon();
+    }
+    else
+    {
+        chapter++;
+        ResetDungeon();
+    }
 }

@@ -154,6 +154,7 @@ protected:
 	void ClosingUnuusedWall();
 
 	//보스방 생성에 문제가 있을때 문제 없을때까지 리셋
+    UFUNCTION(BlueprintCallable)
 	void ResetDungeon();
 
 	//무한루프 방지용 강제 리셋 함수
@@ -163,6 +164,11 @@ protected:
 	void SetSeed();
 
     void SpawnDoors();
+
+    void StageConfigSetting();
+
+    UFUNCTION(BlueprintCallable)
+    void GoToNextStage();
 private:
 	//벽이랑 복도등 모든 요소 저장하는 배열(ResetDungeon에서 맵 리셋할떄 씀)
 	UPROPERTY()
