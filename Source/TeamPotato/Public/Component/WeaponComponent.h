@@ -31,7 +31,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SwapWeapon();
 
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
 	EWeaponType GetCurrentWeaponType() const;
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
     inline AWeaponBase* GetCurrentWeapon() { return CurrentWeapon; }
 
 protected:

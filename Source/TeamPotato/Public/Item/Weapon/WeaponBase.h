@@ -41,7 +41,7 @@ public:
 
 protected:
     // 무기 매쉬
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<USkeletalMeshComponent> WeaponMesh = nullptr;
 
 	// 무기 타입
