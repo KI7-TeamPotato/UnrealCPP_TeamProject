@@ -19,36 +19,36 @@
 // Sets default values
 ATestCharacter::ATestCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
-	//컨트롤러 방향으로 회전
-	MovementComponent = GetCharacterMovement();
-	MovementComponent->bUseControllerDesiredRotation = true;
-	MovementComponent->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
+    //컨트롤러 방향으로 회전
+    MovementComponent = GetCharacterMovement();
+    MovementComponent->bUseControllerDesiredRotation = true;
+    MovementComponent->bOrientRotationToMovement = false;
+    bUseControllerRotationYaw = true;
 
-	//스프링 암 생성
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = SpringArmLenght;
-	SpringArm->SocketOffset = SpringArmOffset;
-	SpringArm->bUsePawnControlRotation = true;		//컨트롤러를 따라 회전하도록 설정
+    //스프링 암 생성
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = SpringArmLenght;
+    SpringArm->SocketOffset = SpringArmOffset;
+    SpringArm->bUsePawnControlRotation = true;		//컨트롤러를 따라 회전하도록 설정
 
-	//카메라 생성
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComponent->SetupAttachment(SpringArm);
-	CameraComponent->SetRelativeRotation(CameraRotation);
+    //카메라 생성
+    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    CameraComponent->SetupAttachment(SpringArm);
+    CameraComponent->SetRelativeRotation(CameraRotation);
 
-	WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
+    WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
 
-	PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
+    PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
-	ActivatedWeapon = EWeaponType::None;			//테스트용
+    ActivatedWeapon = EWeaponType::None;			//테스트용
 
-	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+    WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
-	ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
+    ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
 
     //데미지 받는 함수 바인딩
     OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);
@@ -57,13 +57,13 @@ ATestCharacter::ATestCharacter()
 // Called when the game starts or when spawned
 void ATestCharacter::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	if (GetMesh())
-	{
-		AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
-	}
-	
+    if (GetMesh())
+    {
+        AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
+    }
+
     if (CrosshairWidgetClass)
     {
         CrosshairWidget = CreateWidget<UUserWidget>(
@@ -81,35 +81,35 @@ void ATestCharacter::BeginPlay()
 
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
+    Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
 void ATestCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-}   
+    Super::Tick(DeltaTime);
+}
 
 // Called to bind functionality to input
 void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-	if (enhancedInputComponent)
-	{
-		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
-		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete); 
-		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnSideMovementInput);
-		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);
-		enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
-		enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
-		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
-		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
-		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
-		enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
+    UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+    if (enhancedInputComponent)
+    {
+        enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
+        enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete);
+        enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnSideMovementInput);
+        enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);
+        enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
+        enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
+        enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
+        enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
+        enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
+        enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
         enhancedInputComponent->BindAction(IA_WeaponSwap, ETriggerEvent::Started, this, &ATestCharacter::OnWeaponSwap);
-	}
+    }
 }
 
 void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
@@ -126,7 +126,7 @@ void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
 
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	Super::NotifyActorBeginOverlap(OtherActor);
+    Super::NotifyActorBeginOverlap(OtherActor);
 
     if (OtherActor &&
         OtherActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
@@ -137,7 +137,7 @@ void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
-	Super::NotifyActorEndOverlap(OtherActor);
+    Super::NotifyActorEndOverlap(OtherActor);
 
     if (OtherActor == CurrentInteractTarget)
     {
@@ -147,7 +147,7 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 
 void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-    if(bIsCanTakeDamage)
+    if (bIsCanTakeDamage)
     {
         ResourceManager->PlayerTakeDamage(InDamage);
         OnHitInvincible();
@@ -157,22 +157,22 @@ void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const U
 
 void ATestCharacter::KillPlayer()
 {
-	//캐릭터 이동 중지
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
+    //캐릭터 이동 중지
+    GetCharacterMovement()->DisableMovement();
+    GetCharacterMovement()->StopMovementImmediately();
 
-	//캡슐 충돌 끄기 
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    //캡슐 충돌 끄기 
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	//메시를 Ragdoll 프로파일로
-	USkeletalMeshComponent* MeshComp = GetMesh();
-	MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
+    //메시를 Ragdoll 프로파일로
+    USkeletalMeshComponent* MeshComp = GetMesh();
+    MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
 
-	//물리 활성화
-	MeshComp->SetSimulatePhysics(true);
+    //물리 활성화
+    MeshComp->SetSimulatePhysics(true);
 
-	//캡슐에서 분리 
-	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+    //캡슐에서 분리 
+    MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
     //애니메이션 재생을 막기 위함
     bIsOnAction = true;
@@ -180,29 +180,29 @@ void ATestCharacter::KillPlayer()
 
 void ATestCharacter::InvincibleActivate()
 {
-	//콜리전 끔
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+    //콜리전 끔
+    GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 }
 
 void ATestCharacter::InvincibleDeactivate()
 {
-	//콜리전 켬
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    //콜리전 켬
+    GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
-	PlayAnimMontage(AttackMontage_Sword);
+    PlayAnimMontage(AttackMontage_Sword);
 }
 
 void ATestCharacter::PlayGunShootingMontage()
 {
-	PlayAnimMontage(AttackMontage_Gun);
+    PlayAnimMontage(AttackMontage_Gun);
 }
 
 void ATestCharacter::PlayDodgeMontage_Front_Sword()
 {
-	PlayAnimMontage(RollMontage_Sword);
+    PlayAnimMontage(RollMontage_Sword);
 }
 
 void ATestCharacter::PlayDodgeMontage_Right_Sword()
@@ -230,7 +230,7 @@ void ATestCharacter::PlayDodgeMontage_Back_Gun()
     SetAnimRootMotionIgnore();
     FVector playerDirection = -GetActorForwardVector();                         //플레이어 기준 뒷쪽 방향 벡터
     LaunchCharacter(playerDirection * LaunchPlayerPower, false, false);         //플레이어를 뒷쪽으로 이동
-    PlayAnimMontage(BackStepMontage_Gun); 
+    PlayAnimMontage(BackStepMontage_Gun);
 }
 
 void ATestCharacter::PlayDodgeMontage_Right_Gun()
@@ -252,18 +252,18 @@ void ATestCharacter::PlayDodgeMontage_Left_Gun()
 
 void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 {
-	//FVector2D inputtedMovement = InValue.Get<FVector2D>();
-	//FVector moveDirection(inputtedMovement.Y, inputtedMovement.X, 0.0f);
-	//FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
-	//moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
+    //FVector2D inputtedMovement = InValue.Get<FVector2D>();
+    //FVector moveDirection(inputtedMovement.Y, inputtedMovement.X, 0.0f);
+    //FQuat controlYawRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));	// 컨트롤러의 Yaw회전을 따로 뽑아와서
+    //moveDirection = controlYawRotation.RotateVector(moveDirection);	// 이동 방향에 적용
 
 
-	//AddMovementInput(moveDirection);
+    //AddMovementInput(moveDirection);
 }
 
 void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
 {
-    if(!bIsOnAction)
+    if (!bIsOnAction)
     {
         FrontBackMove = InValue.Get<float>();
         if (Controller && (FrontBackMove != 0.0f))
@@ -306,42 +306,42 @@ void ATestCharacter::OnSideMovementComplete()
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
 {
-	AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	        //마우스 움직이는 값 * 마우스 감도만큼 움직임
+    AddControllerYawInput((InValue.Get<float>()) * HorizonMouseSensivility);	        //마우스 움직이는 값 * 마우스 감도만큼 움직임
 }
 
 void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 {
-	SightDegree = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
-	PlayerVerticalDegree += SightDegree;
+    SightDegree = ((InValue.Get<float>()) * VerticalMouseSensivility) * Reverse;		//마우스 움직이는 값 * 마우스 감도만큼 움직임
+    PlayerVerticalDegree += SightDegree;
 
-	if (PlayerVerticalDegree > MaxSightAngle)		//위로 넘어가지 않도록
-	{
-		PlayerVerticalDegree = MaxSightAngle;
-		SightDegree = 0.0f;
-	}
-	else if (PlayerVerticalDegree < -MaxSightAngle)	//아래로 넘어가지 않도록
-	{
-		PlayerVerticalDegree = -MaxSightAngle;
-		SightDegree = 0.0f;
-	}
-	
-	AddControllerPitchInput(SightDegree);
+    if (PlayerVerticalDegree > MaxSightAngle)		//위로 넘어가지 않도록
+    {
+        PlayerVerticalDegree = MaxSightAngle;
+        SightDegree = 0.0f;
+    }
+    else if (PlayerVerticalDegree < -MaxSightAngle)	//아래로 넘어가지 않도록
+    {
+        PlayerVerticalDegree = -MaxSightAngle;
+        SightDegree = 0.0f;
+    }
+
+    AddControllerPitchInput(SightDegree);
 }
 
 void ATestCharacter::OnAttackInput()
 {
-	//if(!bIsOnAction)
-	//{
+    //if(!bIsOnAction)
+    //{
  //       if(UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
  //       {
  //           PlayerAnimation->PlayAttackAnimation();     
  //           WeaponComponent->WeaponAttack();
  //       }
-	//}
+    //}
 
     if (IsActionAvailable())
     {
-        if(UseEnergy(10))
+        if (UseEnergy(10))
         {
             PlayerAnimation->PlayAttackAnimation();
             WeaponComponent->WeaponAttack();
@@ -404,7 +404,7 @@ void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
     {
         currentRotation.Yaw += AnimRotateDegree;
     }
-    else if(TurnDirection == EMovingDirection::Left)
+    else if (TurnDirection == EMovingDirection::Left)
     {
         currentRotation.Yaw -= AnimRotateDegree;
     }
@@ -491,13 +491,13 @@ EMovingDirection ATestCharacter::GetLastInput()
 
 void ATestCharacter::SetOnActing(bool InActing)
 {
-    if(!InActing)
+    if (!InActing)
     {
         MovementComponent->bUseControllerDesiredRotation = true;
         MovementComponent->bOrientRotationToMovement = false;
         bUseControllerRotationYaw = true;
 
-        if(Controller)
+        if (Controller)
         {
             FRotator controllerRotation = Controller->GetControlRotation();
             SetActorRotation(controllerRotation);
@@ -508,17 +508,17 @@ void ATestCharacter::SetOnActing(bool InActing)
 
 void ATestCharacter::OnRollInput()
 {
-	//KillPlayer();				//테스트용으로 사망 연출 실행해봄
-	if (IsActionAvailable())
-	{
-		/*if (ResourceManager->UseStamina(RollStamina))
-		{
-			PlayerAnimation->PlayRollMontage();
-		}*/
+    //KillPlayer();				//테스트용으로 사망 연출 실행해봄
+    if (IsActionAvailable())
+    {
+        /*if (ResourceManager->UseStamina(RollStamina))
+        {
+            PlayerAnimation->PlayRollMontage();
+        }*/
         MovementComponent->bUseControllerDesiredRotation = false;
         MovementComponent->bOrientRotationToMovement = true;
         bUseControllerRotationYaw = false;
-		PlayerAnimation->PlayRollMontage();
-	}
+        PlayerAnimation->PlayRollMontage();
+    }
 }
 

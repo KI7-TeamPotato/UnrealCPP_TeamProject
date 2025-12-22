@@ -9,21 +9,21 @@
 // Sets default values for this component's properties
 UPlayerResource::UPlayerResource()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+    // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+    // off to improve performance if you don't need them.
+    PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+    // ...
 }
 
 
 // Called when the game starts
 void UPlayerResource::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	// ...
-	
+    // ...
+
     if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
     {
         Subsystem->RegisterPlayerResourceComp(this);
@@ -50,26 +50,26 @@ void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
-	Health -= InDamage;
+    Health -= InDamage;
 
     // 체력 변경 브로드캐스트 시도
     BroadcastHealthChanged();
 
     UE_LOG(LogTemp, Log, TEXT("Left Health: %f"), Health);
-	if (Health <= HealthEpsilon)
-	{
-		AActor* OwnerCharacter = GetOwner();
-		Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
-	}
+    if (Health <= HealthEpsilon)
+    {
+        AActor* OwnerCharacter = GetOwner();
+        Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
+    }
 }
 
 void UPlayerResource::Heal(float InHeal)
 {
-	Health += InHeal;
-	if (Health >= MaxHealth)
-	{
-		Health = MaxHealth;
-	}
+    Health += InHeal;
+    if (Health >= MaxHealth)
+    {
+        Health = MaxHealth;
+    }
     // 체력 변경 브로드캐스트 시도
     BroadcastHealthChanged();
 }
@@ -79,7 +79,6 @@ bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
     if (IsEnergyRemain(InUseStaminaAmount))
     {
         Energy -= InUseStaminaAmount;
-        
         UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Energy);
         // 에너지 변경 브로드캐스트 시도
         BroadcastEnergyChanged();
@@ -91,15 +90,15 @@ bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
         return false;
     }
 
-	/*if (IsStaminaRemain(InUseStaminaAmount))
-	{
-		Stamina -= InUseStaminaAmount;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("No Stamina"));
-		return false;
-	}*/
+    /*if (IsStaminaRemain(InUseStaminaAmount))
+    {
+        Stamina -= InUseStaminaAmount;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("No Stamina"));
+        return false;
+    }*/
 }
 
 void UPlayerResource::AddGold(int32 InGold)

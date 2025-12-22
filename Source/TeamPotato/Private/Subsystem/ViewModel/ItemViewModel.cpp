@@ -5,8 +5,8 @@
 
 void  UItemViewModel::SetCurrentGold(int32 CurrentGold)
 {
-    if (OnPlayerGoldChanged.IsBound())
+    if (OnPlayerGoldUpdate.IsBound())
     {
-        OnPlayerGoldChanged.Broadcast(CurrentGold);
+        OnPlayerGoldUpdate.Broadcast(CurrentGold);
     }
 }

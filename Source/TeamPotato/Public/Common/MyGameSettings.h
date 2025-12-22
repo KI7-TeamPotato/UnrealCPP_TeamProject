@@ -9,6 +9,7 @@
 #include "MyGameSettings.generated.h"
 
 class ULevelDataAsset;
+class USoundMix;
 /**
  * 
  */
@@ -33,4 +34,13 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Character")
 	TSoftObjectPtr<UDataTable> CharacterDataTable;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
+    TSoftObjectPtr<USoundMix> MasterSoundMix;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
+    TSoftObjectPtr<USoundClass> MusicSoundClass;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
+    TSoftObjectPtr<USoundClass> SFXSoundClass;
 };

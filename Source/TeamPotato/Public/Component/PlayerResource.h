@@ -10,32 +10,32 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentH
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, InCurrentGold);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TEAMPOTATO_API UPlayerResource : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UPlayerResource();
+public:
+    // Sets default values for this component's properties
+    UPlayerResource();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+    // Called when the game starts
+    virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	//getter
-	inline float GetHealthAmount() { return Health; }
+    //getter
+    inline float GetHealthAmount() { return Health; }
     inline float GetEnergyAmount() { return Energy; }
 
     //inline float GetStaminaAmount() { return Stamina; }
 
-	//리소스 사용
+    //리소스 사용
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	void PlayerTakeDamage(float InDamage);
+    void PlayerTakeDamage(float InDamage);
     UFUNCTION(BlueprintCallable, Category = "Resource")
-	void Heal(float InHeal);
+    void Heal(float InHeal);
     UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool UseEnergy(float InUseStaminaAmount);
     UFUNCTION(BlueprintCallable, Category = "Resource")
@@ -66,10 +66,10 @@ public:
     FOnGoldChanged OnGoldChanged;
 
 private:
-	//체력
-	float Health = 100.0f;
-	//최대 체력
-	float MaxHealth = 100.0f;
+    //체력
+    float Health = 100.0f;
+    //최대 체력
+    float MaxHealth = 100.0f;
     //최대 체력의 최솟값. 최대체력 감소 효과 적용시 이 이하로 내려가지 않음
     const float MinHealth = 1.0f;
     //사망 확인 기준점. 체력이 이보다 작을 시 사망처리함
@@ -85,12 +85,12 @@ private:
     const float EnergyEpsilon = 0.0001f;
     // 소지 골드
     int32 Gold = 0;
- 
-	//공격력
-	float AttackPower = 10.0f;
-	//최소 공격력(이 이하로 내려가지 않음)
-	float MinAttackPower = 0.1f;
 
-	//살아있는지 죽었는지
-	bool bIsAlive = true;
+    //공격력
+    float AttackPower = 10.0f;
+    //최소 공격력(이 이하로 내려가지 않음)
+    float MinAttackPower = 0.1f;
+
+    //살아있는지 죽었는지
+    bool bIsAlive = true;
 };

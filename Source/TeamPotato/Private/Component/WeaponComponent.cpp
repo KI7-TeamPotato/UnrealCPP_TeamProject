@@ -6,6 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Item/Weapon/GunWeaponActor.h"
 #include "Data/WeaponDataAsset.h"
+#include "Subsystem/MVVMSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
@@ -20,6 +23,11 @@ UWeaponComponent::UWeaponComponent()
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->RegisterWeaponComp(this);
+    }
 
 	Owner = Cast<ATestCharacter>(GetOwner());
 }
@@ -36,6 +44,8 @@ void UWeaponComponent::WeaponAttack()
 
 void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
 {
+    UE_LOG(LogTemp, Log, TEXT("EquipCurrentWeapon called"));
+
     if (!InWeapon || !Owner) return;
 
     CurrentWeapon = InWeapon;
@@ -51,6 +61,21 @@ void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
         FAttachmentTransformRules::SnapToTargetIncludingScale,
         TEXT("Weapon_R")
     );
+
+    // 메인 무기 변경 브로드캐스트
+    BroadcastMainWeaponChanged();
+}
+
+void UWeaponComponent::EquipSubWeapon(AWeaponBase* InWeapon)
+{
+    if (!InWeapon) return;
+
+    SubWeapon = InWeapon;
+    SubWeapon->SetActorHiddenInGame(true);
+    SubWeapon->SetActorEnableCollision(false);
+
+    // 서브 무기 변경 브로드캐스트
+    BroadcastSubWeaponChanged();
 }
 
 void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
@@ -72,10 +97,8 @@ void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
     // 현재 무기 있음, 서브 무기 없음
     if (!SubWeapon)
     {
-        SubWeapon = NewWeapon;
+        EquipSubWeapon(NewWeapon);
         SubWeapon->SetOwner(Owner);
-        SubWeapon->SetActorHiddenInGame(true);
-        SubWeapon->SetActorEnableCollision(false);
         return;
     }
 
@@ -99,9 +122,7 @@ void UWeaponComponent::SwapWeapon()
 
     EquipCurrentWeapon(SubWeapon);
 
-    SubWeapon = Temp;
-    SubWeapon->SetActorHiddenInGame(true);
-    SubWeapon->SetActorEnableCollision(false);
+    EquipSubWeapon(Temp);
 }
 
 void UWeaponComponent::SpawnPickupWeapon(UWeaponDataAsset* WeaponData)
@@ -126,4 +147,21 @@ void UWeaponComponent::SpawnPickupWeapon(UWeaponDataAsset* WeaponData)
 EWeaponType UWeaponComponent::GetCurrentWeaponType() const
 {
 	return CurrentWeapon ? CurrentWeapon->GetWeaponType() : EWeaponType::None;
+}
+
+
+void UWeaponComponent::BroadcastMainWeaponChanged()
+{
+    if (OnMainWeaponChanged.IsBound())
+    {
+        OnMainWeaponChanged.Broadcast(CurrentWeapon->GetWeaponData());
+    }
+}
+
+void UWeaponComponent::BroadcastSubWeaponChanged()
+{
+    if (OnSubWeaponChanged.IsBound())
+    {
+        OnSubWeaponChanged.Broadcast(SubWeapon->GetWeaponData());
+    }
 }

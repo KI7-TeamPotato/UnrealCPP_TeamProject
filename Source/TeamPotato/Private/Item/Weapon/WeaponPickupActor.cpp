@@ -6,6 +6,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "Component/WeaponComponent.h"
+#include "Data/WeaponDataAsset.h"
 #include "Player/TestCharacter.h"
 
 AWeaponPickupActor::AWeaponPickupActor()

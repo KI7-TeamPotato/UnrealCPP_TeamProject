@@ -8,11 +8,11 @@
 #include "WeaponViewModel.generated.h"
 
 // --- 위젯에 자원 변경을 알리기 위한 델리게이트 ---
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerResourceChanged, float, NewResourcePercent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerResourceUpdate, float, NewResourcePercent);
 // --- 위젯에 메인 무기 변경을 알리기 위한 델리게이트 ---
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainWeaponChanged, FText, InWeaponName, UTexture2D*, InWeaponIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainWeaponUpdate, FText, InWeaponName, UTexture2D*, InWeaponIcon);
 // --- 위젯에 서브 무기 변경을 알리기 위한 델리게이트 ---
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSubWeaponChanged, UTexture2D*, InWeaponIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSubWeaponUpdate, UTexture2D*, InWeaponIcon);
 
 
 /**
@@ -39,9 +39,9 @@ public:
 
 public:
     // --- 델리게이트 ---
-    FOnPlayerResourceChanged OnPlayerResourceChanged;
-    FOnMainWeaponChanged OnMainWeaponChanged;
-    FOnSubWeaponChanged OnSubWeaponChanged;
+    FOnPlayerResourceUpdate OnPlayerResourceUpdate;
+    FOnMainWeaponUpdate OnMainWeaponUpdate;
+    FOnSubWeaponUpdate OnSubWeaponUpdate;
 
 private:
     // --- 플레이어의 자원 백분율 ---
