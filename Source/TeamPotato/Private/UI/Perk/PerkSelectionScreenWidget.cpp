@@ -119,6 +119,8 @@ void UPerkSelectionScreenWidget::HandlePerkSelected(UPerkDataAsset* SelectedPerk
 {
     if (!SelectedPerkData || !PerkViewModel) return;
 
+    //UE_LOG(LogTemp, Warning, TEXT("UPerkSelectionScreenWidget::HandlePerkSelected called"));
+
     PerkViewModel->RequestEquipPerk(SelectedPerkData);
 }
 
@@ -129,5 +131,28 @@ void UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel(UPerkDataAsset* Equ
 
 void UPerkSelectionScreenWidget::SetViewModel(UPerkViewModel* InViewModel)
 {
+    UnbindViewModel();
     PerkViewModel = InViewModel;
+    BindViewModel();
+}
+
+void UPerkSelectionScreenWidget::BindViewModel()
+{
+    if (PerkViewModel && !bIsViewModelBound)
+    {
+        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+
+        bIsViewModelBound = true;
+    }
+}
+
+void UPerkSelectionScreenWidget::UnbindViewModel()
+{
+    if (PerkViewModel && bIsViewModelBound)
+    {
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+
+        bIsViewModelBound = false;
+    }
+
 }

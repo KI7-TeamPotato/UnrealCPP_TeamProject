@@ -38,6 +38,8 @@ private:
     UFUNCTION()
     void OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk);
 
+    void BindViewModel();
+    void UnbindViewModel();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -58,4 +60,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Perk", meta = (AllowPrivateAccess = "true"))
 	int32 PerkNum=3;
+
+    bool bIsViewModelBound = false;
 };
