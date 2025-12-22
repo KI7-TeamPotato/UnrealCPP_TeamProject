@@ -15,6 +15,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "IntetFace/Interactable.h"
+#include "Component/PerkComponent.h"
+
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -49,6 +51,8 @@ ATestCharacter::ATestCharacter()
     WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
     ResourceManager = CreateDefaultSubobject<UPlayerResource>(TEXT("ResourceManager"));
+
+    PerkComponent = CreateDefaultSubobject<UPerkComponent>(TEXT("PerkComponent"));
 
     //데미지 받는 함수 바인딩
     OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);

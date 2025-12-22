@@ -314,6 +314,9 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class UPlayerResource> ResourceManager = nullptr;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UPerkComponent> PerkComponent = nullptr;
+
     //가지고 있는 무기 정보
     UPROPERTY()
     EWeaponType ActivatedWeapon = EWeaponType::None;

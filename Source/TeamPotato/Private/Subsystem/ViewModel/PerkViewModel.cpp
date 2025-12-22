@@ -22,7 +22,7 @@ bool UPerkViewModel::RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex)
 
 	if (OnEquipPerkRequest.IsBound())
 	{
-        UE_LOG(LogTemp, Warning, TEXT("PerkViewModel::RequestEquipPerk called"));
+        //UE_LOG(LogTemp, Warning, TEXT("PerkViewModel::RequestEquipPerk called"));
 		return OnEquipPerkRequest.Execute(NewData, SlotIndex);
 	}
 

@@ -118,7 +118,6 @@ void UMVVMSubsystem::RegisterWeaponComp(UWeaponComponent* NewComp)
     // Model->ViewModel (무기가 바뀌면 뷰모델에 반영)
     // 1. 메인 무기 변경
     // 2. 서브 무기 변경
-    // 3. 무기 스왑
     
     // Model->ViewModel (장착된 무기가 바뀌면 뷰모델에 반영)
     NewComp->OnMainWeaponChanged.AddDynamic(VM, &UWeaponViewModel::SetMainWeapon);

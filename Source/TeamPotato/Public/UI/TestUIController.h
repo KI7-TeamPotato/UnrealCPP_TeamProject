@@ -9,6 +9,7 @@
 class UMVVMSubsystem;
 class UPerkSelectionScreenWidget;
 class UPerkDataAsset;
+class UInGameMenuWidget;
 /**
  * 
  */
@@ -17,23 +18,25 @@ class TEAMPOTATO_API ATestUIController : public APlayerController
 {
 	GENERATED_BODY()
 	
-protected:
-    virtual void BeginPlay() override;
 
-    UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
-    void InitializeViewModels(UMVVMSubsystem* Subsystem);
+//public:
+//    UFUNCTION()
+//    void RemovePerkSelectionScreenFromViewport(UPerkDataAsset* EquippedPerk);
+//
+//protected:
+//    virtual void BeginPlay() override;
+//    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+//
+//    UFUNCTION()
+//    void AddPerkSelectionScreenToViewport();
+//
+//protected:
+//    UPROPERTY(EditDefaultsOnly, Category = "UI")
+//    TSubclassOf<UPerkSelectionScreenWidget> PerkSelectionScreenClass;
+//
+//    // --- 퍽 선택 위젯 ---
+//    UPROPERTY()
+//    TObjectPtr<UPerkSelectionScreenWidget> PerkSelectionScreen;
 
-    UFUNCTION()
-    void RemovePerkSelectionScreenFromViewport(UPerkDataAsset* EquippedPerk);
 
-    UFUNCTION()
-    void AddPerkSelectionScreenToViewport();
-
-protected:
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<UPerkSelectionScreenWidget> PerkSelectionScreenClass;
-
-    // --- 퍽 선택 위젯 ---
-    UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UPerkSelectionScreenWidget> PerkSelectionScreen;
 };

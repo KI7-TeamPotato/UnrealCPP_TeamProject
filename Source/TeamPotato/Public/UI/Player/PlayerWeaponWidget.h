@@ -22,8 +22,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "MVVM")
     void SetViewModel(UWeaponViewModel* InViewModel);
 
-
-
 protected:
     virtual void NativeConstruct() override;
     virtual void NativeDestruct() override;
