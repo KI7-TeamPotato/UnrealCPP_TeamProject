@@ -35,8 +35,8 @@ public:
     TSubclassOf<AActor> WeaponClass;
 
     // 현재 무기
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
-    AActor* CurrentWeapon;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+        AActor* CurrentWeapon;
 
     //공격 애니메이션
     UPROPERTY(EditAnywhere, Category = "Combat")
@@ -60,7 +60,7 @@ public:
 
     //공격, 현재는 몽타주만 재생함
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void DefaultAttack();
+    virtual void DefaultAttack();
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
     bool PlayerFocus(AActor* TargetActor, float DeltaTime, float TurnSpeed);
@@ -74,6 +74,8 @@ public:
 
     UPROPERTY(BlueprintAssignable)
     FOnEnemyDying OnDeath;
+
+
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float MaxHealth = 100.0f;

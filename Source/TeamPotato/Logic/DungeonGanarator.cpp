@@ -27,7 +27,10 @@ void ADungeonGanarator::BeginPlay()
     FTimerHandle UnusedHandle;
 
     //시드 정하기
+    SetSeed();
+
     StageConfigSetting();
+
     //시작 방 생성
     SpawnStarterRooms();
 
@@ -483,7 +486,6 @@ void ADungeonGanarator::SpawnDoors()
 
 void ADungeonGanarator::StageConfigSetting()
 {
-    SetSeed();
     if (StageConfigMap.Contains(Stage))
     {
         FStageRoomConfig& SelectedConfig = StageConfigMap[Stage];
@@ -520,17 +522,18 @@ void ADungeonGanarator::StageConfigSetting()
     }
 }
 
-void ADungeonGanarator::GoToNextStage()
+void ADungeonGanarator::GoToNextStage(int32 NewChapter)
 {
-    if (chapter == 5)
+    int32 NextStage = NewChapter+1;
+    UE_LOG(LogTemp, Error, TEXT("%d스테이지-%d챕터"), Stage, NewChapter);
+    if (NextStage > 5)
     {
         chapter = 1;
         Stage++;
-        ResetDungeon();
     }
     else
     {
         chapter++;
-        ResetDungeon();
     }
+    ResetDungeon();
 }

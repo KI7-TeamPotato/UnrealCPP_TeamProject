@@ -104,6 +104,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnCreateDungeonEnded EndedCreate;
+
+    UFUNCTION(BlueprintCallable)
+    int32 GetChapter() const { return chapter; }
 protected:
 	//마지막으로 생성된 방
 	ARoomBase* LastestSpawnRoom = nullptr;
@@ -168,7 +171,7 @@ protected:
     void StageConfigSetting();
 
     UFUNCTION(BlueprintCallable)
-    void GoToNextStage();
+    void GoToNextStage(int32 NewChapter);
 private:
 	//벽이랑 복도등 모든 요소 저장하는 배열(ResetDungeon에서 맵 리셋할떄 씀)
 	UPROPERTY()
