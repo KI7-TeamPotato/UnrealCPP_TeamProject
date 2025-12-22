@@ -43,6 +43,7 @@ enum class EWeaponType : uint8
 UENUM(BlueprintType)
 enum class EMovingDirection : uint8
 {
+    None        UMETA(DisplayName = "None"),
     Front	    UMETA(DisplayName = "Front"),
     FrontRight	UMETA(DisplayName = "FrontRight"),
     FrontLeft   UMETA(DisplayName = "FrontLeft"),

@@ -367,7 +367,7 @@ void ATestCharacter::OnInteract()
 
 bool ATestCharacter::IsActionAvailable()
 {
-    if (!bIsOnAction && (ActivatedWeapon != EWeaponType::None))
+    if (!bIsOnAction && !bIsOnAttacking && (ActivatedWeapon != EWeaponType::None))
     {
         return true;
     }
@@ -458,7 +458,7 @@ void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 
 EMovingDirection ATestCharacter::GetLastInput()
 {
-    EMovingDirection playerDirection;
+    EMovingDirection playerDirection = EMovingDirection::None;
 
     if (FrontBackMove > 0)
     {
@@ -504,6 +504,11 @@ void ATestCharacter::SetOnActing(bool InActing)
         }
     }
     bIsOnAction = InActing;
+}
+
+void ATestCharacter::SetOnAttacking(bool InAttacking)
+{
+    bIsOnAttacking = InAttacking;
 }
 
 void ATestCharacter::OnRollInput()

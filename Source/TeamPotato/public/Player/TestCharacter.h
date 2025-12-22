@@ -77,6 +77,7 @@ public:
     //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
     UFUNCTION()
     void SetAnimRootMotionIgnore();
+
     //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
     UFUNCTION()
     void SetAnimRootMotionFromMontage();
@@ -117,13 +118,15 @@ public:
 	inline float GetSightDegree() { return SightDegree; }
 
     //마지막으로 입력받은 값을 enum으로 반환
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable, Category = "Direction")
     EMovingDirection GetLastInput();
 
     //Setter
     //행동중인지 설정
     UFUNCTION()
     void SetOnActing(bool InActing);
+
+    void SetOnAttacking(bool InAttacking);
 
 	//활성화 된 무기 설정
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -294,6 +297,9 @@ private:
 
 	//플레이어가 행동중인지 확인
 	bool bIsOnAction = false;
+
+    //플레이어가 공격중인지 확인
+    bool bIsOnAttacking = false;
 
 	//시야각
 	float SightDegree = 0.0f;
