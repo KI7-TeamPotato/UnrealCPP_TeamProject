@@ -29,20 +29,19 @@ void UWaveComponent::StartWaveSystem(const TArray<UArrowComponent*>& InSpawnPoin
 
 void UWaveComponent::SpawnWave(int32 WaveIndex)
 {
-    // 1. 웨이브 인덱스가 유효한지 먼저 검사 (끝났으면 종료)
+    //웨이브 인덱스가 유효한지 먼저 검사
     if (!Waves.IsValidIndex(WaveIndex))
     {
         OnAllWavesCleared.Broadcast();
         return;
     }
 
-    // 2. [수정됨] 바로 스폰하지 않고, 2초 뒤에 SpawnEnemiesDelayed 함수를 실행하도록 타이머 설정
+    //2초 뒤에 SpawnEnemiesDelayed 함수를 실행하도록 타이머 설정
     FTimerDelegate TimerDel;
 
-    // 타이머가 끝난 뒤 실행할 함수와 파라미터(WaveIndex)를 묶어줍니다.
     TimerDel.BindUObject(this, &UWaveComponent::SpawnEnemiesDelayed, WaveIndex);
 
-    // 2.0f초 뒤에 실행 (false는 반복 안 함)
+    // 2초 뒤에 실행
     GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, TimerDel, 2.0f, false);
 }
 
@@ -69,7 +68,6 @@ void UWaveComponent::SpawnEnemiesDelayed(int32 WaveIndex)
     if (!Waves.IsValidIndex(WaveIndex)) return; // 안전 검사 한 번 더
     const FWaveData& CurrentWave = Waves[WaveIndex];
 
-    // --- 기존 스폰 루프 코드 ---
     for (const FSpawnInfo& Info : CurrentWave.SpawnList)
     {
         if (Info.EnemyClass && SpawnPoints.IsValidIndex(Info.SpawnPointIndex))
@@ -78,12 +76,15 @@ void UWaveComponent::SpawnEnemiesDelayed(int32 WaveIndex)
             if (TargetPoint)
             {
                 FTransform SpawnTransform = TargetPoint->GetComponentTransform();
+                FTransform EffectTransform = TargetPoint->GetComponentTransform();
+                EffectTransform.SetLocation(FVector(SpawnTransform.GetLocation().X, SpawnTransform.GetLocation().Y, 0.0f));
                 FActorSpawnParameters SpawnParams;
                 SpawnParams.Owner = GetOwner();
                 SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
                 // 몬스터 생성
                 AEnemyCharacter* NewEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(Info.EnemyClass, SpawnTransform, SpawnParams);
+                AActor* effect = GetWorld()->SpawnActor<AActor>(EnemyEffect, EffectTransform, SpawnParams);
 
                 if (NewEnemy)
                 {

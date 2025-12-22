@@ -10,6 +10,7 @@
 #include "Door.h"
 #include "Kismet/GameplayStatics.h"
 #include "Enemy/EnemyCharacter.h"
+#include "Item/Weapon/WeaponBoxActor.h"
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
@@ -24,50 +25,9 @@ void ADungeonGanarator::BeginPlay()
 	Super::BeginPlay();
     InitialRoomAmount = RoomAmount;
     FTimerHandle UnusedHandle;
-    FTimerHandle DoorHandle;
 
     //시드 정하기
-    SetSeed();
-    if (StageConfigMap.Contains(Stage))
-    {
-        FStageRoomConfig& SelectedConfig = StageConfigMap[Stage];
-        RoomAmount = SelectedConfig.StageRoomAmount;
-
-        // 1. 일반 방 목록 교체
-        if (SelectedConfig.NormalRooms.Num() > 0 
-            && SelectedConfig.SpecialRooms.Num() > 0
-            && SelectedConfig.Corridors.Num() > 0
-            && SelectedConfig.StartRooms.Num() > 0
-            && SelectedConfig.BossRooms.Num() > 0
-            && SelectedConfig.ClosingWalls.Num() > 0
-            && SelectedConfig.PotalRooms.Num() > 0
-            && RoomAmount > 0
-            )
-        {
-            RoomsToBeSpawned = SelectedConfig.NormalRooms; 
-            SpecialRoomsToBeSpawned = SelectedConfig.SpecialRooms;
-            CorridorRooms = SelectedConfig.Corridors;
-            StartRoom = SelectedConfig.StartRooms;
-            BossRoomClass = SelectedConfig.BossRooms;
-            PotalRoomClass = SelectedConfig.PotalRooms;
-            ClosingWall = SelectedConfig.ClosingWalls;
-            InitialRoomAmount = RoomAmount;
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Stage %d : NormalRooms array is empty! Using default."), Stage);
-        }
-        //if (SelectedConfig.BossRooms.Num() > 0)
-        //{
-        //    BossRoomClass = SelectedConfig.BossRooms;
-        //}
-
-
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Stage %d config not found in StageConfigMap. Using default arrays."), Stage);
-    }
+    StageConfigSetting();
     //시작 방 생성
     SpawnStarterRooms();
 
@@ -78,10 +38,6 @@ void ADungeonGanarator::BeginPlay()
 
     //방이 모두 생성되면 1초(임의로 정할 수 있음)후 실행(보스방 만들기, 벽 막기 등등)
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
-    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.5f, false);
-
-
-
 }
 
 // Called every frame
@@ -114,7 +70,14 @@ void ADungeonGanarator::SpawnStarterRooms()
 void ADungeonGanarator::SpawnNextRoom()
 {
     //RoomAmount가 0이거나 저장된 CorridorRooms의 요소가 없으면 리턴
-    if (RoomAmount <= 0 || CorridorRooms.Num() == 0) return;
+    if (RoomAmount <= 0 || CorridorRooms.Num() == 0)
+    {
+        //if (RoomAmount <=0)
+        //{
+        //    AfterEndedSpawnNomalRooms();
+        //}
+        return;
+    };
     bCanSpawn = true;
 
     //시작 방을 기준으로 시작 방의 출구(Exits)에 복도를 생성, 복도 생성에 성공하면 방을 생성
@@ -270,6 +233,7 @@ void ADungeonGanarator::RemoveOverlappingRooms()
 	}
 }
 
+//모든 방 생성이 끝나고 실행되는 함수, 보스방 스폰과 닫힌 벽을 막고 방을 들어갔는지 확인하는 콜리전 활성화함
 void ADungeonGanarator::AfterEndedSpawnNomalRooms()
 {
     //보물방 같은 특수방 지정하는 함수, 단순히 현재 생성된 방들 중 고를거라 보스방 생성 전 돌려야함 아마 사용 안할듯
@@ -281,6 +245,8 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
         //통로 닫기 전 보스방 생성 성공여부 검사, 생성 실패하면 스테이지 다시 만드는 구조라 ClosingUnuusedWall 호출되지 않게 리턴
     }
     //안쓰는 통로 닫는 함수
+    SpawnDoors();
+
     ClosingUnuusedWall();
 
     for (AActor* Actor : GeneratedActors)
@@ -291,8 +257,14 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
             Room->ActivateBattleTrigger();
         }
     }
+
+    if (EndedCreate.IsBound())
+    {
+        EndedCreate.Broadcast();
+    }
 }
 
+//닫힌 벽 막는 함수
 void ADungeonGanarator::ClosingUnuusedWall()
 {
     //모든 출구에 대해 검사
@@ -309,11 +281,6 @@ void ADungeonGanarator::ClosingUnuusedWall()
         GeneratedActors.Add(LastestClosingWallSpawned);
     }
     UE_LOG(LogTemp, Warning, TEXT("ClosingUnuusedWall"));
-
-    if (EndedCreate.IsBound())
-    {
-        EndedCreate.Broadcast();
-    }
 }
 
 bool ADungeonGanarator::SpawnLastRoom()
@@ -324,12 +291,12 @@ bool ADungeonGanarator::SpawnLastRoom()
     if (chapter == 5)
     {
         TargetRoomArray = &BossRoomClass;
-        UE_LOG(LogTemp, Warning, TEXT("Chapter 5: Preparing Boss Room..."));
+        UE_LOG(LogTemp, Warning, TEXT("createboss"));
     }
     else
     {
         TargetRoomArray = &PotalRoomClass;
-        UE_LOG(LogTemp, Warning, TEXT("Chapter %d: Preparing Potal Room..."), chapter);
+        UE_LOG(LogTemp, Warning, TEXT("createportal"));
     }
 
     if (TargetRoomArray->Num() > 0 && IsValid(LastestSpawnRoom))//안전검사
@@ -368,7 +335,7 @@ bool ADungeonGanarator::SpawnLastRoom()
                     }
                     else
                     {
-                        UE_LOG(LogTemp, Error, TEXT("Max Retries Reached."));
+                        UE_LOG(LogTemp, Error, TEXT("한도초과"));
                     }
                 }
                 else
@@ -377,7 +344,7 @@ bool ADungeonGanarator::SpawnLastRoom()
                     DoorList.Add(LastExit);
                     GeneratedActors.Add(LastRoom);
                     Exits.Remove(LastExit);
-                    UE_LOG(LogTemp, Warning, TEXT("Boss Room Spawn"));
+                    UE_LOG(LogTemp, Warning, TEXT("BossRoomSpawn"));
                     CurrentResetCount = 0;
                     GetWorld()->GetTimerManager().ClearTimer(GenerationTimeoutHandle);
                 }
@@ -395,13 +362,16 @@ void ADungeonGanarator::SelectedSpecialRoom()
 
 void ADungeonGanarator::ResetDungeon()
 {
+
     //현재 진행 중인 타이머 모두 중지
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
     TArray<AActor*> AllEnemies;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyCharacter::StaticClass(), AllEnemies);
+    TArray<AActor*> WeaponBoxes;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBoxActor::StaticClass(), WeaponBoxes);
 
-
+    StageConfigSetting();
     for (AActor* EnemyActor : AllEnemies)
     {
         if (IsValid(EnemyActor))
@@ -409,6 +379,15 @@ void ADungeonGanarator::ResetDungeon()
             EnemyActor->Destroy();
         }
     }
+
+    for (AActor* BoxActor : WeaponBoxes)
+    {
+        if (IsValid(BoxActor))
+        {
+            BoxActor->Destroy();
+        }
+    }
+
     //지금까지 생성된 모든 방/복도 파괴
 
     for (AActor* Actor : GeneratedActors)
@@ -500,4 +479,58 @@ void ADungeonGanarator::SpawnDoors()
         }
     }
 
+}
+
+void ADungeonGanarator::StageConfigSetting()
+{
+    SetSeed();
+    if (StageConfigMap.Contains(Stage))
+    {
+        FStageRoomConfig& SelectedConfig = StageConfigMap[Stage];
+        RoomAmount = SelectedConfig.StageRoomAmount;
+
+        // 1. 일반 방 목록 교체
+        if (SelectedConfig.NormalRooms.Num() > 0
+            && SelectedConfig.SpecialRooms.Num() > 0
+            && SelectedConfig.Corridors.Num() > 0
+            && SelectedConfig.StartRooms.Num() > 0
+            && SelectedConfig.BossRooms.Num() > 0
+            && SelectedConfig.ClosingWalls.Num() > 0
+            && SelectedConfig.PotalRooms.Num() > 0
+            && RoomAmount > 0
+            )
+        {
+            RoomsToBeSpawned = SelectedConfig.NormalRooms;
+            SpecialRoomsToBeSpawned = SelectedConfig.SpecialRooms;
+            CorridorRooms = SelectedConfig.Corridors;
+            StartRoom = SelectedConfig.StartRooms;
+            BossRoomClass = SelectedConfig.BossRooms;
+            PotalRoomClass = SelectedConfig.PotalRooms;
+            ClosingWall = SelectedConfig.ClosingWalls;
+            InitialRoomAmount = RoomAmount;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Stage %d : NormalRooms array is empty! Using default."), Stage);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Stage %d config not found in StageConfigMap. Using default arrays."), Stage);
+    }
+}
+
+void ADungeonGanarator::GoToNextStage()
+{
+    if (chapter == 5)
+    {
+        chapter = 1;
+        Stage++;
+        ResetDungeon();
+    }
+    else
+    {
+        chapter++;
+        ResetDungeon();
+    }
 }
