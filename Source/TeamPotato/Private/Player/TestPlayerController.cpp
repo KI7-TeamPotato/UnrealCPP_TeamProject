@@ -60,7 +60,7 @@ void ATestPlayerController::BeginPlay()
         }
 
         // 테스트용, 실제 게임에서는 다른 타이밍에 뷰포트 추가
-        PerkSelectionScreen->AddToViewport();
+        //PerkSelectionScreen->AddToViewport();
     }
 }
 
