@@ -38,7 +38,7 @@ void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
         return;
     }
 
-    Resource->UseStamina(AttackCost);
+    Resource->UseEnergy(AttackCost);
 }
 
 void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)

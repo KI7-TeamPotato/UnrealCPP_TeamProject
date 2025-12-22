@@ -83,10 +83,10 @@ public:
 
     //스태미너 사용 가능 여부 반환 및 스태미너 사용
     UFUNCTION()
-    bool UseStamina(float InStaminaUseAmount);
+    bool UseEnergy(float InEnergyUseAmount);
     //스태미너 충전
-    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
-    void FillStamina(float InStamina);
+    UFUNCTION(BlueprintCallable, Category = "Resource|Energy")
+    void FillEnergy(float InEnergy);
 
     //체력회복
     UFUNCTION(BlueprintCallable, Category = "Resource|Health")
@@ -99,8 +99,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Resource|Health")
     void AddMaxHealth(float InMaxHealth);
     //최대 스태미나 증가
-    UFUNCTION(BlueprintCallable, Category = "Resource|Stamina")
-    void AddMaxStamina(float InMaxStamina);
+    UFUNCTION(BlueprintCallable, Category = "Resource|Energy")
+    void AddMaxEnergy(float InMaxEnergy);
     
     //Getter
 	//현재 활성화된 무기 확인
