@@ -6,6 +6,7 @@
 #include "Data/WeaponPickupData.h"
 #include "Data/WeaponDataAsset.h"
 #include "Player/TestCharacter.h"
+#include "Component/PlayerResource.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "UI/Player/ShopInteractWidget.h"
@@ -129,7 +130,17 @@ void AShopTableActor::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 
 void AShopTableActor::BuyItem(AActor* InPlayer)
 {
-    SpawnItem->SetSellItem(false);
-    SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    SpawnItem->OnPickup(InPlayer);
+    ATestCharacter* player = Cast<ATestCharacter>(InPlayer);
+    if (!player) return;
+
+    UPlayerResource* Resource = player->GetResource();
+    if (!Resource) return;
+
+    if (Resource->GetCurrentGold() > SpawnItem->GetPrice())
+    {
+        SpawnItem->SetSellItem(false);
+        SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        SpawnItem->OnPickup(InPlayer);
+        Resource->AddGold(-SpawnItem->GetPrice());
+    }
 }

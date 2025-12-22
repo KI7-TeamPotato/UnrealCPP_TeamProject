@@ -28,6 +28,7 @@ public:
     //getter
     inline float GetHealthAmount() { return Health; }
     inline float GetEnergyAmount() { return Energy; }
+    inline int GetCurrentGold() { return CurrentGold; }
 
     //inline float GetStaminaAmount() { return Stamina; }
 
@@ -84,7 +85,7 @@ private:
     //스태미나가 충분히 있는지 계산할때 부동소수점 오차로 인해 사용
     const float EnergyEpsilon = 0.0001f;
     // 소지 골드
-    int32 Gold = 0;
+    int32 CurrentGold = 0;
 
     //공격력
     float AttackPower = 10.0f;

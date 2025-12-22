@@ -31,7 +31,7 @@ void UPlayerResource::BeginPlay()
 
     Health = MaxHealth;
 	Energy = MaxEnergy;
-    Gold = 0;
+    CurrentGold = 0;
 
     // 초기 체력, 에너지 값, 골드 브로드캐스트
     BroadcastHealthChanged();
@@ -103,7 +103,8 @@ bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
 
 void UPlayerResource::AddGold(int32 InGold)
 {
-    Gold += InGold;
+    CurrentGold += InGold;
+    BroadcastGoldChanged();
 }
 
 // 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
@@ -157,6 +158,6 @@ void UPlayerResource::BroadcastGoldChanged()
 {
     if (OnGoldChanged.IsBound())
     {
-        //OnGoldChanged.Broadcast();
+        OnGoldChanged.Broadcast(CurrentGold);
     }
 }
