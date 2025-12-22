@@ -36,7 +36,7 @@ void AEnemyAxe::ThrowAt(FVector TargetLocation)
     // 주인에게서 분리 (손에서 떠남)
     DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
     SetActorRotation(Direction.Rotation());
-    AddActorLocalRotation(FRotator(-135.0f, 180.0f, 0.0f));
+    AddActorLocalRotation(FRotator(45.0f, 180.0f, 0.0f));
 
     // 충돌 켜기
     CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);

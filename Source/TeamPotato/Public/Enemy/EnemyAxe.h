@@ -58,7 +58,7 @@ protected:
 
     // 무기 비행 속도
     UPROPERTY(EditAnywhere, Category = "Combat")
-    float ThrowSpeed = 1500.0f;
+    float ThrowSpeed = 2500.0f;
 
     // 돌아오는 속도 (끌고 올 때)
     UPROPERTY(EditAnywhere, Category = "Combat")
