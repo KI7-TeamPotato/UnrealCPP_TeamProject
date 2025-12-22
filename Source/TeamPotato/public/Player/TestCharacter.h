@@ -119,7 +119,9 @@ public:
 
     //마지막으로 입력받은 값을 enum으로 반환
     UFUNCTION(BlueprintCallable, Category = "Direction")
-    EMovingDirection GetLastInput();
+    inline FVector2D GetLastInput() { return LastInput; }
+
+    EMovingDirection GetPlayerDirection();
 
     //Setter
     //행동중인지 설정
@@ -194,6 +196,8 @@ public:
 protected:
 	//IA
 	//이동 입력
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_Move = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
 	TObjectPtr<UInputAction> IA_FrontMove = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
@@ -325,8 +329,10 @@ private:
 	EWeaponType ActivatedWeapon = EWeaponType::None;
 
     //마지막 입력 저장하는 함수
-    float FrontBackMove = 0.0f;
-    float SideMove = 0.0f;
+    /*float FrontBackMove = 0.0f;
+    float SideMove = 0.0f;*/
+
+    FVector2D LastInput;
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;

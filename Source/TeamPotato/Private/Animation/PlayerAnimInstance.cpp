@@ -45,9 +45,13 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
         //플레이어의 움직이는 방향 구하기
         PlayerMovingDirection = MainPlayer->GetLastInput();
-        if ((PlayerMovingDirection == EMovingDirection::FrontLeft) || (PlayerMovingDirection == EMovingDirection::FrontRight))
-            PlayerMovingDirection = EMovingDirection::Front;
-        else if ((PlayerMovingDirection == EMovingDirection::BackLeft) || (PlayerMovingDirection == EMovingDirection::BackRight))
-            PlayerMovingDirection = EMovingDirection::Back;
+        float playerYdirectValue = PlayerMovingDirection.Y + 1.0f + PlayerMovingDirection.X * 0.5f * (-(PlayerMovingDirection.Y));     //y값 1증가(블렌드 스페이스에서 0~2값 사용), 대각선 방향 보정을 위해 x값 * 0,5 * -y값
+        PlayerSideDirection = std::clamp(playerYdirectValue, 0.0f, 2.0f);            //혹시 모르니 0~2사이를 벗어나지 않도록 보정
+
+        //앞으로 가는지 뒤로 가는지 확인
+        if (PlayerMovingDirection.X > 0)
+            bIsPlayerGoingFront = true;
+        else if (PlayerMovingDirection.X < 0)
+            bIsPlayerGoingFront = false;
 	}
 }

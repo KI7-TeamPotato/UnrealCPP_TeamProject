@@ -22,13 +22,11 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
+
+protected:
     //플레이어의 이동속도
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	float Speed = 0.0f;
-
-    //플레이어가 움직이는 방향
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-    EMovingDirection PlayerMovingDirection = EMovingDirection::None;
 
     //검 활성화 여부
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -42,10 +40,22 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Sight")
     float SightDegree = 0.0f;
 
+    //앞으로 가는지 뒤로 가는지, true일때 앞, false일때 뒤
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    bool bIsPlayerGoingFront = true;
+
+    //좌우 방향(0~2, 0일때 왼쪽, 2일때 오른쪽)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    float PlayerSideDirection = 0.0f;
+
 private:
     //플레이어 무빙 컴포넌트
 	TWeakObjectPtr<const UPawnMovementComponent> OwnerMovementComponent = nullptr;
 
     //플레이어
 	TObjectPtr<class ATestCharacter> MainPlayer = nullptr;
+
+    //플레이어가 움직이는 방향
+    FVector2D PlayerMovingDirection;
+
 };

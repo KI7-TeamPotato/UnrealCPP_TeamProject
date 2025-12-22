@@ -98,10 +98,11 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	if (enhancedInputComponent)
 	{
-		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
-		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete); 
+		/*enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnFrontMovementInput);
+		enhancedInputComponent->BindAction(IA_FrontMove, ETriggerEvent::Completed, this, &ATestCharacter::OnFrontMovementComplete);
 		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Triggered, this, &ATestCharacter::OnSideMovementInput);
-		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);
+		enhancedInputComponent->BindAction(IA_SideMove, ETriggerEvent::Completed, this, &ATestCharacter::OnSideMovementComplete);*/
+        enhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ATestCharacter::OnMovementInput);
 		enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
 		enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
 		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
@@ -128,8 +129,7 @@ void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-    if (OtherActor &&
-        OtherActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+    if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
     {
         CurrentInteractTarget = OtherActor;
     }
@@ -259,11 +259,25 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 
 
 	//AddMovementInput(moveDirection);
+
+    if (!bIsOnAction)
+    {
+        LastInput = InValue.Get<FVector2D>();
+
+        if (Controller && !LastInput.IsZero())
+        {
+            FRotator controllerRotation = Controller->GetControlRotation();         //컨트롤러 회전 구하기
+            FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);           //컨트롤러 방향으로 플레이어 회전
+
+            FVector Direction = FVector(LastInput.X, LastInput.Y, 0.0f);
+            AddMovementInput(Direction);
+        }
+    }
 }
 
 void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
 {
-    if(!bIsOnAction)
+    /*if(!bIsOnAction)
     {
         FrontBackMove = InValue.Get<float>();
         if (Controller && (FrontBackMove != 0.0f))
@@ -274,13 +288,13 @@ void ATestCharacter::OnFrontMovementInput(const FInputActionValue& InValue)
             FVector Direction = FRotationMatrix(controllerYawRotation).GetUnitAxis(EAxis::X);
             AddMovementInput(Direction, FrontBackMove);
         }
-    }
+    }*/
 }
 
 
 void ATestCharacter::OnSideMovementInput(const FInputActionValue& InValue)
 {
-    if (!bIsOnAction)
+    /*if (!bIsOnAction)
     {
         SideMove = InValue.Get<float>();
         if (Controller && (SideMove != 0.0f))
@@ -291,17 +305,17 @@ void ATestCharacter::OnSideMovementInput(const FInputActionValue& InValue)
             FVector Direction = FRotationMatrix(controllerYawRotation).GetUnitAxis(EAxis::Y);
             AddMovementInput(Direction, SideMove);
         }
-    }
+    }*/
 }
 
 void ATestCharacter::OnFrontMovementComplete()
 {
-    FrontBackMove = 0.0f;
+    //FrontBackMove = 0.0f;
 }
 
 void ATestCharacter::OnSideMovementComplete()
 {
-    SideMove = 0.0f;
+    //SideMove = 0.0f;
 }
 
 void ATestCharacter::OnHorizonSightInput(const FInputActionValue& InValue)
@@ -456,33 +470,33 @@ void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
     ResourceManager->AddMaxEnergy(InMaxEnergy);
 }
 
-EMovingDirection ATestCharacter::GetLastInput()
+EMovingDirection ATestCharacter::GetPlayerDirection()
 {
     EMovingDirection playerDirection = EMovingDirection::None;
 
-    if (FrontBackMove > 0)
+    if (LastInput.X > 0)
     {
-        if (SideMove > 0)
+        if (LastInput.Y > 0)
             playerDirection = EMovingDirection::FrontRight;
-        else if (SideMove < 0)
+        else if (LastInput.Y < 0)
             playerDirection = EMovingDirection::FrontLeft;
         else
             playerDirection = EMovingDirection::Front;
     }
-    else if (FrontBackMove < 0)
+    else if (LastInput.X < 0)
     {
-        if (SideMove > 0)
+        if (LastInput.Y > 0)
             playerDirection = EMovingDirection::BackRight;
-        else if (SideMove < 0)
+        else if (LastInput.Y < 0)
             playerDirection = EMovingDirection::BackLeft;
         else
             playerDirection = EMovingDirection::Back;
     }
     else
     {
-        if (SideMove > 0)
+        if (LastInput.Y > 0)
             playerDirection = EMovingDirection::Right;
-        else if (SideMove < 0)
+        else if (LastInput.Y < 0)
             playerDirection = EMovingDirection::Left;
     }
 
