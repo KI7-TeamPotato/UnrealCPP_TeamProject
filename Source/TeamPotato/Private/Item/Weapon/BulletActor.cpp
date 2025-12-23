@@ -57,11 +57,17 @@ void ABulletActor::GunFire(const FVector& ShootDirection, float Speed, float Dam
 void ABulletActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+    APawn* PlayerInstigator = GetInstigator();
 	
-	if (AActor* OwnerActor = GetOwner())
-	{
-		BulletCollision->IgnoreActorWhenMoving(OwnerActor, true);
-	}
+    if (PlayerInstigator)
+    {
+        // 1. 이동 중 충돌 무시
+        BulletCollision->IgnoreActorWhenMoving(PlayerInstigator, true);
+
+        // 2. 플레이어의 모든 컴포넌트(캡슐, 메쉬 등)와 충돌하지 않도록 설정
+        PlayerInstigator->MoveIgnoreActorAdd(this);
+    }
 }
 
 void ABulletActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)

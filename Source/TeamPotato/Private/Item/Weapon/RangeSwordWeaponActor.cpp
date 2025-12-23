@@ -4,6 +4,7 @@
 #include "Item/Weapon/RangeSwordWeaponActor.h"
 #include "Item/Weapon/SlashActor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Player/TestCharacter.h"
 
 void ARangeSwordWeaponActor::EndAttack()
 {
@@ -12,23 +13,24 @@ void ARangeSwordWeaponActor::EndAttack()
     if (!SlashActorClass)
         return;
 
-    AActor* OwnerActor = GetOwner();
-    if (!OwnerActor)
+    OwnerCharacter = Cast<ATestCharacter>(GetOwner());
+    if (!OwnerCharacter)
         return;
 
-    FVector Forward = OwnerActor->GetActorForwardVector();
-    FVector SpawnLocation = OwnerActor->GetActorLocation() + Forward * 100.f + FVector(0, 0, 50.f);
-    FRotator SpawnRotation = OwnerActor->GetActorRotation();
+    FVector Forward = OwnerCharacter->GetActorForwardVector();
+    FVector SpawnLocation = OwnerCharacter->GetActorLocation() + Forward * 100.f + FVector(0, 0, 50.f);
+    FRotator SpawnRotation = OwnerCharacter->GetActorRotation();
 
-    FActorSpawnParameters Params;
-    Params.Owner = OwnerActor;
-    Params.Instigator = OwnerActor->GetInstigator();
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = OwnerCharacter;
+    SpawnParams.Instigator = OwnerCharacter->GetInstigator();
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     ASlashActor* Slash = GetWorld()->SpawnActor<ASlashActor>(
         SlashActorClass,
         SpawnLocation,
         SpawnRotation,
-        Params
+        SpawnParams
     );
 
     if (Slash)

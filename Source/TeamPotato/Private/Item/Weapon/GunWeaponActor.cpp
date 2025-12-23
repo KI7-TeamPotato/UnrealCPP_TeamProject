@@ -71,16 +71,21 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 	// 발사 방향 계산
 	FVector ShootDirection = (HitLocation - MuzzleLocation).GetSafeNormal();
 
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = OwningPlayer;          // 총알의 주인을 플레이어로 설정
+    SpawnParams.Instigator = OwningPlayer;     // 데미지 가해자를 플레이어로 설정
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
 	// 총알 스폰
 	ABulletActor* Bullet = GetWorld()->SpawnActor<ABulletActor>(
 		BulletClass,
 		MuzzleLocation,
-		ShootDirection.Rotation()
+		ShootDirection.Rotation(),
+        SpawnParams
 	);
 
 	if (Bullet)
 	{
-		Bullet->SetOwner(GetOwner());
 		Bullet->GunFire(ShootDirection, BulletSpeed, AttackDamage);
 	}
 }

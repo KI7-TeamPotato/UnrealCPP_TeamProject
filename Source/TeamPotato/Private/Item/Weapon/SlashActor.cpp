@@ -41,6 +41,16 @@ void ASlashActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    APawn* PlayerInstigator = GetInstigator();
+
+    if (PlayerInstigator)
+    {
+        // 1. 이동 중 충돌 무시
+        SlashCollision->IgnoreActorWhenMoving(PlayerInstigator, true);
+
+        // 2. 플레이어의 모든 컴포넌트(캡슐, 메쉬 등)와 충돌하지 않도록 설정
+        PlayerInstigator->MoveIgnoreActorAdd(this);
+    }
 }
 
 void ASlashActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
