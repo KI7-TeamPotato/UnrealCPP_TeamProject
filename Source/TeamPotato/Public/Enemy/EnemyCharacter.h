@@ -9,6 +9,9 @@
 #include "EnemyCharacter.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDying);
 
+class UWidgetComponent;
+class UEnemyHealthBarWidget;
+
 UCLASS()
 class TEAMPOTATO_API AEnemyCharacter : public ACharacter, public IEnemyInterface
 {
@@ -20,8 +23,8 @@ public:
 
     UFUNCTION(BlueprintCallable)
 
-
     void OnDie();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -44,7 +47,6 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Combat")
     UAnimMontage* DeadMontage;
-
 
     //소켓 이름(나중에 통일할 예정)
     UPROPERTY(EditAnywhere, Category = "Combat")
@@ -75,11 +77,20 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnEnemyDying OnDeath;
 
+private:
+    void SetupHealthBarWidget();
 
 protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float MaxHealth = 100.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
     float CurrentHealth = 0.0f;
+
+private:
+    UPROPERTY()
+    TObjectPtr<UEnemyHealthBarWidget> HealthBarWidget;
 };

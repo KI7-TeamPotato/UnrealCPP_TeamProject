@@ -9,12 +9,17 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "AIController.h" 
 #include "BrainComponent.h"
+#include "Components/WidgetComponent.h"
+#include "UI/Enemy/EnemyHealthBarWidget.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
 {
     CurrentHealth = MaxHealth;
     UE_LOG(LogTemp, Warning, TEXT("Enemy Spawned! HP: %f / %f"), CurrentHealth, MaxHealth);
+
+    HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+    HealthBarWidgetComponent->SetupAttachment(GetMesh());
 }
 
 // Called when the game starts or when spawned
@@ -23,6 +28,14 @@ void AEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
     WieldWeapon();
 
+    if (HealthBarWidgetComponent)
+    {
+        if (UUserWidget* Widget = HealthBarWidgetComponent->GetWidget())
+        {
+            HealthBarWidget = Cast<UEnemyHealthBarWidget>(Widget);
+            SetupHealthBarWidget();
+        }
+    }
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -41,6 +54,9 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
     // 로그로 확인 (디버깅용)
     UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
+
+    // 위젯 업데이트
+    SetupHealthBarWidget();
 
     // 3. 사망 체크
     if (CurrentHealth <= 0.0f)
@@ -176,3 +192,10 @@ void AEnemyCharacter::OnDie()
     GetCharacterMovement()->DisableMovement();
 }
 
+void AEnemyCharacter::SetupHealthBarWidget()
+{
+    if (HealthBarWidget)
+    {
+        HealthBarWidget->SetHealthPercent(CurrentHealth / MaxHealth);
+    }
+}
