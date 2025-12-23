@@ -270,6 +270,7 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
             FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);           //컨트롤러 방향으로 플레이어 회전
 
             FVector Direction = FVector(LastInput.X, LastInput.Y, 0.0f);
+            Direction = controllerYawRotation.RotateVector(Direction);
             AddMovementInput(Direction);
         }
     }
