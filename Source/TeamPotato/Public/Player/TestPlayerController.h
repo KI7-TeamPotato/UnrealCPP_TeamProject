@@ -26,6 +26,9 @@ public:
     void AddPerkSelectionScreenToViewport();
 
 protected:
+    // --- 빙의 시점에 강제로 Input을 GameModeOnly로 바꿈 ---
+    virtual void OnPossess(APawn* InPawn) override;
+
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;

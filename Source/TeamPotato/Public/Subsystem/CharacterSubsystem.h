@@ -20,7 +20,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedCharacterChanged, ECharac
 struct PlayerSaveData
 {
 public:
-    ECharacterType SelectedCharacter = ECharacterType::None;
+    // 초기 캐릭터는 전사로 설정
+    ECharacterType SelectedCharacter = ECharacterType::Warrior;
     UWeaponDataAsset* EquippedMainWeapon = nullptr;
     UWeaponDataAsset* EquippedSubWeapon = nullptr;
 };
@@ -51,6 +52,10 @@ public:
 
 	//모든 캐릭터 데이터 반환
 	const TMap<ECharacterType, FCharacterDataTableRow>& GetAllCharacterDataMap() const { return CharacterDataCache; }
+
+    // 현재 플레이어 타입의 초기 상태로 리셋
+    UFUNCTION(BlueprintCallable, Category = "Character")
+    void ResetPlayerDataToInitialState();
 
 	// =============================================================
 	// 진행 중의 플레이어 정보

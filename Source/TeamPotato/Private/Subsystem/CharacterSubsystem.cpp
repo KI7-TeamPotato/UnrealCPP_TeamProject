@@ -76,6 +76,12 @@ bool UCharacterSubsystem::GetCharacterData(ECharacterType CharacterType, FCharac
 	return false;
 }
 
+void UCharacterSubsystem::ResetPlayerDataToInitialState()
+{
+    CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset;
+    CurrentPlayerData.EquippedSubWeapon = nullptr;
+}
+
 // =============================================================
 // 선택된 캐릭터
 // =============================================================

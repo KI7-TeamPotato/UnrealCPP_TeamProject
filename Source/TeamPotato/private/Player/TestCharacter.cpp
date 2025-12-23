@@ -18,6 +18,7 @@
 #include "IntetFace/Interactable.h"
 #include "Component/PerkComponent.h"
 #include "Subsystem/CharacterSubsystem.h"
+#include "Subsystem/GameStateSubsystem.h"
 
 
 // Sets default values
@@ -84,8 +85,20 @@ void ATestCharacter::BeginPlay()
         }
     }
 
-    // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
+
+    UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
     UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+
+    // 게임 상태가 로비일 때 캐릭터 초기화 작업 수행
+    if (GameStateSubsystem && CharacterSubsystem)
+    {
+        if (GameStateSubsystem->GetCurrentGameState() == EGameState::Lobby)
+        {
+            CharacterSubsystem->ResetPlayerDataToInitialState();
+        }
+    }
+
+    // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
     if (CharacterSubsystem)
     {
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedMainWeapon());

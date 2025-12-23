@@ -13,6 +13,18 @@
 #include "UI/Perk/InventoryPerkTileWidget.h"
 #include "Kismet/GameplayStatics.h"
 
+void ATestPlayerController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+
+    UE_LOG(LogTemp, Log, TEXT("ATestPlayerController::OnPossess - Possessed Pawn: %s"), *InPawn->GetName());
+
+    FInputModeGameOnly InputMode;
+    InputMode.SetConsumeCaptureMouseDown(false);
+    SetInputMode(InputMode);
+    bShowMouseCursor = false;
+}
+
 void ATestPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
