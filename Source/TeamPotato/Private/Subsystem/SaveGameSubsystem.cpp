@@ -34,11 +34,8 @@ void USaveGameSubsystem::Deinitialize()
     Super::Deinitialize();
 }
 
-bool USaveGameSubsystem::SaveSettings(USaveSettings* Settings)
+bool USaveGameSubsystem::SaveSettings()
 {
-    // 캐시된 설정을 업데이트
-    CachedSettings = Settings;
-
     // 설정을 실제 슬롯에 저장
     if (UGameplayStatics::SaveGameToSlot(CachedSettings, SettingSaveSlotName, 0))
     {
@@ -56,4 +53,22 @@ USaveSettings* USaveGameSubsystem::GetGameSettings()
     }
     // 캐시된 설정이 없으면 새로 생성
     return nullptr;
+}
+
+void USaveGameSubsystem::SaveMusicVolume(float InVolume)
+{
+    if (CachedSettings)
+    {
+        CachedSettings->MusicVolume = InVolume;
+        SaveSettings();
+    }
+}
+
+void USaveGameSubsystem::SaveSFXVolume(float InVolume)
+{
+    if (CachedSettings)
+    {
+        CachedSettings->SFXVolume = InVolume;
+        SaveSettings();
+    }
 }

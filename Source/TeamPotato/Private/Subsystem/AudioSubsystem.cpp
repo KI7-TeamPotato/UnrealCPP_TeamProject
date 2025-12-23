@@ -39,7 +39,7 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     // 초기화를 보장된 상태  
     if (CachedSaveGameSubsystem = GetGameInstance()->GetSubsystem<USaveGameSubsystem>())
     {
-        // 이미 초기화가 완료된 상태라면 바로 설정 적용
+        // 이미 초기화가 완료된 상태라면 바로 설정 적용(한번 더 확인)
         if (CachedSaveGameSubsystem->bIsInitialized)
         {
             InitializeSaveSettings();
@@ -66,6 +66,11 @@ void UAudioSubsystem::SetMusicVolume(float InVolume)
         CachedMusicSoundClass,
         InVolume
     );
+
+    if (CachedSaveGameSubsystem)
+    {
+        CachedSaveGameSubsystem->SaveMusicVolume(InVolume);
+    }
 }
 
 void UAudioSubsystem::SetSFXVolume(float InVolume)
@@ -78,4 +83,9 @@ void UAudioSubsystem::SetSFXVolume(float InVolume)
         CachedSFXSoundClass,
         InVolume
     );
+
+    if (CachedSaveGameSubsystem)
+    {
+        CachedSaveGameSubsystem->SaveSFXVolume(InVolume);
+    }
 }

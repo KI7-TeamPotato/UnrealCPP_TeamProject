@@ -23,13 +23,19 @@ protected:
 
 private:
     UFUNCTION()
+    void LoadSavedVolumeFromSubsystem();
+
+    UFUNCTION()
     void UpdateMusicVolumeText(float InVolume);
 
     UFUNCTION()
     void UpdateSFXVolumeText(float InVolume);
 
     UFUNCTION()
-    void OnApplyButtonClicke();
+    void OnApplyButtonClick();
+
+    UFUNCTION()
+    void OnCancelButtonClick();
 
 protected:
     // ---  배경 음악 볼륨 슬라이더 ---

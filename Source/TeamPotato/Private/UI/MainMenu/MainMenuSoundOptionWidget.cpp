@@ -13,17 +13,12 @@ void UMainMenuSoundOptionWidget::NativeConstruct()
 
     MusicSlider->OnValueChanged.AddDynamic(this, &UMainMenuSoundOptionWidget::UpdateMusicVolumeText);
     SFXSlider->OnValueChanged.AddDynamic(this, &UMainMenuSoundOptionWidget::UpdateSFXVolumeText);
-    ApplyButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnApplyButtonClicke);
+    ApplyButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnApplyButtonClick);
+    CancelButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnCancelButtonClick);
 
     if (CachedAudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>())
     {
-        // --- 저장된 설정 불러오기 ---
-        float SavedMusicVolume = CachedAudioSubsystem->GetMusicVolume();
-        float SavedSFXVolume = CachedAudioSubsystem->GetSFXVolume();
-        MusicSlider->SetValue(SavedMusicVolume);
-        SFXSlider->SetValue(SavedSFXVolume);
-        UpdateMusicVolumeText(SavedMusicVolume);
-        UpdateSFXVolumeText(SavedSFXVolume);
+        LoadSavedVolumeFromSubsystem();
     }
 }
 
@@ -41,11 +36,30 @@ void UMainMenuSoundOptionWidget::UpdateSFXVolumeText(float InVolume)
     SFXSoundPercent->SetText(FText::AsPercent(InVolume));
 }
 
-void UMainMenuSoundOptionWidget::OnApplyButtonClicke()
+void UMainMenuSoundOptionWidget::OnApplyButtonClick()
 {
     if (CachedAudioSubsystem)
     {
         CachedAudioSubsystem->SetMusicVolume(MusicSlider->GetValue());
         CachedAudioSubsystem->SetSFXVolume(SFXSlider->GetValue());
     }
+}
+
+void UMainMenuSoundOptionWidget::OnCancelButtonClick()
+{
+    LoadSavedVolumeFromSubsystem();
+}
+
+
+void UMainMenuSoundOptionWidget::LoadSavedVolumeFromSubsystem()
+{
+    if (!CachedAudioSubsystem) return;
+
+    // --- 저장된 설정 불러오기 ---
+    float SavedMusicVolume = CachedAudioSubsystem->GetMusicVolume();
+    float SavedSFXVolume = CachedAudioSubsystem->GetSFXVolume();
+    MusicSlider->SetValue(SavedMusicVolume);
+    SFXSlider->SetValue(SavedSFXVolume);
+    UpdateMusicVolumeText(SavedMusicVolume);
+    UpdateSFXVolumeText(SavedSFXVolume);
 }

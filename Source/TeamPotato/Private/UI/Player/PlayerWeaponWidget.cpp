@@ -21,31 +21,44 @@ void UPlayerWeaponWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
-void UPlayerWeaponWidget::UpdatePlayerResourceBar(float NewResourcePercent)
+void UPlayerWeaponWidget::UpdatePlayerResourceBar(float CurrentResource, float MaxResource)
 {
+    float ResourcePercent = FMath::Clamp(CurrentResource / MaxResource, 0.0f, 1.0f);
+
     if (PlayerResourceBar)
     {
-        PlayerResourceBar->SetPercent(NewResourcePercent);
+        PlayerResourceBar->SetPercent(ResourcePercent);
+    }
+
+    if (CurrentEnergyText && MaxEnergyText)
+    {
+        CurrentEnergyText->SetText(FText::AsNumber(FMath::FloorToInt(CurrentResource)));
+        MaxEnergyText->SetText(FText::AsNumber(FMath::FloorToInt(MaxResource)));
     }
 }
 
-void UPlayerWeaponWidget::UpdateMainWeaponInfo(FText InWeaponName, UTexture2D* InWeaponIcon)
+void UPlayerWeaponWidget::UpdateMainWeaponInfo(UWeaponDataAsset* InDataAsset)
 {
     if(WeaponIconImage)
     {
-        WeaponIconImage->SetBrushFromTexture(InWeaponIcon);
+        WeaponIconImage->SetBrushFromTexture(InDataAsset->WeaponIcon);
     }
     if(WeaponName)
     {
-        WeaponName->SetText(InWeaponName);
+        WeaponName->SetText(InDataAsset->WeaponName);
+    }
+    if (UsageResourceText)
+    {
+        FText InWeaponCost = FText::AsNumber(FMath::FloorToInt(InDataAsset->AttackCost));
+        UsageResourceText->SetText(InWeaponCost);
     }
 }
 
-void UPlayerWeaponWidget::UpdateSubWeaponInfo(UTexture2D* InSubWeaponIcon)
+void UPlayerWeaponWidget::UpdateSubWeaponInfo(UWeaponDataAsset* InDataAsset)
 {
     if (SubWeaponIconImage)
     {
-        SubWeaponIconImage->SetBrushFromTexture(InSubWeaponIcon);
+        SubWeaponIconImage->SetBrushFromTexture(InDataAsset->WeaponIcon);
     }
 }
 

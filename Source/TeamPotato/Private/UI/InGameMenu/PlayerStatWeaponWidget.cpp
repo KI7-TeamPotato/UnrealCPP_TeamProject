@@ -4,6 +4,7 @@
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "Components/Image.h"
 #include "Subsystem/ViewModel/WeaponViewModel.h"
+#include "Data/WeaponDataAsset.h"
 
 void UPlayerStatWeaponWidget::NativeConstruct()
 {
@@ -19,19 +20,19 @@ void UPlayerStatWeaponWidget::NativeDestruct()
     Super::NativeDestruct();
 }
 
-void UPlayerStatWeaponWidget::UpdateMainWeaponIcon(FText InWeaponName, UTexture2D* InWeaponIcon)
+void UPlayerStatWeaponWidget::UpdateMainWeaponIcon(UWeaponDataAsset* InDataAsset)
 {
-    if (InWeaponIcon)
+    if (InDataAsset)
     {
-        MainWeaponIcon->SetBrushFromTexture(InWeaponIcon);
+        MainWeaponIcon->SetBrushFromTexture(InDataAsset->WeaponIcon);
     }
 }
 
-void UPlayerStatWeaponWidget::UpdateSubWeaponIcon(UTexture2D* InSubWeaponIcon)
+void UPlayerStatWeaponWidget::UpdateSubWeaponIcon(UWeaponDataAsset* InDataAsset)
 {
-    if (InSubWeaponIcon)
+    if (InDataAsset)
     {
-        SubWeaponIcon->SetBrushFromTexture(InSubWeaponIcon);
+        SubWeaponIcon->SetBrushFromTexture(InDataAsset->WeaponIcon);
     }
 }
 
