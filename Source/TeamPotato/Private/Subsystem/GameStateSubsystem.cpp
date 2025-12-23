@@ -64,15 +64,17 @@ void UGameStateSubsystem::TravelToChapter(int32 ChapterIndex)
 {
 	EGameState TargetState = EGameState::None;
 
+    UE_LOG(LogTemp, Log, TEXT("TravelToChapter called with ChapterIndex: %d"), ChapterIndex);
+
 	switch (ChapterIndex)
 	{
-	case 1:
+	case 0:
 		TargetState = EGameState::Chapter1;
 		break;
-	case 2:
+	case 1:
 		TargetState = EGameState::Chapter2;
 		break;
-	case 3:
+	case 2:
 		TargetState = EGameState::Chapter3;
 		break;
 	default:
