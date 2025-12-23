@@ -32,6 +32,7 @@ protected:
     UFUNCTION()
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
         class AController* EventInstigator, AActor* DamageCauser) override;
+
 public:	
     //착용할 무기 블루프린트에서 할당함
     UPROPERTY(EditAnywhere, Category = "Combat")
@@ -78,7 +79,11 @@ public:
     FOnEnemyDying OnDeath;
 
 private:
+    // --- 체력 위젯 컴포넌트를 업데이트하는 함수 ---
     void SetupHealthBarWidget();
+
+    // --- 체력 위젯 컴포넌트를 플레이어 방향으로 회전시키는 함수 ---
+    void RotateHealthBarToPlayer();
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")

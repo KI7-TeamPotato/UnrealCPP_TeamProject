@@ -36,6 +36,17 @@ void AEnemyCharacter::BeginPlay()
             SetupHealthBarWidget();
         }
     }
+
+    // 주기적으로 체력바를 플레이어 쪽으로 회전시키는 타이머 설정
+    FTimerHandle RotateTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer
+    (
+        RotateTimerHandle,
+        this,
+        &AEnemyCharacter::RotateHealthBarToPlayer,
+        0.1f,
+        true
+    );
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -165,6 +176,12 @@ float AEnemyCharacter::SetMovementSpeed_Implementation(EEnemySpeed State)
 
 void AEnemyCharacter::OnDie()
 {
+    // 죽으면 바로 위젯 컴포넌트 숨기기
+    if (HealthBarWidget)
+    {
+        HealthBarWidgetComponent->SetVisibility(false);
+    }
+
     if (OnDeath.IsBound())
     {
         OnDeath.Broadcast();
@@ -197,5 +214,19 @@ void AEnemyCharacter::SetupHealthBarWidget()
     if (HealthBarWidget)
     {
         HealthBarWidget->SetHealthPercent(CurrentHealth / MaxHealth);
+    }
+}
+
+void AEnemyCharacter::RotateHealthBarToPlayer()
+{
+    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    if (Player && HealthBarWidget)
+    {
+        // 위젯을 플레이어를 바라보게 회전
+        FVector PlayerLocation = Player->GetActorLocation();
+        FVector WidgetLocation = HealthBarWidgetComponent->GetComponentLocation();
+        FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(WidgetLocation, PlayerLocation);
+        LookAtRotation.Pitch = 0.0f; // 수직 회전은 제거
+        HealthBarWidgetComponent->SetWorldRotation(LookAtRotation);
     }
 }
