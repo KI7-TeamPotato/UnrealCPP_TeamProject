@@ -41,8 +41,8 @@ protected:
     float SightDegree = 0.0f;
 
     //앞으로 가는지 뒤로 가는지, true일때 앞, false일때 뒤
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool bIsPlayerGoingFront = true;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    float playerFrontDirection = 0.0f;
 
     //좌우 방향(0~2, 0일때 왼쪽, 2일때 오른쪽)
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
