@@ -57,8 +57,6 @@ protected:
         bool bFromSweep, 
         const FHitResult& SweepResult);
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWaveComponent> WaveSystemComp;
