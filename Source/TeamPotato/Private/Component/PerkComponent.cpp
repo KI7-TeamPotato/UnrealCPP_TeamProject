@@ -154,7 +154,7 @@ bool UPerkComponent::SwapEquippedPerks(int32 FromIndex, int32 ToIndex)
 	return true;
 }
 
-inline UPerkDataAsset* UPerkComponent::GetEquippedPerkAt(int32 SlotIndex) const
+UPerkDataAsset* UPerkComponent::GetEquippedPerkAt(int32 SlotIndex) const
 {
 	if (EquippedPerks.IsValidIndex(SlotIndex))
 	{
