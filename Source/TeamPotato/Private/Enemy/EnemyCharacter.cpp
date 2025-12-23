@@ -74,24 +74,19 @@ void AEnemyCharacter::WieldWeapon()
 void AEnemyCharacter::DefaultAttack()
 {
     ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
+    
     if (Player)
     {
-        // 2. 나와 플레이어의 위치를 가져옵니다.
         FVector MyLoc = GetActorLocation();
         FVector TargetLoc = Player->GetActorLocation();
 
-        // 3. 높이 차이(Z축)는 무시합니다. (기울어져서 때리면 안 되니까)
         MyLoc.Z = 0.0f;
         TargetLoc.Z = 0.0f;
 
-        // 4. 플레이어를 바라보는 각도를 계산합니다.
         FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
 
-        // 5. 강제로 몸을 돌립니다.
         SetActorRotation(LookAtRot);
 
-        // [중요] 만약 AI 컨트롤러가 회전을 방해한다면 컨트롤러의 시선도 같이 돌려줍니다.
         if (GetController())
         {
             GetController()->SetControlRotation(LookAtRot);
@@ -99,7 +94,7 @@ void AEnemyCharacter::DefaultAttack()
     }
     if (AttackMontage)
     {
-        PlayAnimMontage(AttackMontage);//아직은 몽타주만
+        PlayAnimMontage(AttackMontage);
     }
 }
 
