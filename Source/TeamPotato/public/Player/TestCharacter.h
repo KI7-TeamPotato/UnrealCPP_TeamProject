@@ -257,17 +257,17 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Sword = nullptr;
 
     //총
     //회피(구르기)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> RollMontage_Gun = nullptr;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> BackStepMontage_Gun = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
 
 

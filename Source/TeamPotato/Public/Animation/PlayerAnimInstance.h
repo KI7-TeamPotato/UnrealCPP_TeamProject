@@ -58,4 +58,5 @@ private:
     //플레이어가 움직이는 방향
     FVector2D PlayerMovingDirection;
 
+    const float Reverse = -1;
 };
