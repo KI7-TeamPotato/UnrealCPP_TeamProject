@@ -58,4 +58,6 @@ private:
     //플레이어가 움직이는 방향
     FVector2D PlayerMovingDirection;
 
+    //값을 반전하기 위한 -1상수
+    const float Reverse = -1;
 };

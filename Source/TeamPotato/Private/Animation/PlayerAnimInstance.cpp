@@ -49,6 +49,11 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
         playerFrontDirection = PlayerMovingDirection.X * Speed;
         PlayerSideDirection = PlayerMovingDirection.Y * Speed;
 
+        if ((ActivatedWeapon != EWeaponType::Gun) && (playerFrontDirection > 0))
+        {
+            PlayerSideDirection *= Reverse;
+        }
+
         ////y값 1증가(블렌드 스페이스에서 0~2값 사용), 대각선 방향 보정을 위해 x값 * 0,5 * -y값. smoothstep을 위해 0~1사이로 만들어야 해서 2로 나눔
         //float playerYdirectValue = (PlayerMovingDirection.Y + 1.0f + PlayerMovingDirection.X * 0.5f * (-(PlayerMovingDirection.Y)))/2;     
         //float smoothPlayerDireciton = (playerYdirectValue * playerYdirectValue * (3.0f - 2.0f * playerYdirectValue))*2;                 //smoothstep, 0~2사이 값으로 하기 위해 2곱함
