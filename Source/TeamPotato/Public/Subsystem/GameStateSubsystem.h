@@ -69,4 +69,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<ULevelDataAsset> LevelDataAsset;
+
+    UPROPERTY()
+    TSoftClassPtr<UUserWidget> LoadingWidget;
 };

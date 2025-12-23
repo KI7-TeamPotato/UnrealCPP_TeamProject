@@ -32,15 +32,23 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Game State")
 	EGameState DefaultStartState = EGameState::MainMenu;
 
+    // 캐릭터 데이터 테이블
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Character")
 	TSoftObjectPtr<UDataTable> CharacterDataTable;
 
+    // 사운드 설정
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
     TSoftObjectPtr<USoundMix> MasterSoundMix;
 
+    // 음악 사운드 클래스
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
     TSoftObjectPtr<USoundClass> MusicSoundClass;
 
+    // 효과음 사운드 클래스
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Sound")
     TSoftObjectPtr<USoundClass> SFXSoundClass;
+
+    // 로딩 화면 위젯 클래스
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Widget")
+    TSoftClassPtr<UUserWidget> LoadingWidgetClass;
 };
