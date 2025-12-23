@@ -6,6 +6,7 @@
 #include "Component/WeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/TestCharacter.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AGunWeaponActor::AGunWeaponActor()
@@ -17,6 +18,11 @@ AGunWeaponActor::AGunWeaponActor()
 	WeaponType = EWeaponType::Gun;
     AttackDamage = 10.0f;
     AttackCost = 1.0f;
+
+    // 트레일 초기화
+    ShootEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Trail"));
+    ShootEffect->SetupAttachment(WeaponMesh);
+    ShootEffect->Deactivate();
 }
 
 void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
@@ -71,6 +77,8 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 		MuzzleLocation,
 		ShootDirection.Rotation()
 	);
+
+    ShootEffect->Activate();
 
 	if (Bullet)
 	{

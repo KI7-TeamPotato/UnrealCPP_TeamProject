@@ -56,11 +56,22 @@ void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
     CurrentWeapon->SetOwner(Owner);
     CurrentWeapon->SetOwnerComponent(this);
 
-    CurrentWeapon->AttachToComponent(
-        Owner->GetMesh(),
-        FAttachmentTransformRules::SnapToTargetIncludingScale,
-        TEXT("Weapon_R")
-    );
+    if (CurrentWeapon->GetWeaponType() == EWeaponType::Sword)
+    {
+        CurrentWeapon->AttachToComponent(
+            Owner->GetMesh(),
+            FAttachmentTransformRules::SnapToTargetIncludingScale,
+            TEXT("Weapon_Sword")
+        );
+    }
+    else if (CurrentWeapon->GetWeaponType() == EWeaponType::Gun)
+    {
+        CurrentWeapon->AttachToComponent(
+            Owner->GetMesh(),
+            FAttachmentTransformRules::SnapToTargetIncludingScale,
+            TEXT("Weapon_Gun")
+        );
+    }
 
     // 메인 무기 변경 브로드캐스트
     BroadcastMainWeaponChanged();

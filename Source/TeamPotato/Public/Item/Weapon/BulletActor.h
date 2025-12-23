@@ -36,7 +36,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet")
 	UStaticMeshComponent* BulletMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data|Area")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet")
+    TObjectPtr<class UNiagaraComponent> TrailEffect = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet")
 	TObjectPtr<class UNiagaraSystem> HitEffect = nullptr;
 
 	// 무기 공격 데미지

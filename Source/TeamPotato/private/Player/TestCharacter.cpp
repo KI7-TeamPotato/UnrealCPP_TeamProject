@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "Item/Weapon/WeaponManagerActor.h"
 #include "Item/Weapon/WeaponPickupActor.h"
+#include "Data/WeaponDataAsset.h"
 #include "Item/Weapon/WeaponBoxActor.h"
 #include "Component/WeaponComponent.h"
 #include "Component/PlayerResource.h"
@@ -360,7 +361,8 @@ void ATestCharacter::OnAttackInput()
 
     if (IsActionAvailable())
     {
-        if (UseEnergy(10))
+        float Cost = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackCost;
+        if (UseEnergy(Cost))
         {
             PlayerAnimation->PlayAttackAnimation();
             WeaponComponent->WeaponAttack();
