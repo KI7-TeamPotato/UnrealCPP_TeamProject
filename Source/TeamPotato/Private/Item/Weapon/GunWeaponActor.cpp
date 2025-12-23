@@ -78,8 +78,6 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 		ShootDirection.Rotation()
 	);
 
-    ShootEffect->Activate();
-
 	if (Bullet)
 	{
 		Bullet->SetOwner(GetOwner());

@@ -21,8 +21,8 @@ ASwordWeaponActor::ASwordWeaponActor()
 
 	// 무기 타입 설정
 	WeaponType = EWeaponType::Sword;
-    AttackDamage = 20.0f;
-    AttackCost = 5.0f;
+    AttackDamage = 0.0f;
+    AttackCost = 0.0f;
 }
 
 void ASwordWeaponActor::BeginAttack()
