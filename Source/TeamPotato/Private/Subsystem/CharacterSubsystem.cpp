@@ -3,6 +3,8 @@
 
 #include "Subsystem/CharacterSubsystem.h"
 #include "Common/MyGameSettings.h"
+#include "Player/TestCharacter.h"
+#include "Component/WeaponComponent.h"
 
 void UCharacterSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -58,6 +60,7 @@ void UCharacterSubsystem::LoadAndCacheCharacterData()
 	}
 }
 
+
 // =============================================================
 // 데이터 테이블
 // =============================================================
@@ -85,11 +88,39 @@ void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterTy
 	{
 		SelectedCharacterType = NewCharacterType;
 
+        // 선택된 캐릭터 타입으로 빙의
+        PossessSelectedCharacterType();
+
 		// 실제 캐릭터의 변경된 데이터 처리는 이 델리게이트를 구독한 곳에서 처리
 		OnSelectedCharacterChanged.Broadcast(NewCharacterType);
 
 		UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::SetSelectedCharacterType - Changed to %d"), static_cast<int32>(NewCharacterType));
 	}
+}
+
+
+void UCharacterSubsystem::PossessSelectedCharacterType()
+{
+    // 현재 플레이어 폰의 위치와 회전을 가져옴
+    APawn* CurrentPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+
+    FVector SpawnLocation = CurrentPawn->GetActorLocation();
+    FRotator SpawnRotation = CurrentPawn->GetActorRotation();
+
+    // 현재 플레이어 폰을 제거
+    CurrentPawn->Destroy();
+
+    // 새로운 캐릭터 타입에 해당하는 폰을 스폰
+
+    TSubclassOf<ATestCharacter> SpawnCharacter = CharacterDataCache.Find(SelectedCharacterType)->CharacterClass;
+
+    ATestCharacter* NewPawn = GetWorld()->SpawnActor<ATestCharacter>(SpawnCharacter, SpawnLocation, SpawnRotation);
+    if (NewPawn)
+    {
+        GetWorld()->GetFirstPlayerController()->Possess(NewPawn);
+        NewPawn->GetWeaponComponent()->PickupWeapon(CharacterDataCache.Find(SelectedCharacterType)->DefaultWeaponDataAsset);
+        UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::PossessSelectedCharacterType - Possessed new character of type %d"), static_cast<int32>(SelectedCharacterType));
+    }
 }
 
 bool UCharacterSubsystem::GetSelectedCharacterData(FCharacterDataTableRow& OutData) const

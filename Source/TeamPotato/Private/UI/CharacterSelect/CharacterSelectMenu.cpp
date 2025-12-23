@@ -112,6 +112,7 @@ void UCharacterSelectMenu::OnSelectButtonClicked()
 	CharacterSubsystem->SetSelectedCharacterType(SelectedCharacterData->CharacterType);
 
 	// UI 닫기 추가
+    RemoveFromParent();
 }
 
 void UCharacterSelectMenu::SetCharacterIllustration(UTexture2D* InIllustration)
