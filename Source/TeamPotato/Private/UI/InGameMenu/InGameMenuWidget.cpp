@@ -54,7 +54,7 @@ void UInGameMenuWidget::OnShowCharacterStatButtonClicked()
 void UInGameMenuWidget::OnSettingButtonClicked()
 {
     // 위젯 스위처로 설정 패널로 전환
-    //MenuWidgetSwitcher->SetActiveWidgetIndex(2);
+    MenuWidgetSwitcher->SetActiveWidgetIndex(2);
 }
 void UInGameMenuWidget::OnGiveUpButtonClicked()
 {

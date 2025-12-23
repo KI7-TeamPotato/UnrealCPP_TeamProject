@@ -10,6 +10,7 @@ class UTextBlock;
 class UImage;
 class UProgressBar;
 class UWeaponViewModel;
+class UWeaponDataAsset;
 /**
  * 
  */
@@ -33,27 +34,36 @@ private:
     // --- 뷰모델 바인딩 함수 ---
     // 플레이어에게 있는 무기 공격 가능 자원 변경 함수
     UFUNCTION()
-    void UpdatePlayerResourceBar(float NewResourcePercent);
+    void UpdatePlayerResourceBar(float CurrentResource, float MaxResource);
 
     // 플레이어의 메인 무기 정보 변경 함수 (데이터 에셋 혹은 테이블도 생각)
      UFUNCTION()
-    void UpdateMainWeaponInfo(FText InWeaponName, UTexture2D* InWeaponIcon);
+    void UpdateMainWeaponInfo(UWeaponDataAsset* InDataAsset);
 
     UFUNCTION()
-    void UpdateSubWeaponInfo(UTexture2D* InSubWeaponIcon);
+    void UpdateSubWeaponInfo(UWeaponDataAsset* InDataAsset);
 
 protected:
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UImage> WeaponIconImage;
+    TObjectPtr<UImage> WeaponIconImage = nullptr;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UTextBlock> WeaponName;
+    TObjectPtr<UTextBlock> WeaponName = nullptr;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UImage> SubWeaponIconImage;
+    TObjectPtr<UImage> SubWeaponIconImage = nullptr;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UProgressBar> PlayerResourceBar;
+    TObjectPtr<UProgressBar> PlayerResourceBar = nullptr;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> UsageResourceText = nullptr;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> CurrentEnergyText = nullptr;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> MaxEnergyText = nullptr;
 
 private:
     UPROPERTY()

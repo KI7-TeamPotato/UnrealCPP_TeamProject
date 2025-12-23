@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Data/CharacterTypes.h"
+#include "Data/WeaponDataAsset.h"
 #include "CharacterDataTableRow.generated.h"
+
+class ATestCharacter;
 /**
  * 
  */
@@ -16,14 +19,20 @@ struct FCharacterDataTableRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	ECharacterType CharacterType;
+    ECharacterType CharacterType = ECharacterType::None;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	FString CharacterName;
+    FString CharacterName = "";
+
+    UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+    TSubclassOf<ATestCharacter> CharacterClass = nullptr;
+
+    UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+    TObjectPtr<UWeaponDataAsset> DefaultWeaponDataAsset = nullptr;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	TObjectPtr<UTexture2D> CharacterIcon;
+    TObjectPtr<UTexture2D> CharacterIcon = nullptr;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	TObjectPtr<UTexture2D> CharacterIllustration;
+    TObjectPtr<UTexture2D> CharacterIllustration = nullptr;
 };

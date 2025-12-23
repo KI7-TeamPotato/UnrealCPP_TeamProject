@@ -18,9 +18,18 @@ class TEAMPOTATO_API USaveGameSubsystem : public UGameInstanceSubsystem
 	
 public:
     // --- 로컬에 설정 저장 ---
-    bool SaveSettings(USaveSettings* Settings);
+    bool SaveSettings();
+
     // --- 다른 곳에서 이 서브시스템의 설정 불러오기 ---
     USaveSettings* GetGameSettings();
+
+    // --- MusicVolume을 저장 ---
+    UFUNCTION()
+    void SaveMusicVolume(float InVolume);
+
+    // --- SFXVolume을 저장 ---
+    UFUNCTION()
+    void SaveSFXVolume(float InVolume);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;

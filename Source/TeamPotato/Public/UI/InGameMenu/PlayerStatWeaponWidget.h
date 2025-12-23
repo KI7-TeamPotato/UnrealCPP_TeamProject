@@ -8,6 +8,7 @@
 
 class UWeaponViewModel;
 class UImage;
+class UWeaponDataAsset;
 /**
  * 
  */
@@ -26,10 +27,10 @@ protected:
 
 private:
     UFUNCTION()
-    void UpdateMainWeaponIcon(FText InWeaponName, UTexture2D* InWeaponIcon);
+    void UpdateMainWeaponIcon(UWeaponDataAsset* InDataAsset);
     
     UFUNCTION()
-    void UpdateSubWeaponIcon(UTexture2D* InSubWeaponIcon);
+    void UpdateSubWeaponIcon(UWeaponDataAsset* InDataAsset);
 
     void BindViewModel();
     void UnbindViewModel();

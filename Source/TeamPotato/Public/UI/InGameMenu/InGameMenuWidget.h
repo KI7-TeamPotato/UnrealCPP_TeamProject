@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInGameMenuClosed);
 class UWidgetSwitcher;
 class UPauseMenuWidget;
 class UMenuPlayerStatWidget;
+class UMainMenuSoundOptionWidget;
 class UConfirmPopupWidget;
 /**
  * 
@@ -60,14 +61,17 @@ public:
 
 protected:
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UWidgetSwitcher> MenuWidgetSwitcher;
+    TObjectPtr<UWidgetSwitcher> MenuWidgetSwitcher = nullptr;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UPauseMenuWidget> PauseMenuPanel;
+    TObjectPtr<UPauseMenuWidget> PauseMenuPanel = nullptr;
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UMenuPlayerStatWidget> PlayingPlayerStatPanel;
+    TObjectPtr<UMenuPlayerStatWidget> PlayingPlayerStatPanel = nullptr;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UMainMenuSoundOptionWidget> InGameSoundOptionMenuPanel = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InGameMenu")
-    TSubclassOf<UConfirmPopupWidget> ConfirmPopupWidgetClass;
+    TSubclassOf<UConfirmPopupWidget> ConfirmPopupWidgetClass = nullptr;
 };

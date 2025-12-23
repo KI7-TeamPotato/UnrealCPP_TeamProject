@@ -8,8 +8,7 @@ void UWeaponViewModel::SetResource(float CurrentResource, float MaxResource)
 {
     if (OnPlayerResourceUpdate.IsBound())
     {
-        ResourcePercent = FMath::Clamp(CurrentResource / MaxResource, 0.0f, 1.0f);
-        OnPlayerResourceUpdate.Broadcast(ResourcePercent);
+        OnPlayerResourceUpdate.Broadcast(CurrentResource, MaxResource);
     }
 }
 
@@ -19,7 +18,7 @@ void UWeaponViewModel::SetMainWeapon(UWeaponDataAsset* InWeaponData)
 
     if (OnMainWeaponUpdate.IsBound())
     {
-        OnMainWeaponUpdate.Broadcast(InWeaponData->WeaponName, InWeaponData->WeaponIcon);
+        OnMainWeaponUpdate.Broadcast(InWeaponData);
     
     }
 }
@@ -30,7 +29,7 @@ void UWeaponViewModel::SetSubWeapon(UWeaponDataAsset* InWeaponData)
 
     if (OnSubWeaponUpdate.IsBound())
     {
-        OnSubWeaponUpdate.Broadcast(InWeaponData->WeaponIcon);
+        OnSubWeaponUpdate.Broadcast(InWeaponData);
     }
 }
 
