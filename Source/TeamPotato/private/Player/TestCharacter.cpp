@@ -17,6 +17,7 @@
 #include "Blueprint/UserWidget.h"
 #include "IntetFace/Interactable.h"
 #include "Component/PerkComponent.h"
+#include "Subsystem/CharacterSubsystem.h"
 
 
 // Sets default values
@@ -81,6 +82,14 @@ void ATestCharacter::BeginPlay()
             CrosshairWidget->AddToViewport();
             CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
         }
+    }
+
+    // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
+    UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+    if (CharacterSubsystem)
+    {
+        WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedMainWeapon());
+        WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
 }
 

@@ -60,7 +60,6 @@ void UCharacterSubsystem::LoadAndCacheCharacterData()
 	}
 }
 
-
 // =============================================================
 // 데이터 테이블
 // =============================================================
@@ -84,9 +83,12 @@ bool UCharacterSubsystem::GetCharacterData(ECharacterType CharacterType, FCharac
 // 선택된 캐릭터 타입 설정
 void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterType)
 {
-	if (SelectedCharacterType != NewCharacterType)
+	if (CurrentPlayerData.SelectedCharacter != NewCharacterType)
 	{
-		SelectedCharacterType = NewCharacterType;
+        // 캐릭터 변경시에 기본 캐릭터 상태로 초기화
+        CurrentPlayerData.SelectedCharacter = NewCharacterType;
+        CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
+        CurrentPlayerData.EquippedSubWeapon = nullptr;
 
         // 선택된 캐릭터 타입으로 빙의
         PossessSelectedCharacterType();
@@ -98,7 +100,28 @@ void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterTy
 	}
 }
 
+void UCharacterSubsystem::SetEquippedMainWeapon(UWeaponDataAsset* NewMainWeapon)
+{
+    if (CurrentPlayerData.EquippedMainWeapon != NewMainWeapon)
+    {
+        CurrentPlayerData.EquippedMainWeapon = NewMainWeapon;
+    }
+}
 
+void UCharacterSubsystem::SetEquippedSubWeapon(UWeaponDataAsset* NewSubWeapon)
+{
+    if (CurrentPlayerData.EquippedSubWeapon != NewSubWeapon)
+    {
+        CurrentPlayerData.EquippedSubWeapon = NewSubWeapon;
+    }
+}
+
+bool UCharacterSubsystem::GetSelectedCharacterData(FCharacterDataTableRow& OutData) const
+{
+    return GetCharacterData(CurrentPlayerData.SelectedCharacter, OutData);
+}
+
+// 선택된 캐릭터 타입으로 빙의
 void UCharacterSubsystem::PossessSelectedCharacterType()
 {
     // 현재 플레이어 폰의 위치와 회전을 가져옴
@@ -111,21 +134,16 @@ void UCharacterSubsystem::PossessSelectedCharacterType()
     CurrentPawn->Destroy();
 
     // 새로운 캐릭터 타입에 해당하는 폰을 스폰
-
-    TSubclassOf<ATestCharacter> SpawnCharacter = CharacterDataCache.Find(SelectedCharacterType)->CharacterClass;
+    TSubclassOf<ATestCharacter> SpawnCharacter = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterClass;
 
     ATestCharacter* NewPawn = GetWorld()->SpawnActor<ATestCharacter>(SpawnCharacter, SpawnLocation, SpawnRotation);
     if (NewPawn)
     {
         GetWorld()->GetFirstPlayerController()->Possess(NewPawn);
-        NewPawn->GetWeaponComponent()->PickupWeapon(CharacterDataCache.Find(SelectedCharacterType)->DefaultWeaponDataAsset);
-        UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::PossessSelectedCharacterType - Possessed new character of type %d"), static_cast<int32>(SelectedCharacterType));
-    }
-}
 
-bool UCharacterSubsystem::GetSelectedCharacterData(FCharacterDataTableRow& OutData) const
-{
-	return GetCharacterData(SelectedCharacterType, OutData);
+        // 플레이어 beginPlay에서 처리
+        //NewPawn->GetWeaponComponent()->PickupWeapon(CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset);
+    }
 }
 
 

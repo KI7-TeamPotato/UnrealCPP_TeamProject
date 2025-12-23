@@ -44,6 +44,8 @@ void UGameStateSubsystem::SetGameState(EGameState NewState)
 	EGameState OldState = CurrentGameState;
 	CurrentGameState = NewState;
 
+    UE_LOG(LogTemp, Log, TEXT("Game state changed from %d to %d"), static_cast<int32>(OldState), static_cast<int32>(NewState));
+
 	OnGameStateChanged.Broadcast(OldState, NewState);
 }
 
@@ -137,17 +139,8 @@ void UGameStateSubsystem::ExecuteLevelTravel(const FLevelData& LevelData)
                 UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelPath));
             }));
 	}
-	else if (!LevelData.LevelName.IsNone())
-	{
-        UE_LOG(LogTemp, Log, TEXT("Level name path: %s"), *LevelData.LevelName.ToString());
-
-		UGameplayStatics::OpenLevel(GetWorld(), LevelData.LevelName);
-	}
 	else 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("LevelData for state %d has no valid level asset or name."), static_cast<int32>(LevelData.GameState));
 	}
-
-    // OpenLevel을 활용한 레벨 이동
-    //UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelPath));
 }
