@@ -9,6 +9,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkStateChanged, UPerkDataAsset*, InData);
 
+class UPerkDataAsset;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAMPOTATO_API UPerkComponent : public UActorComponent
 {

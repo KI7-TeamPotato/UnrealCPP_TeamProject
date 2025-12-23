@@ -14,8 +14,8 @@ class TEAMPOTATO_API AAssassinEnemy : public AEnemyCharacter
 {
 	GENERATED_BODY()
 
-    AAssassinEnemy();
 public:
+    AAssassinEnemy();
 
     //인터페이스 함수 오버라이드, EnumBase에 있는 열거형에 따라 상태별 속도 설정
     virtual float SetMovementSpeed_Implementation(EEnemySpeed State) override;

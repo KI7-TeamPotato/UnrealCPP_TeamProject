@@ -5,6 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
 // Sets default values
@@ -33,6 +34,11 @@ ABulletActor::ABulletActor()
 	BulletMesh->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
 	BulletMesh->SetupAttachment(RootComponent);
 	BulletMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    // 트레일 초기화
+    TrailEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Trail"));
+    TrailEffect->SetupAttachment(BulletMesh);
+    TrailEffect->Activate();
 
 	// 충돌 델리게이트 설정
 	BulletCollision->OnComponentHit.AddDynamic(this, &ABulletActor::OnHit);
