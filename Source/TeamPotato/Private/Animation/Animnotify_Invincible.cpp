@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Animaiton/Animnotify_Invincible.h"
+#include "Animation/Animnotify_Invincible.h"
 #include "Player/TestCharacter.h"
 
 void UAnimnotify_Invincible::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

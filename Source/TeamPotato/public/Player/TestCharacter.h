@@ -77,6 +77,7 @@ public:
     //총 상태에서 회피 애니메이션 재생시 원활하게 움직이도록 AnimInstance의 RootMotionMode::IgnoreRootMotion 설정
     UFUNCTION()
     void SetAnimRootMotionIgnore();
+
     //RootMotionMode::RootMotionFromMontagesOnly으로 원상복구
     UFUNCTION()
     void SetAnimRootMotionFromMontage();
@@ -117,16 +118,20 @@ public:
     inline float GetSightDegree() { return SightDegree; }
 
     //마지막으로 입력받은 값을 enum으로 반환
-    UFUNCTION()
-    EMovingDirection GetLastInput();
+    UFUNCTION(BlueprintCallable, Category = "Direction")
+    inline FVector2D GetLastInput() { return LastInput; }
+
+    EMovingDirection GetPlayerDirection();
 
     //Setter
     //행동중인지 설정
     UFUNCTION()
     void SetOnActing(bool InActing);
 
-    //활성화 된 무기 설정
-    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SetOnAttacking(bool InAttacking);
+
+	//활성화 된 무기 설정
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
 protected:
@@ -189,10 +194,12 @@ public:
     AActor* CurrentInteractTarget = nullptr;
 
 protected:
-    //IA
-    //이동 입력
+	//IA
+	//이동 입력
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
-    TObjectPtr<UInputAction> IA_FrontMove = nullptr;
+    TObjectPtr<UInputAction> IA_Move = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+	TObjectPtr<UInputAction> IA_FrontMove = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
     TObjectPtr<UInputAction> IA_SideMove = nullptr;
     //횡방향 마우스 이동
@@ -295,8 +302,11 @@ private:
     //플레이어가 행동중인지 확인
     bool bIsOnAction = false;
 
-    //시야각
-    float SightDegree = 0.0f;
+    //플레이어가 공격중인지 확인
+    bool bIsOnAttacking = false;
+
+	//시야각
+	float SightDegree = 0.0f;
 
     //피격무적 시간
     float OnHitInvincibleTime = 1.0f;
@@ -322,8 +332,10 @@ private:
     EWeaponType ActivatedWeapon = EWeaponType::None;
 
     //마지막 입력 저장하는 함수
-    float FrontBackMove = 0.0f;
-    float SideMove = 0.0f;
+    /*float FrontBackMove = 0.0f;
+    float SideMove = 0.0f;*/
+
+    FVector2D LastInput;
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;

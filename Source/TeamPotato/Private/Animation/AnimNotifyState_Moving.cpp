@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Animaiton/AnimNotifyState_Moving.h"
+#include "Animation/AnimNotifyState_Moving.h"
 #include "Player/TestCharacter.h"
 
 void UAnimNotifyState_Moving::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

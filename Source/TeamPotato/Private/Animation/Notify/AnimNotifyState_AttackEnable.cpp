@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Animaiton/Notify/AnimNotifyState_AttackEnable.h"
+#include "Animation/Notify/AnimNotifyState_AttackEnable.h"
 #include "Player/TestCharacter.h"
 #include "Component/WeaponComponent.h"
 #include "Item/Weapon/WeaponBase.h"
