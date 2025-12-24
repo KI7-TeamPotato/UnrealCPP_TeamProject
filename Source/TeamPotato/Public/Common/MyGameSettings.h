@@ -51,4 +51,9 @@ public:
     // 로딩 화면 위젯 클래스
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Widget")
     TSoftClassPtr<UUserWidget> LoadingWidgetClass;
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Minimap")
+    TSoftObjectPtr<UMaterialInterface> MinimapBaseMaterial;
+
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Minimap")
+    TSoftObjectPtr<UTexture2D> MinimapPlayerIcon;
 };

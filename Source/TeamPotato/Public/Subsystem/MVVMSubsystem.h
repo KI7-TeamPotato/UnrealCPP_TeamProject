@@ -10,7 +10,7 @@ class UPlayerStatusViewModel;
 class UPerkViewModel;
 class UWeaponViewModel;
 class UItemViewModel;
-
+class UMinimapViewModel;
 class UPlayerResource;
 class UPerkComponent;
 class UWeaponComponent;
@@ -32,6 +32,8 @@ public:
     UWeaponViewModel* GetWeaponViewModel();
     UFUNCTION(BlueprintPure)
     UItemViewModel* GetItemViewModel();
+    UFUNCTION(BlueprintPure)
+    UMinimapViewModel* GetMinimapViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
@@ -55,6 +57,12 @@ public:
     UFUNCTION()
     void UnregisterWeaponComp(class UWeaponComponent* ExitingComp);
 
+    // --- DungeonGenerator 액터 등록 및 해제 함수 ---
+    UFUNCTION()
+    void RegisterDungeonGeneratorActor(class ADungeonGanarator* NewActor);
+    UFUNCTION()
+    void UnregisterDungeonGeneratorActor(class ADungeonGanarator* ExitingActor);
+
 private:
 	UPROPERTY()
 	TObjectPtr<UPlayerStatusViewModel> PlayerStatusViewModel;
@@ -67,5 +75,7 @@ private:
 
     UPROPERTY()
     TObjectPtr<UItemViewModel> ItemViewModel;
-
+    
+    UPROPERTY()
+    TObjectPtr<UMinimapViewModel> MinimapViewModel;
 };

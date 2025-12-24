@@ -7,6 +7,9 @@
 #include "DungeonGanarator.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateDungeonEnded);
 
+// 던전 생성 완료시에 최대, 최소 지점 알려주는 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDungeonGenerationCompleted, FVector2D, InMinPoint, FVector2D, InMaxPoint);
+
 USTRUCT(BlueprintType)
 struct FStageRoomConfig
 {
@@ -107,6 +110,15 @@ public:
 
     UFUNCTION(BlueprintCallable)
     int32 GetChapter() const { return chapter; }
+
+
+    //=================================
+    //=================================
+    //=================================
+    // 던전 생성 완료 델리게이트
+    UPROPERTY(BlueprintAssignable, Category = "DungeonGanarator|Delegate")
+    FOnDungeonGenerationCompleted OnDungeonGenerationCompleted;
+
 protected:
 	//마지막으로 생성된 방
 	ARoomBase* LastestSpawnRoom = nullptr;
@@ -172,9 +184,16 @@ protected:
 
     UFUNCTION(BlueprintCallable)
     void GoToNextStage(int32 NewChapter);
+
+    //=================================
+    //=================================
+    //=================================
+    //던전 크기 계산 함수
+    void CalculateDungeonMinMaxPoint();
+
 private:
 	//벽이랑 복도등 모든 요소 저장하는 배열(ResetDungeon에서 맵 리셋할떄 씀)
-	UPROPERTY()
+    UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
 	TArray<AActor*> GeneratedActors;
 
 	//RoomAmount를 실시간으로 감소시키면서 방을 생성하기 때문에 RoomAmount의 초기값을 저장해야 함, 그ㅡ때쓰는 변수
@@ -192,6 +211,7 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 	// Called every frame

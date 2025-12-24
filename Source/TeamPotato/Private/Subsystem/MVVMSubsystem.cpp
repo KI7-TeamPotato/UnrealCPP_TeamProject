@@ -9,7 +9,9 @@
 #include "Subsystem/ViewModel/PerkViewModel.h"
 #include "Subsystem/ViewModel/WeaponViewModel.h"
 #include "Subsystem/ViewModel/ItemViewModel.h"
+#include "Subsystem/ViewModel/MinimapViewModel.h"
 #include "Data/WeaponDataAsset.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {
@@ -45,6 +47,14 @@ UItemViewModel* UMVVMSubsystem::GetItemViewModel()
         ItemViewModel = NewObject<UItemViewModel>(this);
     }
     return ItemViewModel;
+
+UMinimapViewModel* UMVVMSubsystem::GetMinimapViewModel()
+{
+    if (!MinimapViewModel)
+    {
+        MinimapViewModel = NewObject<UMinimapViewModel>(this);
+    }
+    return MinimapViewModel;
 }
 
 
@@ -133,3 +143,26 @@ void UMVVMSubsystem::UnregisterWeaponComp(UWeaponComponent* ExitingComp)
         ExitingComp->OnSubWeaponChanged.RemoveDynamic(WeaponViewModel, &UWeaponViewModel::SetSubWeapon);
     }
 }
+
+void UMVVMSubsystem::RegisterDungeonGeneratorActor(ADungeonGanarator* NewActor)
+{
+    if (!NewActor) return;
+
+    UnregisterDungeonGeneratorActor(NewActor);
+
+    // 뷰모델 가져오기
+    UMinimapViewModel* VM = GetMinimapViewModel();
+
+    // DungeonGenerator -> ViewModel -> 던전 생성 완료 알림 뿌림
+    NewActor->OnDungeonGenerationCompleted.AddDynamic(VM, &UMinimapViewModel::RequestMinimapCapture);
+}
+
+void UMVVMSubsystem::UnregisterDungeonGeneratorActor(ADungeonGanarator* ExitingActor)
+{
+    if (ExitingActor && MinimapViewModel)
+    {
+        // 델리게이트 언바인딩
+        ExitingActor->OnDungeonGenerationCompleted.RemoveDynamic(MinimapViewModel, &UMinimapViewModel::RequestMinimapCapture);
+    }
+}
+
