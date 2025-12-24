@@ -422,16 +422,6 @@ void ATestCharacter::OnHitInvincible()
     );
 }
 
-void ATestCharacter::SetCurrentInput(const FInputActionValue& InValue)
-{
-    UE_LOG(LogTemp, Log, TEXT("Input Finished"));
-}
-
-void ATestCharacter::SetLastInput(const FInputActionValue& InValue)
-{
-    LastInput = CurrentInput;
-}
-
 void ATestCharacter::OnWeaponSwap()
 {
     WeaponComponent->SwapWeapon();

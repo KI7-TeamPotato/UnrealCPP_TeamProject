@@ -47,30 +47,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
         //플레이어의 움직이는 방향 구하기
         PlayerCurrentInput = MainPlayer->GetCurrentInput();
 
-        /*if (PlayerCurrentInput != PlayerLastInput)
-        {
-            turningTime += DeltaSeconds;
-            float turningXDirection = turningTime * (PlayerCurrentInput.X - PlayerLastInput.X);
-            float turningYDirection = turningTime * (PlayerCurrentInput.Y - PlayerLastInput.Y);
-
-            if ((turningXDirection == PlayerCurrentInput.X) && (turningYDirection == PlayerCurrentInput.Y))
-            {
-                PlayerLastInput = PlayerCurrentInput;
-                turningTime = 0.0f;
-            }
-            else
-            {
-                playerFrontDirection *= PlayerTurningCurve ? PlayerTurningCurve->GetFloatValue(turningXDirection) : 0.0f;
-                PlayerSideDirection *= PlayerTurningCurve ? PlayerTurningCurve->GetFloatValue(turningYDirection) : 0.0f;
-            }
-        }*/
-
         playerFrontDirection = (PlayerCurrentInput.X) * Speed;
         PlayerSideDirection = (PlayerCurrentInput.Y) * Speed;
 
-        if ((ActivatedWeapon != EWeaponType::Gun) && (playerFrontDirection > 0))
+        /*if ((ActivatedWeapon != EWeaponType::Gun) && (playerFrontDirection > 0))
         {
             PlayerSideDirection *= Reverse;
-        }
+        }*/
 	}
 }

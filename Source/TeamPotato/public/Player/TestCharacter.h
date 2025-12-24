@@ -119,11 +119,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Sight")
     inline float GetSightDegree() { return SightDegree; }
 
-    //마지막으로 입력받은 값을 enum으로 반환
     UFUNCTION(BlueprintCallable, Category = "Direction")
     inline FVector2D GetCurrentInput() { return CurrentInput; }
-    UFUNCTION(BlueprintCallable, Category = "Direction")
-    inline FVector2D GetLastInput() { return LastInput; }
 
     EMovingDirection GetPlayerDirection();
 
@@ -194,12 +191,6 @@ private:
 
     UFUNCTION()
     void OnHitInvincible();
-
-    UFUNCTION()
-    void SetCurrentInput(const FInputActionValue& InValue);
-
-    UFUNCTION()
-    void SetLastInput(const FInputActionValue& InValue);
 
 public:
     // 상호작용 대상
@@ -361,9 +352,8 @@ private:
     /*float FrontBackMove = 0.0f;
     float SideMove = 0.0f;*/
 
+    //움직이는 방향 입력값
     FVector2D CurrentInput = FVector2D(0.0f, 0.0f);
-    FVector2D TempInput = FVector2D(0.0f, 0.0f);
-    FVector2D LastInput = FVector2D(0.0f, 0.0f);
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;
