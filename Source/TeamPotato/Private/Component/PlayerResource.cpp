@@ -76,9 +76,14 @@ void UPlayerResource::Heal(float InHeal)
 
 bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
 {
+    
     if (IsEnergyRemain(InUseStaminaAmount))
     {
         Energy -= InUseStaminaAmount;
+        if (Energy > MaxEnergy)
+        {
+            Energy = MaxEnergy;
+        }
         UE_LOG(LogTemp, Log, TEXT("Stamina : %f"), Energy);
         // 에너지 변경 브로드캐스트 시도
         BroadcastEnergyChanged();
@@ -89,16 +94,6 @@ bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
         UE_LOG(LogTemp, Log, TEXT("No Stamina"));
         return false;
     }
-
-    /*if (IsStaminaRemain(InUseStaminaAmount))
-    {
-        Stamina -= InUseStaminaAmount;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("No Stamina"));
-        return false;
-    }*/
 }
 
 void UPlayerResource::AddGold(int32 InGold)

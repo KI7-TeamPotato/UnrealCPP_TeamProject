@@ -29,16 +29,6 @@ void AWeaponBase::BeginPlay()
 
 void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
 {
-    if (!OwningPlayer) return;
-
-    UPlayerResource* Resource = OwningPlayer->GetResource();
-    if (!Resource)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Resource is NULL in Attack"));
-        return;
-    }
-
-    Resource->UseEnergy(AttackCost);
 }
 
 void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)
