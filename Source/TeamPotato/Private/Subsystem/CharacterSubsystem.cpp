@@ -17,11 +17,11 @@ void UCharacterSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     {
         UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Initialize - Character data loaded and cached successfully. Total Characters: %d"), CharacterDataCache.Num());
         // 초기 선택된 캐릭터 타입 설정 (데이터 테이블의 첫 번째 캐릭터)
-        CurrentPlayerData.SelectedCharacter = CharacterDataCache.CreateConstIterator().Key();
-        CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset;
-        CurrentPlayerData.EquippedSubWeapon = nullptr;
-        CurrentPlayerData.PlayerIcon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterIcon;
-        CurrentPlayerData.PlayerIllustration = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterIllustration;
+        PlayerSaveData.SelectedCharacterType = CharacterDataCache.CreateConstIterator().Key();
+        PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->DefaultWeaponDataAsset;
+        PlayerSaveData.EquippedSubWeapon = nullptr;
+        PlayerSaveData.PlayerIcon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIcon;
+        PlayerSaveData.PlayerIllustration = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIllustration;
     }
 }
 
@@ -75,22 +75,27 @@ void UCharacterSubsystem::LoadAndCacheCharacterData()
 // 데이터 테이블
 // =============================================================
 
-// 특정 캐릭터의 행 데이터를 OutData에 담아서 반환
-bool UCharacterSubsystem::GetCharacterData(ECharacterType CharacterType, FCharacterDataTableRow& OutData) const
+const FCharacterDataTableRow& UCharacterSubsystem::GetCharacterDataRowByType(ECharacterType InCharacterType) const
 {
-	const FCharacterDataTableRow* FoundData = CharacterDataCache.Find(CharacterType);
-	if (FoundData)
-	{
-		OutData = *FoundData;
-		return true;
-	}
-	return false;
+    const FCharacterDataTableRow* FoundRow = CharacterDataCache.Find(InCharacterType);
+
+    if (FoundRow)
+    {
+        return *FoundRow;
+    }
+    else
+    {
+        // 기본값 반환 또는 예외 처리
+        UE_LOG(LogTemp, Error, TEXT("UCharacterSubsystem::GetCharacterDataRowByType - Character type %d not found in cache"), static_cast<int32>(InCharacterType));
+        static FCharacterDataTableRow DefaultRow;
+        return DefaultRow;
+    }
 }
 
 void UCharacterSubsystem::ResetPlayerDataToInitialState()
 {
-    CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset;
-    CurrentPlayerData.EquippedSubWeapon = nullptr;
+    PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->DefaultWeaponDataAsset;
+    PlayerSaveData.EquippedSubWeapon = nullptr;
 }
 
 // =============================================================
@@ -102,13 +107,13 @@ void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterTy
 {
 
     // 캐릭터 변경시에 기본 캐릭터 상태로 초기화
-    CurrentPlayerData.SelectedCharacter = NewCharacterType;
-    CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
-    CurrentPlayerData.EquippedSubWeapon = nullptr;
-    CurrentPlayerData.PlayerIcon = CharacterDataCache.Find(NewCharacterType)->CharacterIcon;
+    PlayerSaveData.SelectedCharacterType = NewCharacterType;
+    PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
+    PlayerSaveData.EquippedSubWeapon = nullptr;
+    PlayerSaveData.PlayerIcon = CharacterDataCache.Find(NewCharacterType)->CharacterIcon;
 
     // 선택된 캐릭터 타입으로 빙의
-    PossessSelectedCharacterType();
+    PossessSelectedCharacterType(PlayerSaveData.SelectedCharacterType);
 
 	// 실제 캐릭터의 변경된 데이터 처리는 이 델리게이트를 구독한 곳에서 처리
 	OnSelectedCharacterChanged.Broadcast();
@@ -118,27 +123,22 @@ void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterTy
 
 void UCharacterSubsystem::SetEquippedMainWeapon(UWeaponDataAsset* NewMainWeapon)
 {
-    if (CurrentPlayerData.EquippedMainWeapon != NewMainWeapon)
+    if (PlayerSaveData.EquippedMainWeapon != NewMainWeapon)
     {
-        CurrentPlayerData.EquippedMainWeapon = NewMainWeapon;
+        PlayerSaveData.EquippedMainWeapon = NewMainWeapon;
     }
 }
 
 void UCharacterSubsystem::SetEquippedSubWeapon(UWeaponDataAsset* NewSubWeapon)
 {
-    if (CurrentPlayerData.EquippedSubWeapon != NewSubWeapon)
+    if (PlayerSaveData.EquippedSubWeapon != NewSubWeapon)
     {
-        CurrentPlayerData.EquippedSubWeapon = NewSubWeapon;
+        PlayerSaveData.EquippedSubWeapon = NewSubWeapon;
     }
 }
 
-bool UCharacterSubsystem::GetSelectedCharacterData(FCharacterDataTableRow& OutData) const
-{
-    return GetCharacterData(CurrentPlayerData.SelectedCharacter, OutData);
-}
-
 // 선택된 캐릭터 타입으로 빙의
-void UCharacterSubsystem::PossessSelectedCharacterType()
+void UCharacterSubsystem::PossessSelectedCharacterType(ECharacterType InCharacterType)
 {
     // 현재 플레이어 폰의 위치와 회전을 가져옴
     APawn* CurrentPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
@@ -150,7 +150,7 @@ void UCharacterSubsystem::PossessSelectedCharacterType()
     CurrentPawn->Destroy();
 
     // 새로운 캐릭터 타입에 해당하는 폰을 스폰
-    TSubclassOf<ATestCharacter> SpawnCharacter = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterClass;
+    TSubclassOf<ATestCharacter> SpawnCharacter = CharacterDataCache.Find(InCharacterType)->CharacterClass;
 
     ATestCharacter* NewPawn = GetWorld()->SpawnActor<ATestCharacter>(SpawnCharacter, SpawnLocation, SpawnRotation);
     if (NewPawn)

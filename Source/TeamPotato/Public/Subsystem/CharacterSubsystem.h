@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Data/CharacterTypes.h"
 #include "Data/CharacterDataTableRow.h"
 #include "Data/WeaponDataAsset.h"
+#include "Subsystem/Save/PlayerSaveData.h"
 #include "CharacterSubsystem.generated.h"
 
 // 델리게이트 선언: 선택된 캐릭터 타입이 변경되었을 때 알림
@@ -15,16 +15,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectedCharacterChanged);
 /**
  * 
  */
-struct PlayerSaveData
-{
-public:
-    // 초기 캐릭터는 전사로 설정
-    ECharacterType SelectedCharacter = ECharacterType::Warrior;
-    UWeaponDataAsset* EquippedMainWeapon = nullptr;
-    UWeaponDataAsset* EquippedSubWeapon = nullptr;
-    UTexture2D* PlayerIcon = nullptr;
-    UTexture2D* PlayerIllustration = nullptr;
-};
 
 // ==============================================================
 // 플레이어 정보를 통합하여 관리하는 서브시스템
@@ -46,12 +36,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Character Subsystem|Character")
 	UDataTable* GetCharacterDataTable() const { return CharacterDataTable; }
 
-	// 특정 캐릭터 타입의 데이터 반환
-	UFUNCTION(BlueprintPure, Category = "Character Subsystem|Character")
-	bool GetCharacterData(ECharacterType CharacterType, FCharacterDataTableRow& OutData) const;
-
 	//모든 캐릭터 데이터 반환
 	const TMap<ECharacterType, FCharacterDataTableRow>& GetAllCharacterDataMap() const { return CharacterDataCache; }
+
+    // 캐릭터 타입으로 캐릭터 테이블의 행을 반환
+    const FCharacterDataTableRow& GetCharacterDataRowByType(ECharacterType InCharacterType) const;
+
 
     // 현재 플레이어 타입의 초기 상태로 리셋
     UFUNCTION(BlueprintCallable, Category = "Character")
@@ -59,6 +49,7 @@ public:
 
 	// =============================================================
 	// 진행 중의 플레이어 정보
+    // Setters
 	// =============================================================
 
 	// 선택된 캐릭터 타입 설정
@@ -75,35 +66,39 @@ public:
 
     // 플레이어 아이콘 설정
     UFUNCTION(BlueprintCallable, Category = "Character")
-    void SetPlayerIcon(UTexture2D* NewIcon) { CurrentPlayerData.PlayerIcon = NewIcon; }
+    void SetPlayerIcon(UTexture2D* NewIcon) { PlayerSaveData.PlayerIcon = NewIcon; }
 
     // 플레이어 일러스트 설정
     UFUNCTION(BlueprintCallable, Category = "Character")
-    void SetPlayerIllustration(UTexture2D* NewIllust) { CurrentPlayerData.PlayerIllustration = NewIllust; }
+    void SetPlayerIllustration(UTexture2D* NewIllust) { PlayerSaveData.PlayerIllustration = NewIllust; }
+
+    // =============================================================
+    // Getters
+    // =============================================================
+    
+    // 현재 캐릭터의 데이터 반환
+    UFUNCTION(BlueprintPure, Category = "Character")
+    const FPlayerSaveData& GetCurrentPlayerData() { return PlayerSaveData; }
 
 	// 선택된 캐릭터 타입 반환
 	UFUNCTION(BlueprintPure, Category = "Character")
-	ECharacterType GetSelectedCharacterType() const { return CurrentPlayerData.SelectedCharacter; }
+	ECharacterType GetSelectedCharacterType() const { return PlayerSaveData.SelectedCharacterType; }
 
     // 장착 중인 메인 무기 반환
     UFUNCTION(BlueprintPure, Category = "Weapon")
-    UWeaponDataAsset* GetEquippedMainWeapon() const { return CurrentPlayerData.EquippedMainWeapon; }
+    UWeaponDataAsset* GetEquippedMainWeapon() const { return PlayerSaveData.EquippedMainWeapon; }
 
     // 장착 중인 서브 무기 반환
     UFUNCTION(BlueprintPure, Category = "Weapon")
-    UWeaponDataAsset* GetEquippedSubWeapon() const { return CurrentPlayerData.EquippedSubWeapon; }
+    UWeaponDataAsset* GetEquippedSubWeapon() const { return PlayerSaveData.EquippedSubWeapon; }
 
     // 플레이어 아이콘 반환
     UFUNCTION(BlueprintPure, Category = "Character")
-    UTexture2D* GetPlayerIcon() const { return CurrentPlayerData.PlayerIcon; }
+    UTexture2D* GetPlayerIcon() const { return PlayerSaveData.PlayerIcon; }
 
     // 플레이어 일러스트 반환
     UFUNCTION(BlueprintPure, Category = "Character")
-    UTexture2D* GetPlayerIllustration() const { return CurrentPlayerData.PlayerIllustration; }
-
-	// 선택된 캐릭터의 데이터 반환
-	UFUNCTION(BlueprintPure, Category = "Character")
-	bool GetSelectedCharacterData(FCharacterDataTableRow& OutData) const;
+    UTexture2D* GetPlayerIllustration() const { return PlayerSaveData.PlayerIllustration; }
 
 	// =============================================================
 	// 델리게이트
@@ -116,11 +111,11 @@ private:
 	void LoadAndCacheCharacterData();
 
     // 선택된 캐릭터 타입으로 빙의
-    void PossessSelectedCharacterType();
+    void PossessSelectedCharacterType(ECharacterType InCharacterType);
     
-// ===================================================================================
-// 변수
-// ===================================================================================
+    // ===================================================================================
+    // 변수
+    // ===================================================================================
 private:
     //=============================================================
     // 기본 캐릭터의 데이터(로비 진입 시(캐릭터 상태 초기화)시에만 사용)
@@ -139,5 +134,5 @@ private:
     //=============================================================
 
 	// 이번 게임의 선택된 캐릭터 정보(로비로 이동하면 캐릭터 타입을 제외하고 전부 초기화, 이후 챕터 진행에서는 저장)
-    PlayerSaveData CurrentPlayerData;
+    FPlayerSaveData PlayerSaveData;  
 };

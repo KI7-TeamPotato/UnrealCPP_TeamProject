@@ -2,6 +2,7 @@
 
 
 #include "UI/CharacterSelect/CharacterSelectMenu.h"
+#include "UI/CharacterSelect/CharacterSelectDetailWidget.h"
 #include "Components/TileView.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
@@ -101,7 +102,7 @@ void UCharacterSelectMenu::OnCharacterPreviewTileSelected(UObject* SelectedItem)
 	{
 		SelectedCharacterData = CharacterDataObj;
 
-		SetCharacterIllustration(CharacterDataObj->CharacterIllustration);
+        CharacterSelectDetailPanel->UpdateCharacterDetails(SelectedCharacterData->CharacterType);
 
 		if (SelectButton)
 		{
@@ -133,14 +134,5 @@ void UCharacterSelectMenu::OnSelectButtonClicked()
 
 	// UI 닫기 추가
     RemoveFromParent();
-}
-
-void UCharacterSelectMenu::SetCharacterIllustration(UTexture2D* InIllustration)
-{
-	if (CharacterDetailImage && InIllustration)
-	{
-        CharacterDetailImage->SetBrushFromTexture(InIllustration);
-        CharacterDetailImage->SetVisibility(ESlateVisibility::Visible);
-	}
 }
 

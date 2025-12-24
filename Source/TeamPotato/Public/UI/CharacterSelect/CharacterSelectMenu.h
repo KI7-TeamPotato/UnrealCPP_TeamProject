@@ -9,6 +9,7 @@
 
 class UCharacterDataObject;
 class UCharacterSubsystem;
+class UCharacterSelectDetailWidget;
 /**
  * 
  */
@@ -35,14 +36,14 @@ private:
 	UCharacterSubsystem* GetCharacterSubsystem() const;
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<class UTileView> CharacterTileView = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> CharacterDetailImage = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<class UButton> SelectButton = nullptr;
+    
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UCharacterSelectDetailWidget> CharacterSelectDetailPanel = nullptr;
 
 private:
 	UPROPERTY()
