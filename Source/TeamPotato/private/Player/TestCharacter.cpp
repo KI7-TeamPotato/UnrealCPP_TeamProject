@@ -373,6 +373,10 @@ void ATestCharacter::OnAttackInput()
             WeaponComponent->WeaponAttack();
         }
     }
+    else if (bIsOnAttacking && bIsComboInputAvailable)
+    {
+        bIsOnComboInput = true;
+    }
 }
 
 void ATestCharacter::OnSkillInput()

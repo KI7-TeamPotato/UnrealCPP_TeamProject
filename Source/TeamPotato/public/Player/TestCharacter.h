@@ -195,6 +195,14 @@ public:
     UPROPERTY()
     AActor* CurrentInteractTarget = nullptr;
 
+    //공격중에 콤보 공격을 입력했는지
+    UPROPERTY()
+    bool bIsOnComboInput = false;
+
+    //콤보공격 입력을 받을 수 있는지
+    UPROPERTY()
+    bool bIsComboInputAvailable = false;
+
 protected:
 	//IA
 	//이동 입력
@@ -308,6 +316,7 @@ private:
 
     //플레이어가 공격중인지 확인
     bool bIsOnAttacking = false;
+
 
 	//시야각
 	float SightDegree = 0.0f;

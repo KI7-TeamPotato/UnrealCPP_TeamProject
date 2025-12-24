@@ -23,4 +23,4 @@ public:
 
 private:
     TWeakObjectPtr<class ATestCharacter> OwnerCharacter = nullptr;
-}
+};
