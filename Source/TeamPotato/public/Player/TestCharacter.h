@@ -170,7 +170,9 @@ protected:
 
     //공격 함수
     UFUNCTION()
-    void OnAttackInput();
+    void OnAttack();
+    void OnAttackStarted();
+    void OnAttackCompleted();
 
     UFUNCTION()
     void OnSkillInput();
@@ -277,6 +279,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
+
+    // 무기 연사 타이머 핸들
+    FTimerHandle AttackTimerHandle;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
     TSubclassOf<UUserWidget> CrosshairWidgetClass;
