@@ -47,6 +47,7 @@ UItemViewModel* UMVVMSubsystem::GetItemViewModel()
         ItemViewModel = NewObject<UItemViewModel>(this);
     }
     return ItemViewModel;
+}
 
 UMinimapViewModel* UMVVMSubsystem::GetMinimapViewModel()
 {
