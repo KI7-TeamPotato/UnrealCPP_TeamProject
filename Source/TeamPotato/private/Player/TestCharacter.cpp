@@ -110,7 +110,8 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         enhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ATestCharacter::OnMovementInput);
 		enhancedInputComponent->BindAction(IA_HorizonSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnHorizonSightInput);
 		enhancedInputComponent->BindAction(IA_VerticalSight, ETriggerEvent::Triggered, this, &ATestCharacter::OnVerticalSightInput);
-		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackInput);
+		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &ATestCharacter::OnAttackStarted);
+		enhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Completed, this, &ATestCharacter::OnAttackCompleted);
 		enhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &ATestCharacter::OnRollInput);
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
 		enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
@@ -348,17 +349,8 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
     AddControllerPitchInput(SightDegree);
 }
 
-void ATestCharacter::OnAttackInput()
+void ATestCharacter::OnAttack()
 {
-    //if(!bIsOnAction)
-    //{
- //       if(UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
- //       {
- //           PlayerAnimation->PlayAttackAnimation();     
- //           WeaponComponent->WeaponAttack();
- //       }
-    //}
-
     if (IsActionAvailable())
     {
         float Cost = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackCost;
@@ -368,6 +360,37 @@ void ATestCharacter::OnAttackInput()
             WeaponComponent->WeaponAttack();
         }
     }
+    else
+    {
+        // 에너지가 부족하면 연사 중단
+        OnAttackCompleted();
+    }
+}
+
+void ATestCharacter::OnAttackStarted()
+{
+    // 누르면 공격 일단 실행
+    OnAttack();
+
+    // 무기 데이터에서 공격 속도 가져옴
+    float FireRate = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackSpeed;
+    if (FireRate > 0)
+    {
+        float interval = 1.0f / FireRate;
+
+        GetWorldTimerManager().SetTimer(
+            AttackTimerHandle,
+            this,
+            &ATestCharacter::OnAttack,
+            interval,
+            true
+        );
+    }
+}
+
+void ATestCharacter::OnAttackCompleted()
+{
+    GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 }
 
 void ATestCharacter::OnSkillInput()

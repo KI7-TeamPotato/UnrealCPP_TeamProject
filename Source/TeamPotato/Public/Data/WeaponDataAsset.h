@@ -38,6 +38,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
     float AttackCost = 0.0f;
 
+    // 무기 공격 속도
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+    float AttackSpeed = 0.0f;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
     FText WeaponName;
 
