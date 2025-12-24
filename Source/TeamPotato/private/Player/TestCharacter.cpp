@@ -220,7 +220,12 @@ void ATestCharacter::InvincibleDeactivate()
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
-    PlayAnimMontage(AttackMontage_Sword);
+    PlayAnimMontage(AttackMontage_Sword_Combo1);
+}
+
+void ATestCharacter::PlaySwordAttackMontage_Combo()
+{
+    PlayAnimMontage(AttackMontage_Sword_Combo2);
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -290,14 +295,14 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
 
     if (!bIsOnAction)
     {
-        LastInput = InValue.Get<FVector2D>();
+        CurrentInput = InValue.Get<FVector2D>();
 
-        if (Controller && !LastInput.IsZero())
+        if (Controller && !CurrentInput.IsZero())
         {
             FRotator controllerRotation = Controller->GetControlRotation();         //컨트롤러 회전 구하기
             FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);           //컨트롤러 방향으로 플레이어 회전
 
-            FVector Direction = FVector(LastInput.X, LastInput.Y, 0.0f);
+            FVector Direction = FVector(CurrentInput.X, CurrentInput.Y, 0.0f);
             Direction = controllerYawRotation.RotateVector(Direction);
             AddMovementInput(Direction);
         }
@@ -381,6 +386,10 @@ void ATestCharacter::OnAttack()
             PlayerAnimation->PlayAttackAnimation();
             WeaponComponent->WeaponAttack();
         }
+    }
+    else if (bIsOnAttacking && bIsComboInputAvailable)
+    {
+        bIsOnComboInput = true;
     }
     else
     {
@@ -526,29 +535,29 @@ EMovingDirection ATestCharacter::GetPlayerDirection()
 {
     EMovingDirection playerDirection = EMovingDirection::None;
 
-    if (LastInput.X > 0)
+    if (CurrentInput.X > 0)
     {
-        if (LastInput.Y > 0)
+        if (CurrentInput.Y > 0)
             playerDirection = EMovingDirection::FrontRight;
-        else if (LastInput.Y < 0)
+        else if (CurrentInput.Y < 0)
             playerDirection = EMovingDirection::FrontLeft;
         else
             playerDirection = EMovingDirection::Front;
     }
-    else if (LastInput.X < 0)
+    else if (CurrentInput.X < 0)
     {
-        if (LastInput.Y > 0)
+        if (CurrentInput.Y > 0)
             playerDirection = EMovingDirection::BackRight;
-        else if (LastInput.Y < 0)
+        else if (CurrentInput.Y < 0)
             playerDirection = EMovingDirection::BackLeft;
         else
             playerDirection = EMovingDirection::Back;
     }
     else
     {
-        if (LastInput.Y > 0)
+        if (CurrentInput.Y > 0)
             playerDirection = EMovingDirection::Right;
-        else if (LastInput.Y < 0)
+        else if (CurrentInput.Y < 0)
             playerDirection = EMovingDirection::Left;
     }
 

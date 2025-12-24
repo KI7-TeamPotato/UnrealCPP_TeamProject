@@ -48,6 +48,9 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     float PlayerSideDirection = 0.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+    TObjectPtr<class UCurveFloat> PlayerTurningCurve = nullptr;
+
 private:
     //플레이어 무빙 컴포넌트
 	TWeakObjectPtr<const UPawnMovementComponent> OwnerMovementComponent = nullptr;
@@ -55,9 +58,12 @@ private:
     //플레이어
 	TObjectPtr<class ATestCharacter> MainPlayer = nullptr;
 
-    //플레이어가 움직이는 방향
-    FVector2D PlayerMovingDirection;
+    FVector2D PlayerLastInput = FVector2D(0.0f, 0.0f);
+    FVector2D PlayerCurrentInput = FVector2D(0.0f, 0.0f);
 
     //값을 반전하기 위한 -1상수
     const float Reverse = -1;
+
+    //회전시 델타타임을 저장하기 위한 변수
+    float turningTime = 0.0f;
 };
