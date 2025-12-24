@@ -51,8 +51,6 @@ void ADungeonGanarator::BeginPlay()
 
     //방이 모두 생성되면 1초(임의로 정할 수 있음)후 실행(보스방 만들기, 벽 막기 등등)
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
-    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
-
 }
 
 void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -111,7 +111,6 @@ public:
     UFUNCTION(BlueprintCallable)
     int32 GetChapter() const { return chapter; }
 
-
     //=================================
     //=================================
     //=================================
