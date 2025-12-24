@@ -197,7 +197,12 @@ void ATestCharacter::InvincibleDeactivate()
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
-    PlayAnimMontage(AttackMontage_Sword);
+    PlayAnimMontage(AttackMontage_Sword_Combo1);
+}
+
+void ATestCharacter::PlaySwordAttackMontage_Combo()
+{
+    PlayAnimMontage(AttackMontage_Sword_Combo2);
 }
 
 void ATestCharacter::PlayGunShootingMontage()

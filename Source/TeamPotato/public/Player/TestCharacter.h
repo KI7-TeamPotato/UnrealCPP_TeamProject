@@ -55,6 +55,8 @@ public:
     //검 공격 몽타주 재생
     void PlaySwordAttackMontage();
 
+    void PlaySwordAttackMontage_Combo();
+
     //총 발사 몽타주 재생
     void PlayGunShootingMontage();
 
@@ -257,17 +259,19 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-    TObjectPtr<class UAnimMontage> AttackMontage_Sword = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+    TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo1 = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+    TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo2 = nullptr;
 
     //총
     //회피(구르기)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> RollMontage_Gun = nullptr;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> BackStepMontage_Gun = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
 
 
