@@ -12,6 +12,45 @@
 #include "Subsystem/ViewModel/MinimapViewModel.h"
 #include "Data/WeaponDataAsset.h"
 #include "TeamPotato/Logic/DungeonGanarator.h"
+#include "Subsystem/CharacterSubsystem.h"
+
+void UMVVMSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+    UCharacterSubsystem* CharacterSubsystem = Collection.InitializeDependency<UCharacterSubsystem>();
+
+    Super::Initialize(Collection);
+
+    CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+    if (CharacterSubsystem)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UMVVMSubsystem::Initialize - CharacterSubsystem found, binding to OnSelectedCharacterChanged"));
+
+        // 초기화 시점에 플레이어 아이콘 설정
+        PlayerStatusViewModel = GetPlayerStatusViewModel();
+        PlayerStatusViewModel->SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
+
+        CharacterSubsystem->OnSelectedCharacterChanged.AddDynamic(this, &UMVVMSubsystem::HandlePlayerChanged);
+    }
+}
+
+void UMVVMSubsystem::Deinitialize()
+{
+
+}
+
+void UMVVMSubsystem::HandlePlayerChanged()
+{
+    UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+
+    if (PlayerStatusViewModel && CharacterSubsystem)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UMVVMSubsystem::HandlePlayerChanged - Player Changed"));
+        // PlayerStatusViewModel의 아이콘 갱신 실행
+        PlayerStatusViewModel = GetPlayerStatusViewModel();
+        PlayerStatusViewModel->SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
+    }
+}
+
 
 UPlayerStatusViewModel* UMVVMSubsystem::GetPlayerStatusViewModel()
 {

@@ -122,16 +122,25 @@ void UCharacterSelectMenu::OnSelectButtonClicked()
 
 	CharacterSubsystem->SetSelectedCharacterType(SelectedCharacterData->CharacterType);
 
+    APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    if (PC)
+    {
+        FInputModeGameOnly InputMode;
+        InputMode.SetConsumeCaptureMouseDown(true);
+        PC->SetInputMode(InputMode);
+        PC->bShowMouseCursor = false;
+    }
+
 	// UI 닫기 추가
     RemoveFromParent();
 }
 
 void UCharacterSelectMenu::SetCharacterIllustration(UTexture2D* InIllustration)
 {
-	if (CharacterImage && InIllustration)
+	if (CharacterDetailImage && InIllustration)
 	{
-		CharacterImage->SetBrushFromTexture(InIllustration);
-		CharacterImage->SetVisibility(ESlateVisibility::Visible);
+        CharacterDetailImage->SetBrushFromTexture(InIllustration);
+        CharacterDetailImage->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 

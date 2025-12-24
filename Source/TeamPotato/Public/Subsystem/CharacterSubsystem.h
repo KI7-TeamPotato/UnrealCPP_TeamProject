@@ -10,13 +10,11 @@
 #include "CharacterSubsystem.generated.h"
 
 // 델리게이트 선언: 선택된 캐릭터 타입이 변경되었을 때 알림
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedCharacterChanged, ECharacterType, NewCharacterType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectedCharacterChanged);
 
 /**
  * 
  */
-
-
 struct PlayerSaveData
 {
 public:
@@ -24,6 +22,8 @@ public:
     ECharacterType SelectedCharacter = ECharacterType::Warrior;
     UWeaponDataAsset* EquippedMainWeapon = nullptr;
     UWeaponDataAsset* EquippedSubWeapon = nullptr;
+    UTexture2D* PlayerIcon = nullptr;
+    UTexture2D* PlayerIllustration = nullptr;
 };
 
 // ==============================================================
@@ -73,6 +73,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetEquippedSubWeapon(UWeaponDataAsset* NewSubWeapon);
 
+    // 플레이어 아이콘 설정
+    UFUNCTION(BlueprintCallable, Category = "Character")
+    void SetPlayerIcon(UTexture2D* NewIcon) { CurrentPlayerData.PlayerIcon = NewIcon; }
+
+    // 플레이어 일러스트 설정
+    UFUNCTION(BlueprintCallable, Category = "Character")
+    void SetPlayerIllustration(UTexture2D* NewIllust) { CurrentPlayerData.PlayerIllustration = NewIllust; }
+
 	// 선택된 캐릭터 타입 반환
 	UFUNCTION(BlueprintPure, Category = "Character")
 	ECharacterType GetSelectedCharacterType() const { return CurrentPlayerData.SelectedCharacter; }
@@ -84,6 +92,14 @@ public:
     // 장착 중인 서브 무기 반환
     UFUNCTION(BlueprintPure, Category = "Weapon")
     UWeaponDataAsset* GetEquippedSubWeapon() const { return CurrentPlayerData.EquippedSubWeapon; }
+
+    // 플레이어 아이콘 반환
+    UFUNCTION(BlueprintPure, Category = "Character")
+    UTexture2D* GetPlayerIcon() const { return CurrentPlayerData.PlayerIcon; }
+
+    // 플레이어 일러스트 반환
+    UFUNCTION(BlueprintPure, Category = "Character")
+    UTexture2D* GetPlayerIllustration() const { return CurrentPlayerData.PlayerIllustration; }
 
 	// 선택된 캐릭터의 데이터 반환
 	UFUNCTION(BlueprintPure, Category = "Character")
@@ -124,7 +140,4 @@ private:
 
 	// 이번 게임의 선택된 캐릭터 정보(로비로 이동하면 캐릭터 타입을 제외하고 전부 초기화, 이후 챕터 진행에서는 저장)
     PlayerSaveData CurrentPlayerData;
-
-	/*UPROPERTY()
-	ECharacterType SelectedCharacterType = ECharacterType::None;*/
 };

@@ -63,6 +63,15 @@ public:
     UFUNCTION()
     void UnregisterDungeonGeneratorActor(class ADungeonGanarator* ExitingActor);
 
+protected:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void Deinitialize() override;
+
+private:
+    // --- 플레이어 변경 델리게이트를 처리하는 함수 ---
+    UFUNCTION()
+    void HandlePlayerChanged();
+
 private:
 	UPROPERTY()
 	TObjectPtr<UPlayerStatusViewModel> PlayerStatusViewModel;

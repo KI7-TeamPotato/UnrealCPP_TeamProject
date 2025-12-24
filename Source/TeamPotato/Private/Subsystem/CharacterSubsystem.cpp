@@ -9,14 +9,25 @@
 void UCharacterSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Initialize"));
+	//UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Initialize"));
 
 	LoadAndCacheCharacterData();
+
+    if(CharacterDataCache.Num() > 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Initialize - Character data loaded and cached successfully. Total Characters: %d"), CharacterDataCache.Num());
+        // 초기 선택된 캐릭터 타입 설정 (데이터 테이블의 첫 번째 캐릭터)
+        CurrentPlayerData.SelectedCharacter = CharacterDataCache.CreateConstIterator().Key();
+        CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset;
+        CurrentPlayerData.EquippedSubWeapon = nullptr;
+        CurrentPlayerData.PlayerIcon = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterIcon;
+        CurrentPlayerData.PlayerIllustration = CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->CharacterIllustration;
+    }
 }
 
 void UCharacterSubsystem::Deinitialize()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Deinitialized"));
+	//UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Deinitialized"));
 
 	CharacterDataTable = nullptr;
 	CharacterDataCache.Empty();
@@ -89,21 +100,20 @@ void UCharacterSubsystem::ResetPlayerDataToInitialState()
 // 선택된 캐릭터 타입 설정
 void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterType)
 {
-	if (CurrentPlayerData.SelectedCharacter != NewCharacterType)
-	{
-        // 캐릭터 변경시에 기본 캐릭터 상태로 초기화
-        CurrentPlayerData.SelectedCharacter = NewCharacterType;
-        CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
-        CurrentPlayerData.EquippedSubWeapon = nullptr;
 
-        // 선택된 캐릭터 타입으로 빙의
-        PossessSelectedCharacterType();
+    // 캐릭터 변경시에 기본 캐릭터 상태로 초기화
+    CurrentPlayerData.SelectedCharacter = NewCharacterType;
+    CurrentPlayerData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
+    CurrentPlayerData.EquippedSubWeapon = nullptr;
+    CurrentPlayerData.PlayerIcon = CharacterDataCache.Find(NewCharacterType)->CharacterIcon;
 
-		// 실제 캐릭터의 변경된 데이터 처리는 이 델리게이트를 구독한 곳에서 처리
-		OnSelectedCharacterChanged.Broadcast(NewCharacterType);
+    // 선택된 캐릭터 타입으로 빙의
+    PossessSelectedCharacterType();
 
-		UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::SetSelectedCharacterType - Changed to %d"), static_cast<int32>(NewCharacterType));
-	}
+	// 실제 캐릭터의 변경된 데이터 처리는 이 델리게이트를 구독한 곳에서 처리
+	OnSelectedCharacterChanged.Broadcast();
+
+	//UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::SetSelectedCharacterType - Changed to %d"), static_cast<int32>(NewCharacterType));
 }
 
 void UCharacterSubsystem::SetEquippedMainWeapon(UWeaponDataAsset* NewMainWeapon)
@@ -146,9 +156,6 @@ void UCharacterSubsystem::PossessSelectedCharacterType()
     if (NewPawn)
     {
         GetWorld()->GetFirstPlayerController()->Possess(NewPawn);
-
-        // 플레이어 beginPlay에서 처리
-        //NewPawn->GetWeaponComponent()->PickupWeapon(CharacterDataCache.Find(CurrentPlayerData.SelectedCharacter)->DefaultWeaponDataAsset);
     }
 }
 

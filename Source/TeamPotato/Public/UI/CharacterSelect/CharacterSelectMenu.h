@@ -39,7 +39,7 @@ protected:
 	TObjectPtr<class UTileView> CharacterTileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> CharacterImage = nullptr;
+	TObjectPtr<class UImage> CharacterDetailImage = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> SelectButton = nullptr;
