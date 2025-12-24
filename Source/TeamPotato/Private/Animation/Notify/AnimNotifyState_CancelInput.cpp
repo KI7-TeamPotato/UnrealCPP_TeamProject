@@ -17,6 +17,10 @@ void UAnimNotifyState_CancelInput::NotifyBegin(USkeletalMeshComponent* MeshComp,
     {
         OwnerCharacter->bIsComboInputAvailable = true;
     }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_CancelInput::NotifyBegin : Ownercharacter Unavailable"));
+    }
 }
 
 void UAnimNotifyState_CancelInput::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
@@ -33,6 +37,6 @@ void UAnimNotifyState_CancelInput::NotifyEnd(USkeletalMeshComponent* MeshComp, U
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_CancelInput::NotifyEnd Ownercharacter Unavailable"));
+        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_CancelInput::NotifyEnd : Ownercharacter Unavailable"));
     }
 }

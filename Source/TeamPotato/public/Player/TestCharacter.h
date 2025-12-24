@@ -121,9 +121,14 @@ public:
 
     //마지막으로 입력받은 값을 enum으로 반환
     UFUNCTION(BlueprintCallable, Category = "Direction")
+    inline FVector2D GetCurrentInput() { return CurrentInput; }
+    UFUNCTION(BlueprintCallable, Category = "Direction")
     inline FVector2D GetLastInput() { return LastInput; }
 
     EMovingDirection GetPlayerDirection();
+
+    UFUNCTION(BlueprintCallable, Category = "Direction")
+    inline bool IsDirectionChanged() { return bIsDirectionChanged; }
 
     //Setter
     //행동중인지 설정
@@ -189,6 +194,12 @@ private:
 
     UFUNCTION()
     void OnHitInvincible();
+
+    UFUNCTION()
+    void SetCurrentInput(const FInputActionValue& InValue);
+
+    UFUNCTION()
+    void SetLastInput(const FInputActionValue& InValue);
 
 public:
     // 상호작용 대상
@@ -317,6 +328,8 @@ private:
     //플레이어가 공격중인지 확인
     bool bIsOnAttacking = false;
 
+    //이동 입력의 방향이 바뀌었는지 확인
+    bool bIsDirectionChanged = false;
 
 	//시야각
 	float SightDegree = 0.0f;
@@ -348,7 +361,9 @@ private:
     /*float FrontBackMove = 0.0f;
     float SideMove = 0.0f;*/
 
-    FVector2D LastInput;
+    FVector2D CurrentInput = FVector2D(0.0f, 0.0f);
+    FVector2D TempInput = FVector2D(0.0f, 0.0f);
+    FVector2D LastInput = FVector2D(0.0f, 0.0f);
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;
