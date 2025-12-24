@@ -25,9 +25,12 @@ protected:
     virtual void OnPossess(APawn* InPawn) override;
 
     UFUNCTION()
+    void IsMinimapUpdateThresholdReached();
+
+    UFUNCTION()
     void UpdateMinimapPlayerPosition();
 
-protected:   
+protected:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UMinimapWidget> MinimapWidgetClass;
 
@@ -36,6 +39,9 @@ protected:
 
 private:
     TObjectPtr<UMinimapViewModel> MinimapViewModel = nullptr;
+
+    FVector CurrentPawnLocation = FVector::ZeroVector;
+    float CurrentPawnYaw = 0.f;
 
     FVector LastPawnLocation = FVector::ZeroVector;
     float LastPawnYaw = 0.f;
