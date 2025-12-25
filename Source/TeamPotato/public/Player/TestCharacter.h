@@ -55,6 +55,8 @@ public:
     //검 공격 몽타주 재생
     void PlaySwordAttackMontage();
 
+    void PlaySwordAttackMontage_Combo();
+
     //총 발사 몽타주 재생
     void PlayGunShootingMontage();
 
@@ -117,11 +119,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Sight")
     inline float GetSightDegree() { return SightDegree; }
 
-    //마지막으로 입력받은 값을 enum으로 반환
     UFUNCTION(BlueprintCallable, Category = "Direction")
-    inline FVector2D GetLastInput() { return LastInput; }
+    inline FVector2D GetCurrentInput() { return CurrentInput; }
 
     EMovingDirection GetPlayerDirection();
+
+    UFUNCTION(BlueprintCallable, Category = "Direction")
+    inline bool IsDirectionChanged() { return bIsDirectionChanged; }
 
     //Setter
     //행동중인지 설정
@@ -195,6 +199,14 @@ public:
     UPROPERTY()
     AActor* CurrentInteractTarget = nullptr;
 
+    //공격중에 콤보 공격을 입력했는지
+    UPROPERTY()
+    bool bIsOnComboInput = false;
+
+    //콤보공격 입력을 받을 수 있는지
+    UPROPERTY()
+    bool bIsComboInputAvailable = false;
+
 protected:
 	//IA
 	//이동 입력
@@ -259,17 +271,19 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> LeftStepMontage_Sword = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
-    TObjectPtr<class UAnimMontage> AttackMontage_Sword = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+    TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo1 = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+    TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo2 = nullptr;
 
     //총
     //회피(구르기)
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> RollMontage_Gun = nullptr;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> BackStepMontage_Gun = nullptr;
     //공격
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animaiton|Montage")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
 
 
@@ -310,6 +324,9 @@ private:
     //플레이어가 공격중인지 확인
     bool bIsOnAttacking = false;
 
+    //이동 입력의 방향이 바뀌었는지 확인
+    bool bIsDirectionChanged = false;
+
 	//시야각
 	float SightDegree = 0.0f;
 
@@ -340,7 +357,8 @@ private:
     /*float FrontBackMove = 0.0f;
     float SideMove = 0.0f;*/
 
-    FVector2D LastInput;
+    //움직이는 방향 입력값
+    FVector2D CurrentInput = FVector2D(0.0f, 0.0f);
 
     //대각선 방향 애니메이션 재생을 위해 몸을 돌릴 각도
     float AnimRotateDegree = 45.0f;

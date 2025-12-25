@@ -20,9 +20,9 @@ AGunWeaponActor::AGunWeaponActor()
     AttackCost = 1.0f;
 
     // 트레일 초기화
-    ShootEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Trail"));
+    ShootEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Muzzle"));
     ShootEffect->SetupAttachment(WeaponMesh);
-    ShootEffect->Deactivate();
+    ShootEffect->bAutoActivate = false;
 }
 
 void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
@@ -83,6 +83,9 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 		ShootDirection.Rotation(),
         SpawnParams
 	);
+
+    // 이펙트 효과
+    ShootEffect->Activate();
 
 	if (Bullet)
 	{
