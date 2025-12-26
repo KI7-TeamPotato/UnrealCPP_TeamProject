@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 APickupActor::APickupActor()
@@ -25,6 +26,10 @@ APickupActor::APickupActor()
 
     // 타임라인 초기화
     PickupTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("PickupTimeline"));
+
+    // 이펙트 초기화
+    ItemEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ItemEffect"));
+    ItemEffect->SetupAttachment(Mesh);
 }
 
 void APickupActor::Tick(float DeltaTime)

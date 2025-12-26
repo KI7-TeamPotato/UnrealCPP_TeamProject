@@ -97,6 +97,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
     int32 ItemPrice = 0;
 
+    // 아이템 효과
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
+    TObjectPtr<class UNiagaraComponent> ItemEffect = nullptr;
+
     // 픽업 사운드
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
     TObjectPtr<class USoundBase> PickupSound = nullptr;
