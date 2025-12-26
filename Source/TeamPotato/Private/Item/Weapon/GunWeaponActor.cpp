@@ -21,7 +21,7 @@ AGunWeaponActor::AGunWeaponActor()
 
     // 트레일 초기화
     ShootEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Muzzle"));
-    ShootEffect->SetupAttachment(WeaponMesh);
+    ShootEffect->SetupAttachment(WeaponMesh, TEXT("FirePoint"));
     ShootEffect->bAutoActivate = false;
 }
 
@@ -84,8 +84,10 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
         SpawnParams
 	);
 
-    // 이펙트 효과
-    ShootEffect->Activate();
+    if(ShootEffect)
+       ShootEffect->Activate();
+    if (AttackSound)
+        UGameplayStatics::PlaySound2D(this, AttackSound);
 
 	if (Bullet)
 	{

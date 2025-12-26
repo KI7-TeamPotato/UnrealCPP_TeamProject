@@ -94,8 +94,16 @@ protected:
     float PickupHeight = 50.0f;
 
     // 아이템 가격
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
     int32 ItemPrice = 0;
+
+    // 아이템 효과
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
+    TObjectPtr<class UNiagaraComponent> ItemEffect = nullptr;
+
+    // 픽업 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+    TObjectPtr<class USoundBase> PickupSound = nullptr;
     
 private:
     // 이 픽업 아이템을 먹은 액터

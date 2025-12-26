@@ -31,21 +31,33 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SwapWeapon();
 
+    // 플레이어 스폰 시 기본 무기 장착
+    void InitializeBaseWeapon(UWeaponDataAsset* InWeaponData);
+
+    // 에너지 부족 시 기본 무기로 전환
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SwitchToBaseWeapon();
+
     UFUNCTION(BlueprintCallable, Category = "Weapon")
 	EWeaponType GetCurrentWeaponType() const;
+    
+    // 현재 활성화된 무기를 가져옴
     UFUNCTION(BlueprintCallable, Category = "Weapon")
-    inline AWeaponBase* GetCurrentWeapon() { return CurrentWeapon; }
+    inline AWeaponBase* GetActivateWeapon() { return ActivatedWeapon; }
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+    // 현재 무기 장착
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void EquipCurrentWeapon(AWeaponBase* InWeapon);
 
+    // 서브 무기 장착
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void EquipSubWeapon(AWeaponBase* InWeapon);
 
+    // 무기 교체시 픽업 무기 스폰
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SpawnPickupWeapon(UWeaponDataAsset* WeaponData);
 
@@ -67,10 +79,21 @@ protected:
     TObjectPtr<ATestCharacter> Owner = nullptr;
 
     // 현재 무기
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    TObjectPtr<AWeaponBase> ActivatedWeapon = nullptr;
+
+    // 기본 무기
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    TObjectPtr<AWeaponBase> BaseWeapon = nullptr;
+
+    // 주 무기
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TObjectPtr<AWeaponBase> CurrentWeapon = nullptr;
 
     // 보조 무기
     UPROPERTY(EditAnywhere, Category = "Weapon")
     TObjectPtr<AWeaponBase> SubWeapon = nullptr;
+
+    // 현재 기본 무기를 사용 중인지 여부
+    bool bIsUsingBaseWeapon = false;
 };

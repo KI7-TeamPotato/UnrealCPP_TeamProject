@@ -9,6 +9,7 @@
 
 class UWeaponComponent;
 class UPlayerResource;
+class USoundBase;
 
 UCLASS()
 class TEAMPOTATO_API AWeaponBase : public AActor
@@ -29,7 +30,7 @@ public:
 
     // 데이터 에셋에서 불러오는 함수
     void InitializeFromData(class UWeaponDataAsset* InData);
-
+    
     // 애니메이션 노티파이에서 호출
     virtual void BeginAttack() {}
     virtual void EndAttack() {}
@@ -63,6 +64,14 @@ protected:
 	// 웨폰 컴포넌트
 	UPROPERTY()
 	TObjectPtr<UWeaponComponent> OwnerWeaponComponent = nullptr;
+
+    // 무기 장착 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+    TObjectPtr<USoundBase> EquipSound = nullptr;
+
+    // 무기 공격 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+    TObjectPtr<USoundBase> AttackSound = nullptr;
 
 public:
 	bool bIsActivated = false;

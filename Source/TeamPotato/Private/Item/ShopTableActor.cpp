@@ -11,6 +11,7 @@
 #include "Components/SphereComponent.h"
 #include "UI/Player/ShopInteractWidget.h"
 #include "Engine/DataTable.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AShopTableActor::AShopTableActor()
@@ -138,9 +139,16 @@ void AShopTableActor::BuyItem(AActor* InPlayer)
 
     if (Resource->GetCurrentGold() > SpawnItem->GetPrice())
     {
+        if (BuySound)
+            UGameplayStatics::PlaySound2D(this, BuySound);
         SpawnItem->SetSellItem(false);
         SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         SpawnItem->OnPickup(InPlayer);
         Resource->AddGold(-SpawnItem->GetPrice());
+    }
+    else
+    {
+        if (FailSound)
+            UGameplayStatics::PlaySound2D(this, FailSound);
     }
 }

@@ -4,6 +4,7 @@
 #include "Item/PickupGoldActor.h"
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
+#include "Kismet/GameplayStatics.h"
 
 void APickupGoldActor::UseItem(AActor* InPlayer)
 {
@@ -12,6 +13,9 @@ void APickupGoldActor::UseItem(AActor* InPlayer)
 
     UPlayerResource* Resource = Player->GetResource();
     if (!Resource) return;
+    
+    if (PickupSound)
+        UGameplayStatics::PlaySound2D(this, PickupSound);
 
     Resource->AddGold(GoldAmount);
 }

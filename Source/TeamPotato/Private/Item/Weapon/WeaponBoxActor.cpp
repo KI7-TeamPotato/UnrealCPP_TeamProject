@@ -8,6 +8,7 @@
 #include "Components/WidgetComponent.h"
 #include "Player/TestCharacter.h"
 #include "Data/WeaponDataAsset.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AWeaponBoxActor::AWeaponBoxActor()
@@ -45,6 +46,9 @@ AWeaponBoxActor::AWeaponBoxActor()
 void AWeaponBoxActor::Interact_Implementation(AActor* InTarget)
 {
     PlayOpenAnimation();
+
+    if (OpenSound)
+        UGameplayStatics::PlaySound2D(this, OpenSound);
 }
 
 // Called when the game starts or when spawned

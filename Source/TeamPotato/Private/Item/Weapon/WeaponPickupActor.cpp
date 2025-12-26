@@ -6,6 +6,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "Component/WeaponComponent.h"
+#include "UI/WeaponInfoWidget.h"
 #include "Data/WeaponDataAsset.h"
 #include "Player/TestCharacter.h"
 
@@ -15,7 +16,7 @@ AWeaponPickupActor::AWeaponPickupActor()
 	InteractionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractionWidget"));
 	InteractionWidget->SetupAttachment(RootComponent);
 	InteractionWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	InteractionWidget->SetDrawSize(FVector2D(200, 50));
+	InteractionWidget->SetDrawSize(FVector2D(200, 200));
 	InteractionWidget->SetVisibility(false);
 }
 
@@ -68,6 +69,17 @@ void AWeaponPickupActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	// 플레이어가 오버랩 시 위젯 출력
     if (OtherActor && OtherActor->IsA<ATestCharacter>())
     {
+        UWeaponInfoWidget* InfoWidget = Cast<UWeaponInfoWidget>(InteractionWidget->GetUserWidgetObject()->GetWidgetFromName("WeaponInfo"));
+
+        if (InfoWidget && WeaponData)
+        {
+            InfoWidget->UpdateInfo(
+                WeaponData->AttackDamage,
+                WeaponData->AttackCost,
+                WeaponData->AttackSpeed
+            );
+        }
+
         InteractionWidget->SetVisibility(true);
     }
 }

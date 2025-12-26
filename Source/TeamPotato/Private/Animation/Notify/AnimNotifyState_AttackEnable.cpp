@@ -16,7 +16,7 @@ void UAnimNotifyState_AttackEnable::NotifyBegin(USkeletalMeshComponent* MeshComp
     UWeaponComponent* WeaponComponent = Owner->GetWeaponComponent();
     if (!WeaponComponent) return;
 
-    if (AWeaponBase* Weapon = WeaponComponent->GetCurrentWeapon())
+    if (AWeaponBase* Weapon = WeaponComponent->GetActivateWeapon())
     {
         Weapon->BeginAttack();
     }
@@ -30,7 +30,7 @@ void UAnimNotifyState_AttackEnable::NotifyEnd(USkeletalMeshComponent* MeshComp, 
     UWeaponComponent* WeaponComponent = Owner->GetWeaponComponent();
     if (!WeaponComponent) return;
 
-    if (AWeaponBase* Weapon = WeaponComponent->GetCurrentWeapon())
+    if (AWeaponBase* Weapon = WeaponComponent->GetActivateWeapon())
     {
         Weapon->EndAttack();
     }

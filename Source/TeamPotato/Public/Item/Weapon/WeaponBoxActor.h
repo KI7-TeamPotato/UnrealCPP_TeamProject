@@ -57,28 +57,32 @@ protected:
     
 protected:
     // 상자 매쉬
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Box")
     TObjectPtr<USkeletalMeshComponent> Mesh = nullptr;
 
     // 상호작용 범위
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Box")
     TObjectPtr<USphereComponent> SphereCollision = nullptr;
 
     // 스폰 포인트
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Box")
     TObjectPtr<USceneComponent> SpawnLocation = nullptr;
 
     // 상호작용 위젯
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, Category = "Box")
     TObjectPtr<UWidgetComponent> InteractionWidget = nullptr;
 
     // 무기 데이터 테이블
-    UPROPERTY(EditAnywhere, Category = "Weapon")
+    UPROPERTY(EditAnywhere, Category = "Box")
     TObjectPtr<UDataTable> WeaponDataTable = nullptr;
 
     // 상자 오픈 애니메이션
-    UPROPERTY(EditAnywhere, Category = "Animation")
+    UPROPERTY(EditAnywhere, Category = "Box")
     TObjectPtr<UAnimMontage> OpenMontage = nullptr;
+
+    // 상자 오픈 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Box")
+    TObjectPtr<USoundBase> OpenSound = nullptr;
 
 private:
     UPROPERTY()
