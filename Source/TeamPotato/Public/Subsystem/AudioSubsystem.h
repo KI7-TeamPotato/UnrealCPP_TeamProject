@@ -24,10 +24,10 @@ protected:
 
 public:
     UFUNCTION(BlueprintCallable, Category = "Audio")
-    void SetMusicVolume(float InVolume);
+    void SetMusicVolume(float InVolume, UObject* WorldContextObject = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "Audio")
-    void SetSFXVolume(float InVolume);
+    void SetSFXVolume(float InVolume, UObject* WorldContextObject = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "Audio")
     float GetMusicVolume() const { return CurrnetMusicVolume; };

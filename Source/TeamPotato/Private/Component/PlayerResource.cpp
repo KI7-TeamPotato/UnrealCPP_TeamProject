@@ -48,6 +48,20 @@ void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
+inline void UPlayerResource::SetMaxHealth(float InMaxHealth)
+{
+    MaxHealth = InMaxHealth;
+    Health = MaxHealth;
+    BroadcastHealthChanged();
+}
+
+inline void UPlayerResource::SetMaxEnergy(float InMaxEnergy)
+{
+    MaxEnergy = InMaxEnergy;
+    Energy = MaxEnergy;
+    BroadcastEnergyChanged();
+}
+
 void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
     Health -= InDamage;
@@ -102,24 +116,6 @@ void UPlayerResource::AddGold(int32 InGold)
     BroadcastGoldChanged();
 }
 
-// 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
-void UPlayerResource::BroadcastHealthChanged()
-{
-    if (OnHealthChanged.IsBound())
-    {
-        OnHealthChanged.Broadcast(Health, MaxHealth);
-    }
-}
-
-void UPlayerResource::BroadcastEnergyChanged()
-{
-    if (OnEnergyChanged.IsBound())
-    {
-        OnEnergyChanged.Broadcast(Energy, MaxEnergy);
-    }
-
-}
-
 void UPlayerResource::FillEnergy(float InEnergy)
 {
     Energy += InEnergy;
@@ -141,12 +137,32 @@ void UPlayerResource::AddMaxHealth(float InMaxHealth)
 {
     MaxHealth += InMaxHealth;
     Heal(InMaxHealth);
+    BroadcastHealthChanged();
 }
 
 void UPlayerResource::AddMaxEnergy(float InMaxStamina)
 {
     MaxEnergy += InMaxStamina;
     FillEnergy(InMaxStamina);
+    BroadcastEnergyChanged();
+}
+
+// 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
+void UPlayerResource::BroadcastHealthChanged()
+{
+    if (OnHealthChanged.IsBound())
+    {
+        OnHealthChanged.Broadcast(Health, MaxHealth);
+    }
+}
+
+void UPlayerResource::BroadcastEnergyChanged()
+{
+    if (OnEnergyChanged.IsBound())
+    {
+        OnEnergyChanged.Broadcast(Energy, MaxEnergy);
+    }
+
 }
 
 void UPlayerResource::BroadcastGoldChanged()

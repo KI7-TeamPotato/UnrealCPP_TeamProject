@@ -16,12 +16,16 @@ void UCharacterSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     if(CharacterDataCache.Num() > 0)
     {
         UE_LOG(LogTemp, Warning, TEXT("UCharacterSubsystem::Initialize - Character data loaded and cached successfully. Total Characters: %d"), CharacterDataCache.Num());
+        
         // 초기 선택된 캐릭터 타입 설정 (데이터 테이블의 첫 번째 캐릭터)
         PlayerSaveData.SelectedCharacterType = CharacterDataCache.CreateConstIterator().Key();
         PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->DefaultWeaponDataAsset;
         PlayerSaveData.EquippedSubWeapon = nullptr;
         PlayerSaveData.PlayerIcon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIcon;
         PlayerSaveData.PlayerIllustration = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIllustration;
+        PlayerSaveData.MaxHealth = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->MaxHealth;
+        PlayerSaveData.MaxEnergy = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->MaxEnergy;
+        PlayerSaveData.WalkSpeed = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->WalkSpeed;
     }
 }
 
@@ -96,6 +100,11 @@ void UCharacterSubsystem::ResetPlayerDataToInitialState()
 {
     PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->DefaultWeaponDataAsset;
     PlayerSaveData.EquippedSubWeapon = nullptr;
+    PlayerSaveData.PlayerIcon = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIcon;
+    PlayerSaveData.PlayerIllustration = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->CharacterIllustration;
+    PlayerSaveData.MaxHealth = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->MaxHealth;
+    PlayerSaveData.MaxEnergy = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->MaxEnergy;
+    PlayerSaveData.WalkSpeed = CharacterDataCache.Find(PlayerSaveData.SelectedCharacterType)->WalkSpeed;
 }
 
 // =============================================================
@@ -105,18 +114,18 @@ void UCharacterSubsystem::ResetPlayerDataToInitialState()
 // 선택된 캐릭터 타입 설정
 void UCharacterSubsystem::SetSelectedCharacterType(ECharacterType NewCharacterType)
 {
-
     // 캐릭터 변경시에 기본 캐릭터 상태로 초기화
     PlayerSaveData.SelectedCharacterType = NewCharacterType;
     PlayerSaveData.EquippedMainWeapon = CharacterDataCache.Find(NewCharacterType)->DefaultWeaponDataAsset;
     PlayerSaveData.EquippedSubWeapon = nullptr;
     PlayerSaveData.PlayerIcon = CharacterDataCache.Find(NewCharacterType)->CharacterIcon;
+    PlayerSaveData.PlayerIllustration = CharacterDataCache.Find(NewCharacterType)->CharacterIllustration;
+    PlayerSaveData.MaxHealth = CharacterDataCache.Find(NewCharacterType)->MaxHealth;
+    PlayerSaveData.MaxEnergy = CharacterDataCache.Find(NewCharacterType)->MaxEnergy;
+    PlayerSaveData.WalkSpeed = CharacterDataCache.Find(NewCharacterType)->WalkSpeed;
 
     // 선택된 캐릭터 타입으로 빙의
     PossessSelectedCharacterType(PlayerSaveData.SelectedCharacterType);
-
-	// 실제 캐릭터의 변경된 데이터 처리는 이 델리게이트를 구독한 곳에서 처리
-	OnSelectedCharacterChanged.Broadcast();
 
 	//UE_LOG(LogTemp, Log, TEXT("UCharacterSubsystem::SetSelectedCharacterType - Changed to %d"), static_cast<int32>(NewCharacterType));
 }

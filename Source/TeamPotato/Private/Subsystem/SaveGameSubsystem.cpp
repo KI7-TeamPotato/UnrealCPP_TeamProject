@@ -36,7 +36,19 @@ void USaveGameSubsystem::Deinitialize()
 
 bool USaveGameSubsystem::SaveSettings()
 {
-    // 설정을 실제 슬롯에 저장
+    // 초기화 시에 저장된 설정이 있는지 확인하고 로드
+    if (UGameplayStatics::DoesSaveGameExist(SettingSaveSlotName, 0))
+    {
+        CachedSettings =
+            Cast<USaveSettings>(UGameplayStatics::LoadGameFromSlot(SettingSaveSlotName, 0));
+    }
+    // 만약 저장된 설정이 없다면 기본 설정 생성
+    else
+    {
+        CachedSettings =
+            Cast<USaveSettings>(UGameplayStatics::CreateSaveGameObject(USaveSettings::StaticClass()));
+    }
+
     if (UGameplayStatics::SaveGameToSlot(CachedSettings, SettingSaveSlotName, 0))
     {
         return true;

@@ -4,6 +4,7 @@
 #include "UI/Player/PlayerStatWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
 
 void UPlayerStatWidget::NativeConstruct()
@@ -26,16 +27,16 @@ void UPlayerStatWidget::SetViewModel(UPlayerStatusViewModel* InViewModel)
     PlayerStatusViewModel = InViewModel;
     BindViewModel();
 
-    // 현재 값으로 UI 초기화 (컴포넌트에서 이미 초기값을 보내주는 중, 나중에 제거해보고 확인)
-    if (PlayerStatusViewModel)
-    {
-        SetPlayerHealthBar(PlayerStatusViewModel->GetHealthPercent());
+    //// 현재 값으로 UI 초기화 (컴포넌트에서 이미 초기값을 보내주는 중, 나중에 제거해보고 확인)
+    //if (PlayerStatusViewModel)
+    //{
+    //    SetPlayerHealthBar(PlayerStatusViewModel->GetHealthPercent());
 
-        if (PlayerStatusViewModel->GetPlayerIcon())
-        {
-            SetPlayerIcon(PlayerStatusViewModel->GetPlayerIcon());
-        }
-    }
+    //    if (PlayerStatusViewModel->GetPlayerIcon())
+    //    {
+    //        SetPlayerIcon(PlayerStatusViewModel->GetPlayerIcon());
+    //    }
+    //}
 }
 
 void  UPlayerStatWidget::BindViewModel()
@@ -44,7 +45,7 @@ void  UPlayerStatWidget::BindViewModel()
     if (PlayerStatusViewModel && !bIsViewModelBound)
     {
         // 모델 -> 뷰
-        PlayerStatusViewModel->OnPlayerHealthChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
+        PlayerStatusViewModel->OnPlayerHealthChangedWithText.AddDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
         PlayerStatusViewModel->OnPlayerIconChanged.AddDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
 
         bIsViewModelBound = true;
@@ -55,23 +56,29 @@ void  UPlayerStatWidget::UnbindViewModel()
 {
     if (PlayerStatusViewModel && bIsViewModelBound)
     {
-        PlayerStatusViewModel->OnPlayerHealthChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
+        PlayerStatusViewModel->OnPlayerHealthChangedWithText.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerHealthBar);
         PlayerStatusViewModel->OnPlayerIconChanged.RemoveDynamic(this, &UPlayerStatWidget::SetPlayerIcon);
 
         bIsViewModelBound = false;
     }
 }
 
-void UPlayerStatWidget::SetPlayerHealthBar(float NewHealthPercent)
+void UPlayerStatWidget::SetPlayerHealthBar(float NewHealthPercent, FText NewHealthText)
 {
     if (PlayerHealthBar)
     {
         PlayerHealthBar->SetPercent(NewHealthPercent);
     }
+
+    if (HealthText)
+    {
+        HealthText->SetText(NewHealthText);
+    }
 }
 
 void UPlayerStatWidget::SetPlayerIcon(UTexture2D* NewPlayerIcon)
 {
+    UE_LOG(LogTemp, Warning, TEXT("UPlayerStatWidget::SetPlayerIcon - NewPlayerIcon received"));
     if (PlayerIconImage && NewPlayerIcon)
     {
         PlayerIconImage->SetBrushFromTexture(NewPlayerIcon);

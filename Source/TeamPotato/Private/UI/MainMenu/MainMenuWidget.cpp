@@ -3,9 +3,11 @@
 
 #include "UI/MainMenu/MainMenuWidget.h"
 #include "Components/Button.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Components/WidgetSwitcher.h"
 #include "UI/MainMenu/MainMenuButtonWidget.h"
+#include "UI/MainMenu/MainMenuSoundOptionWidget.h"
 #include "Subsystem/GameStateSubsystem.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
@@ -15,10 +17,6 @@ void UMainMenuWidget::NativeConstruct()
 	{
 		NewGameButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnNewGameClicked);
 	}
-	//if (ContinueGameButton)
-	//{
-	//	ContinueGameButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnContinueGameClicked);
-	//}
 	if (SettingsButton)
 	{
 		SettingsButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnSettingClicked);
@@ -27,12 +25,44 @@ void UMainMenuWidget::NativeConstruct()
 	{
 		QuitButton->MainMenuButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitClicked);
 	}
+    if (MainSoundOptionPanel)
+    {
+        MainSoundOptionPanel->OnCloseButtonClickedDelegate.AddDynamic(this, &UMainMenuWidget::OnSoundOptionCloseClicked);
+        if (MainSoundOptionPanel->OnCloseButtonClickedDelegate.IsBound())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Close Button is bound successfully in MainMenuWidget"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Close Button binding failed in MainMenuWidget"));
+        }
+    }
+}
+
+void UMainMenuWidget::NativeDestruct()
+{
+    if(NewGameButton)
+    {
+        NewGameButton->MainMenuButton->OnClicked.RemoveDynamic(this, &UMainMenuWidget::OnNewGameClicked);
+    }
+    if(SettingsButton)
+    {
+        SettingsButton->MainMenuButton->OnClicked.RemoveDynamic(this, &UMainMenuWidget::OnSettingClicked);
+    }
+    if(QuitButton)
+    {
+        QuitButton->MainMenuButton->OnClicked.RemoveDynamic(this, &UMainMenuWidget::OnQuitClicked);
+    }
+    if(MainSoundOptionPanel)
+    {
+        MainSoundOptionPanel->OnCloseButtonClickedDelegate.RemoveDynamic(this, &UMainMenuWidget::OnSoundOptionCloseClicked);
+    }
+
+    Super::NativeDestruct();
 }
 
 void UMainMenuWidget::OnNewGameClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("New Game Clicked"));
-
 	if (UGameInstance* GI = GetGameInstance())
 	{
 		if (UGameStateSubsystem* GameStateSubsystem = GI->GetSubsystem<UGameStateSubsystem>())
@@ -42,20 +72,13 @@ void UMainMenuWidget::OnNewGameClicked()
 	}
 }
 
-//void UMainMenuWidget::OnContinueGameClicked()
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Continue Game Clicked"));
-//}
-
 void UMainMenuWidget::OnSettingClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Settings Clicked"));
+    MenuWidgetSwitcher->SetActiveWidgetIndex(1);
 }
 
 void UMainMenuWidget::OnQuitClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Quit Clicked"));
-
 	APlayerController* PC = GetOwningPlayer();
 
 	UKismetSystemLibrary::QuitGame(
@@ -64,4 +87,14 @@ void UMainMenuWidget::OnQuitClicked()
 		EQuitPreference::Quit,
 		false
 	);
+}
+
+void UMainMenuWidget::OnSoundOptionCloseClicked()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Sound Option Close Clicked"));
+
+    if (MenuWidgetSwitcher)
+    {
+        MenuWidgetSwitcher->SetActiveWidgetIndex(0);
+    }
 }

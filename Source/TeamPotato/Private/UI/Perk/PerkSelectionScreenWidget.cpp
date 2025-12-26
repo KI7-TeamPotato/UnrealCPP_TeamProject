@@ -126,7 +126,10 @@ void UPerkSelectionScreenWidget::HandlePerkSelected(UPerkDataAsset* SelectedPerk
 
 void UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk)
 {
-    RemoveFromParent();
+    if (OnPerkSelected.IsBound())
+    {
+        OnPerkSelected.Broadcast();
+    }
 }
 
 void UPerkSelectionScreenWidget::SetViewModel(UPerkViewModel* InViewModel)

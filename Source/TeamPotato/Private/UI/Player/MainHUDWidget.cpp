@@ -15,6 +15,7 @@ void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
     // 위젯들에 뷰모델 세팅(이제 위젯은 뷰모델을 알게 된다)
     if (PlayerStatPanel)
     {
+        UE_LOG(LogTemp, Warning, TEXT("UMainHUDWidget::InitializeViewModels - Setting PlayerStatPanel ViewModel"));
         PlayerStatPanel->SetViewModel(Subsystem->GetPlayerStatusViewModel());
     }
     if (InventoryPerkPanel)

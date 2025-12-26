@@ -25,6 +25,19 @@ public:
     UFUNCTION()
     void AddPerkSelectionScreenToViewport();
 
+    UFUNCTION()
+    void RemovePerkSelectionScreenFromViewport();
+
+    UFUNCTION(BlueprintCallable, Category = "Input")
+    void SetGameOnlyInputMode();
+
+    UFUNCTION(BlueprintCallable, Category = "Input")
+    void SetUIOnlyInputMode();
+
+    UFUNCTION(BlueprintCallable, Category = "Input")
+    void SetGameAndUIInputMode();
+
+
 protected:
     // --- 빙의 시점에 강제로 Input을 GameModeOnly로 바꿈 ---
     virtual void OnPossess(APawn* InPawn) override;

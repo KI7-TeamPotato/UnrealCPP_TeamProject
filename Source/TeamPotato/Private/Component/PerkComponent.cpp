@@ -11,7 +11,6 @@ UPerkComponent::UPerkComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-
 void UPerkComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -70,6 +69,7 @@ bool UPerkComponent::EquipPerk(UPerkDataAsset* PerkToEquip, int32 SlotIndex)
 
 		if (NewEffect)
 		{
+            UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::EquipPerk - Equipping Perk: %s at SlotIndex: %d"), *PerkToEquip->GetName(), SlotIndex);
 			NewEffect->OnEquip(GetOwner());
 
 			ActivateEffects.Add(SlotIndex, NewEffect);
@@ -77,7 +77,7 @@ bool UPerkComponent::EquipPerk(UPerkDataAsset* PerkToEquip, int32 SlotIndex)
 	}
 
 	// VIEWMODEL에 알림 => UI 업데이트.  (만약 플레이어의 현재 상태를 따로 저장한다면 그 인스턴스에도 알림)
-	UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::EquipPerk - OnEquipmentUpdated.Broadcast called"));
+	//UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::EquipPerk - OnEquipmentUpdated.Broadcast called"));
 	OnEquipmentUpdated.Broadcast(PerkToEquip);
 	return true;
 }

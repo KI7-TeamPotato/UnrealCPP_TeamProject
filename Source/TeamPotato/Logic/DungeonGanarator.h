@@ -10,6 +10,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateDungeonEnded);
 // 던전 생성 완료시에 최대, 최소 지점 알려주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDungeonGenerationCompleted, FVector2D, InMinPoint, FVector2D, InMaxPoint);
 
+// 던전 생성 실행시 사용할 델리게이트
+
+
 USTRUCT(BlueprintType)
 struct FStageRoomConfig
 {

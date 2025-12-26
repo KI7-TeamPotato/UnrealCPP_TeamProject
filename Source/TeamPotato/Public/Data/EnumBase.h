@@ -60,10 +60,29 @@ enum class EBulletType : uint8
     Straight    UMETA(DisplayName = "Straight Shot"),
     Bomb        UMETA(DisplayName = "Rolling Bomb")
 };
+
+UENUM(BlueprintType)
+enum class EBuffType : uint8
+{
+    None            UMETA(DisplayName = "None"),
+    SpeedUp         UMETA(DisplayName = "SpeedUp"),
+    HealthUp        UMETA(DisplayName = "HealthUp"),
+    EnergyUp        UMETA(DisplayName = "EnergyUp"),
+    PowerUp         UMETA(DisplayName = "PowerUp"),
+};
+
+
+
+
 /**
  * 
  */
+
+
+
 class TEAMPOTATO_API EnumBase
 {
 
 };
+
+
