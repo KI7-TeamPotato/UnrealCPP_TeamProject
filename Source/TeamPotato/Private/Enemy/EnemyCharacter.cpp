@@ -126,6 +126,10 @@ void AEnemyCharacter::DefaultAttack()
 
 bool AEnemyCharacter::PlayerFocus(AActor* TargetActor, float DeltaTime, float TurnSpeed)
 {
+    if (!TargetActor || !IsValid(TargetActor))
+    {
+        return false;
+    }
     FVector Start = GetActorLocation();
     FVector End = TargetActor->GetActorLocation();
     FRotator TargetRot = UKismetMathLibrary::FindLookAtRotation(Start, End);
