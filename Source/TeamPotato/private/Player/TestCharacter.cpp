@@ -380,21 +380,22 @@ void ATestCharacter::OnAttack()
 {
     if (IsActionAvailable())
     {
-        float Cost = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackCost;
+        float Cost = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost;
         if (UseEnergy(Cost))
         {
             PlayerAnimation->PlayAttackAnimation();
             WeaponComponent->WeaponAttack();
         }
+        else
+        {
+            // 에너지가 부족하면 연사 중단
+            OnAttackCompleted();
+            WeaponComponent->SwitchToBaseWeapon();
+        }
     }
     else if (bIsOnAttacking && bIsComboInputAvailable)
     {
         bIsOnComboInput = true;
-    }
-    else
-    {
-        // 에너지가 부족하면 연사 중단
-        OnAttackCompleted();
     }
 }
 
@@ -404,7 +405,7 @@ void ATestCharacter::OnAttackStarted()
     OnAttack();
 
     // 무기 데이터에서 공격 속도 가져옴
-    float FireRate = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackSpeed;
+    float FireRate = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackSpeed;
     if (FireRate > 0)
     {
         float interval = 1.0f / FireRate;

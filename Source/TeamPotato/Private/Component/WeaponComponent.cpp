@@ -30,21 +30,54 @@ void UWeaponComponent::BeginPlay()
     }
 
 	Owner = Cast<ATestCharacter>(GetOwner());
+    InitializeBaseWeapon();
+}
+
+void UWeaponComponent::InitializeBaseWeapon()
+{
+    if (BaseWeaponData && BaseWeaponData->WeaponClass)
+    {
+        BaseWeapon = GetWorld()->SpawnActor<AWeaponBase>(BaseWeaponData->WeaponClass);
+        if (BaseWeapon)
+        {
+            BaseWeapon->InitializeFromData(BaseWeaponData);
+            BaseWeapon->SetOwner(Owner);
+            BaseWeapon->SetOwnerComponent(this);
+
+            // 만약 게임 시작 시 무기가 아예 없다면 기본 무기를 장착
+            if (!CurrentWeapon)
+            {
+                BaseWeapon->AttachToComponent(
+                    Owner->GetMesh(),
+                    FAttachmentTransformRules::SnapToTargetIncludingScale,
+                    TEXT("Weapon_Gun")
+                );
+                SwitchToBaseWeapon();
+            }
+        }
+    }
 }
 
 void UWeaponComponent::WeaponAttack()
 {
-	if (!CurrentWeapon) return;
+	if (!CurrentWeapon || !BaseWeapon) return;
 
-	if (CurrentWeapon)
+	if (CurrentWeapon && !bIsUsingBaseWeapon)
 	{
 		CurrentWeapon->Attack(Owner);
 	}
+    else
+    {
+        BaseWeapon->Attack(Owner);
+    }
 }
 
 void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
 {
     UE_LOG(LogTemp, Log, TEXT("EquipCurrentWeapon called"));
+
+    BaseWeapon->SetActorHiddenInGame(true);
+    BaseWeapon->SetActorEnableCollision(false);
 
     if (!InWeapon || !Owner) return;
 
@@ -73,6 +106,8 @@ void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
         );
     }
 
+    ActivatedWeapon = CurrentWeapon;
+
     // 메인 무기 변경 브로드캐스트
     BroadcastMainWeaponChanged();
 }
@@ -98,36 +133,40 @@ void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
 
     NewWeapon->InitializeFromData(WeaponData);
 
-    // 현재 무기 없음
-    if (!CurrentWeapon)
+    // 기본 무기 상태에서 새 무기를 먹었을 때
+    if (bIsUsingBaseWeapon)
+    {
+        // 기본 무기는 숨기고 새 무기로 교체 (기본 무기는 파괴하거나 드롭하지 않음)
+        BaseWeapon->SetActorHiddenInGame(true);
+        BaseWeapon->SetActorEnableCollision(false);
+
+        EquipCurrentWeapon(NewWeapon);
+        bIsUsingBaseWeapon = false;
+        return;
+    }
+
+    if (!CurrentWeapon) // 현재 무기 없음
     {
         EquipCurrentWeapon(NewWeapon);
-        return;
     }
-
-    // 현재 무기 있음, 서브 무기 없음
-    if (!SubWeapon)
+    else if (!SubWeapon) // 서브 무기 없음
     {
         EquipSubWeapon(NewWeapon);
-        SubWeapon->SetOwner(Owner);
-        return;
     }
-
-    // 둘 다 있음
-
-    AWeaponBase* OldWeapon = CurrentWeapon;
-    
-    // 새 무기 장착
-    EquipCurrentWeapon(NewWeapon);
-    // 기존 픽업 무기 드롭
-    SpawnPickupWeapon(OldWeapon->GetWeaponData());
-    // 기존 장착 무기 파괴
-    OldWeapon->Destroy();
+    else
+    {
+        // 둘 다 있을 때만 현재 무기를 버리고 교체
+        AWeaponBase* OldWeapon = CurrentWeapon;
+        EquipCurrentWeapon(NewWeapon);
+        SpawnPickupWeapon(OldWeapon->GetWeaponData());
+        OldWeapon->Destroy();
+    }
 }
 
 void UWeaponComponent::SwapWeapon()
 {
     if (!CurrentWeapon || !SubWeapon) return;
+    bIsUsingBaseWeapon = false;
 
     AWeaponBase* Temp = CurrentWeapon;
 
@@ -155,9 +194,34 @@ void UWeaponComponent::SpawnPickupWeapon(UWeaponDataAsset* WeaponData)
     }
 }
 
+void UWeaponComponent::SwitchToBaseWeapon()
+{
+    if (!BaseWeapon || bIsUsingBaseWeapon) return;
+
+    // 기존 무기(CurrentWeapon)가 있다면 숨기기만 함
+    if (CurrentWeapon && CurrentWeapon != BaseWeapon)
+    {
+        CurrentWeapon->SetActorHiddenInGame(true);
+        CurrentWeapon->SetActorEnableCollision(false);
+    }
+
+    bIsUsingBaseWeapon = true;
+    ActivatedWeapon = BaseWeapon;
+
+    BaseWeapon->SetActorHiddenInGame(false);
+    BaseWeapon->SetActorEnableCollision(true);
+
+    BaseWeapon->AttachToComponent(
+        Owner->GetMesh(),
+        FAttachmentTransformRules::SnapToTargetIncludingScale,
+        TEXT("Weapon_Gun")
+    );
+    Owner->SetPlayerActivatedWeapon(BaseWeapon->GetWeaponType());
+}
+
 EWeaponType UWeaponComponent::GetCurrentWeaponType() const
 {
-	return CurrentWeapon ? CurrentWeapon->GetWeaponType() : EWeaponType::None;
+	return ActivatedWeapon ? ActivatedWeapon->GetWeaponType() : EWeaponType::None;
 }
 
 
