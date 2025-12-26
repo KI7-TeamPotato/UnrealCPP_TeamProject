@@ -30,29 +30,42 @@ void UWeaponComponent::BeginPlay()
     }
 
 	Owner = Cast<ATestCharacter>(GetOwner());
-    InitializeBaseWeapon();
 }
 
-void UWeaponComponent::InitializeBaseWeapon()
+void UWeaponComponent::InitializeBaseWeapon(UWeaponDataAsset* InWeaponData)
 {
-    if (BaseWeaponData && BaseWeaponData->WeaponClass)
+    if (InWeaponData && InWeaponData->WeaponClass)
     {
-        BaseWeapon = GetWorld()->SpawnActor<AWeaponBase>(BaseWeaponData->WeaponClass);
+        BaseWeapon = GetWorld()->SpawnActor<AWeaponBase>(InWeaponData->WeaponClass);
         if (BaseWeapon)
         {
-            BaseWeapon->InitializeFromData(BaseWeaponData);
+            BaseWeapon->InitializeFromData(InWeaponData);
+
             BaseWeapon->SetOwner(Owner);
             BaseWeapon->SetOwnerComponent(this);
 
             // 만약 게임 시작 시 무기가 아예 없다면 기본 무기를 장착
             if (!CurrentWeapon)
             {
-                BaseWeapon->AttachToComponent(
-                    Owner->GetMesh(),
-                    FAttachmentTransformRules::SnapToTargetIncludingScale,
-                    TEXT("Weapon_Gun")
-                );
-                SwitchToBaseWeapon();
+                if (BaseWeapon->GetWeaponType() == EWeaponType::Sword)
+                {
+                    BaseWeapon->AttachToComponent(
+                        Owner->GetMesh(),
+                        FAttachmentTransformRules::SnapToTargetIncludingScale,
+                        TEXT("Weapon_Sword")
+                    );
+                }
+                else if (BaseWeapon->GetWeaponType() == EWeaponType::Gun)
+                {
+                    BaseWeapon->AttachToComponent(
+                        Owner->GetMesh(),
+                        FAttachmentTransformRules::SnapToTargetIncludingScale,
+                        TEXT("Weapon_Gun")
+                    );
+                }
+                ActivatedWeapon = BaseWeapon;
+                Owner->SetPlayerActivatedWeapon(BaseWeapon->GetWeaponType());
+                BroadcastMainWeaponChanged();
             }
         }
     }
@@ -60,7 +73,7 @@ void UWeaponComponent::InitializeBaseWeapon()
 
 void UWeaponComponent::WeaponAttack()
 {
-	if (!CurrentWeapon || !BaseWeapon) return;
+	if (!CurrentWeapon && !BaseWeapon) return;
 
 	if (CurrentWeapon && !bIsUsingBaseWeapon)
 	{
@@ -211,12 +224,8 @@ void UWeaponComponent::SwitchToBaseWeapon()
     BaseWeapon->SetActorHiddenInGame(false);
     BaseWeapon->SetActorEnableCollision(true);
 
-    BaseWeapon->AttachToComponent(
-        Owner->GetMesh(),
-        FAttachmentTransformRules::SnapToTargetIncludingScale,
-        TEXT("Weapon_Gun")
-    );
     Owner->SetPlayerActivatedWeapon(BaseWeapon->GetWeaponType());
+    BroadcastMainWeaponChanged();
 }
 
 EWeaponType UWeaponComponent::GetCurrentWeaponType() const
@@ -229,7 +238,7 @@ void UWeaponComponent::BroadcastMainWeaponChanged()
 {
     if (OnMainWeaponChanged.IsBound())
     {
-        OnMainWeaponChanged.Broadcast(CurrentWeapon->GetWeaponData());
+        OnMainWeaponChanged.Broadcast(ActivatedWeapon->GetWeaponData());
     }
 }
 

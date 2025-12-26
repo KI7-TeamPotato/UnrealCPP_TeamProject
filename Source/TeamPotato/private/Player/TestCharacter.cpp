@@ -85,7 +85,6 @@ void ATestCharacter::BeginPlay()
         }
     }
 
-
     UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
     UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
 
@@ -101,7 +100,7 @@ void ATestCharacter::BeginPlay()
     // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
     if (CharacterSubsystem)
     {
-        WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedMainWeapon());
+        WeaponComponent->InitializeBaseWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
 }

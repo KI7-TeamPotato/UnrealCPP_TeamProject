@@ -30,7 +30,7 @@ public:
 
     // 데이터 에셋에서 불러오는 함수
     void InitializeFromData(class UWeaponDataAsset* InData);
-
+    
     // 애니메이션 노티파이에서 호출
     virtual void BeginAttack() {}
     virtual void EndAttack() {}
