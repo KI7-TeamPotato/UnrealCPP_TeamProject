@@ -4,6 +4,7 @@
 #include "Enemy/EnemyCharacter.h"
 #include "Component/BulletHellComponent.h"
 #include "BossBase.generated.h"
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPatternFinished);
 
 UCLASS()
 class TEAMPOTATO_API ABossBase : public AEnemyCharacter
@@ -18,6 +19,8 @@ protected:
 
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+    virtual float SetMovementSpeed_Implementation(EEnemySpeed State) override;
+
 public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss|Status")
@@ -26,8 +29,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
     virtual void ExecutePattern(int32 PatternIndex);
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
     UBulletHellComponent* BulletPatternComp;
+
+    UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+    void FinishCurrentPattern();
+
+    UPROPERTY(BlueprintAssignable, Category = "Boss|Event")
+    FOnPatternFinished OnPatternFinished;
+
 protected:
     UFUNCTION(BlueprintNativeEvent, Category = "Boss|Combat")
     void PatternOne();

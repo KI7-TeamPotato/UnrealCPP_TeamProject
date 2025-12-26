@@ -2,6 +2,7 @@
 
 
 #include "Enemy/BossBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 ABossBase::ABossBase()
@@ -11,6 +12,7 @@ ABossBase::ABossBase()
 
 void ABossBase::BeginPlay()
 {
+    Super::BeginPlay();
 }
 
 float ABossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -46,41 +48,86 @@ void ABossBase::ExecutePattern(int32 PatternIndex)
 
     switch (PatternIndex)
     {
-    case 1: PatternOne();
+    case 0: PatternOne();
         break;
-    case 2: PatternTwo();
+    case 1: PatternTwo();
         break;
-    case 3: PatternThree(); 
+    case 2: PatternThree(); 
         break;
-    case 4: PatternFour(); 
+    case 3: PatternFour(); 
         break;
-    case 5: PatternFive();
+    case 4: PatternFive();
         break;
     default: UE_LOG(LogTemp, Warning, TEXT("PatternInvalid")); break;
     }
 }
 
+float ABossBase::SetMovementSpeed_Implementation(EEnemySpeed State)
+{
+    float TargetSpeed = 0.0f;
+    UE_LOG(LogTemp, Log, TEXT("State : %d"), (int)State);
+    //EEnemySpeed에 따라서 속도 조절
+    switch (State)
+    {
+    case EEnemySpeed::Idle:
+        TargetSpeed = 0.0f;
+        break;
+    case EEnemySpeed::Walking:
+        TargetSpeed = 200.0f;
+        break;
+    case EEnemySpeed::Jumping:
+        TargetSpeed = 300.0f;
+        break;
+    case EEnemySpeed::Sprint:
+        TargetSpeed = 500.0f;
+        break;
+    default:
+        TargetSpeed = 100.0f; // 기본값
+        break;
+    }
+    UE_LOG(LogTemp, Log, TEXT("State : %f"), TargetSpeed);
+
+    // 실제 이동 속도 적용
+    GetCharacterMovement()->MaxWalkSpeed = TargetSpeed;
+
+    // 변경된 속도 반환
+    return TargetSpeed;
+}
+
 void ABossBase::PatternOne_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("Pattern1"));
+
 }
 
 void ABossBase::PatternTwo_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("Pattern2"));
+
 }
 
 void ABossBase::PatternThree_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("Pattern3"));
+
 }
 
 void ABossBase::PatternFour_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("Pattern4"));
+
 }
 
 void ABossBase::PatternFive_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("Pattern5"));
+
+}
+
+void ABossBase::FinishCurrentPattern()
+{
+    if (OnPatternFinished.IsBound())
+    {
+        OnPatternFinished.Broadcast();
+    }
 }

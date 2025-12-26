@@ -22,7 +22,7 @@ AEnemyProjectile::AEnemyProjectile()
     ProjectileMovement->bRotationFollowsVelocity = true;
     ProjectileMovement->ProjectileGravityScale = 0.0f; 
 
-    InitialLifeSpan = 3.0f;
+    InitialLifeSpan = 7.0f;
 }
 
 void AEnemyProjectile::BeginPlay()

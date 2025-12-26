@@ -24,6 +24,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Patterns")
     void SpawnSpiralShot(UPARAM(ref) float& CurrentAngle, float AngleStep, float Speed);
 
+    UFUNCTION(BlueprintCallable, Category = "Patterns")
+    void SpawnThreeWayShot(float Speed);
+
 private:
     void SpawnProjectile(FVector Location, FRotator Rotation, float Speed);
 };
