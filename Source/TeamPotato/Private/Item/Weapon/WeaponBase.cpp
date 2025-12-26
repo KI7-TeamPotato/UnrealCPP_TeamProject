@@ -33,8 +33,6 @@ void AWeaponBase::BeginPlay()
 
 void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
 {
-    if (AttackSound)
-        UGameplayStatics::PlaySound2D(this, AttackSound);
 }
 
 void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)

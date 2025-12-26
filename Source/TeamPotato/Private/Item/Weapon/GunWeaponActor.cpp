@@ -86,6 +86,8 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 
     if(ShootEffect)
        ShootEffect->Activate();
+    if (AttackSound)
+        UGameplayStatics::PlaySound2D(this, AttackSound);
 
 	if (Bullet)
 	{

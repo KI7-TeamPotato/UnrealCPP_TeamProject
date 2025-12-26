@@ -146,18 +146,6 @@ void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
 
     NewWeapon->InitializeFromData(WeaponData);
 
-    // 기본 무기 상태에서 새 무기를 먹었을 때
-    if (bIsUsingBaseWeapon)
-    {
-        // 기본 무기는 숨기고 새 무기로 교체 (기본 무기는 파괴하거나 드롭하지 않음)
-        BaseWeapon->SetActorHiddenInGame(true);
-        BaseWeapon->SetActorEnableCollision(false);
-
-        EquipCurrentWeapon(NewWeapon);
-        bIsUsingBaseWeapon = false;
-        return;
-    }
-
     if (!CurrentWeapon) // 현재 무기 없음
     {
         EquipCurrentWeapon(NewWeapon);
@@ -166,13 +154,27 @@ void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
     {
         EquipSubWeapon(NewWeapon);
     }
-    else
+    else if (!bIsUsingBaseWeapon)
     {
         // 둘 다 있을 때만 현재 무기를 버리고 교체
         AWeaponBase* OldWeapon = CurrentWeapon;
         EquipCurrentWeapon(NewWeapon);
         SpawnPickupWeapon(OldWeapon->GetWeaponData());
         OldWeapon->Destroy();
+    }
+    // 기본 무기 상태
+    else
+    {
+        // 기본 무기는 숨기고 새 무기로 교체 (기본 무기는 파괴하거나 드롭하지 않음)
+        BaseWeapon->SetActorHiddenInGame(true);
+        BaseWeapon->SetActorEnableCollision(false);
+
+        AWeaponBase* OldWeapon = CurrentWeapon;
+        EquipCurrentWeapon(NewWeapon);
+        SpawnPickupWeapon(OldWeapon->GetWeaponData());
+        OldWeapon->Destroy();
+
+        bIsUsingBaseWeapon = false;
     }
 }
 

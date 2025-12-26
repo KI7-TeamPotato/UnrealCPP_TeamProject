@@ -60,6 +60,9 @@ void ALaserGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
     // 발사 방향 계산
     FVector ShootDirection = (HitLocation - MuzzleLocation).GetSafeNormal();
 
+    if (AttackSound)
+        UGameplayStatics::PlaySound2D(this, AttackSound);
+
     // 총알 스폰
     AActor* Laser = GetWorld()->SpawnActor<AActor>(
         LaserClass,

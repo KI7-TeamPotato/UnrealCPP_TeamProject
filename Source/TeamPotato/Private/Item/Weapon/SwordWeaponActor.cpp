@@ -33,6 +33,9 @@ void ASwordWeaponActor::BeginAttack()
     {
         TrailEffect->Activate();
     }
+
+    if (AttackSound)
+        UGameplayStatics::PlaySound2D(this, AttackSound);
 }
 
 void ASwordWeaponActor::EndAttack()

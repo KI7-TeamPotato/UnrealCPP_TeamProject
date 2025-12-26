@@ -377,9 +377,9 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttack()
 {
+    float Cost = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost;
     if (IsActionAvailable())
     {
-        float Cost = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost;
         if (UseEnergy(Cost))
         {
             PlayerAnimation->PlayAttackAnimation();
@@ -394,7 +394,8 @@ void ATestCharacter::OnAttack()
     }
     else if (bIsOnAttacking && bIsComboInputAvailable)
     {
-        bIsOnComboInput = true;
+        if(UseEnergy(Cost))
+            bIsOnComboInput = true;
     }
 }
 
