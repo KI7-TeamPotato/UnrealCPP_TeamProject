@@ -9,7 +9,7 @@
 ARoomBase::ARoomBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	DefaultScenRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultScenRoot"));
 	GeometryFolder = CreateDefaultSubobject<USceneComponent>(TEXT("GeometryFolder"));
 	OverlapFolder = CreateDefaultSubobject<USceneComponent>(TEXT("OverlapFolder"));
@@ -231,10 +231,3 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
         OnEnterRoomCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     }
 }
-
-// Called every frame
-void ARoomBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
