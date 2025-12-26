@@ -587,5 +587,8 @@ void ADungeonGanarator::CalculateDungeonMinMaxPoint()
     }
 
     // 로딩창 종료
-    OnDungeonGenerationCompleted.Broadcast(MinPoint, MaxPoint);
+    if (OnDungeonGenerationCompleted.IsBound())
+    {
+        OnDungeonGenerationCompleted.Broadcast(MinPoint, MaxPoint);
+    }
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Data/CharacterTypes.h"
 #include "PlayerStatusViewModel.generated.h"
 
 // --- 위젯에 체력 및 자원 변경을 알리기 위한 델리게이트 ---

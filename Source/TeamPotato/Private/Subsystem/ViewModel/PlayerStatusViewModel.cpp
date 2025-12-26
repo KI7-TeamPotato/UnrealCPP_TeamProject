@@ -2,6 +2,8 @@
 
 
 #include "Subsystem/ViewModel/PlayerStatusViewModel.h"
+#include "Subsystem/CharacterSubsystem.h"
+
 
 void UPlayerStatusViewModel::SetHealth(float CurrentHealth, float MaxHealth)
 {
@@ -13,7 +15,6 @@ void UPlayerStatusViewModel::SetHealth(float CurrentHealth, float MaxHealth)
 	//FText HealthText = FText::FromString(FString::Printf(TEXT("%d / %d"), FMath::RoundToInt(CurrentHealth), FMath::RoundToInt(MaxHealth)));
 	//OnPlayerHealthChangedWithText.Broadcast(HealthPercent, HealthText);
 }
-
 
 void UPlayerStatusViewModel::SetPlayerIcon(UTexture2D* NewIcon)
 {

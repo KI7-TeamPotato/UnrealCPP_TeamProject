@@ -29,6 +29,7 @@ void ATestUIController::BeginPlay()
                 if (!MinimapViewModel)
                 {
                     MinimapViewModel = Subsystem->GetMinimapViewModel();
+                    MinimapViewModel->OnMinimapInitialized.AddDynamic(this, &ATestUIController::UpdateMinimapPlayerPosition);
                 }
             }
         }
@@ -38,7 +39,7 @@ void ATestUIController::BeginPlay()
     GetWorldTimerManager().SetTimer(
         MinimapUpdateTimer,
         this,
-        &ATestUIController::UpdateMinimapPlayerPosition,
+        &ATestUIController::IsMinimapUpdateThresholdReached,
         0.1f,
         true
     );
@@ -62,20 +63,20 @@ void ATestUIController::OnPossess(APawn* InPawn)
     }
 }
 
-void ATestUIController::UpdateMinimapPlayerPosition()
+void ATestUIController::IsMinimapUpdateThresholdReached()
 {
-    UE_LOG(LogTemp, Log, TEXT("LastPawnLocation: %s, LastPawnYaw: %f"), *LastPawnLocation.ToString(), LastPawnYaw);
+    //UE_LOG(LogTemp, Log, TEXT("LastPawnLocation: %s, LastPawnYaw: %f"), *LastPawnLocation.ToString(), LastPawnYaw);
 
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn) return;
 
-    const FVector CurrentLocation = ControlledPawn->GetActorLocation();
-    const float CurrentYaw = ControlledPawn->GetActorRotation().Yaw;
+    CurrentPawnLocation = ControlledPawn->GetActorLocation();
+    CurrentPawnYaw = ControlledPawn->GetActorRotation().Yaw;
 
-    const float DistanceMoved = FVector::DistSquared(CurrentLocation, LastPawnLocation);
-    const float YawDifference = FMath::Abs(CurrentYaw - LastPawnYaw);
+    const float DistanceMoved = FVector::DistSquared(CurrentPawnLocation, LastPawnLocation);
+    const float YawDifference = FMath::Abs(CurrentPawnYaw - LastPawnYaw);
 
-    UE_LOG(LogTemp, Warning, TEXT("DistanceMoved: %f, YawDifference: %f"), DistanceMoved, YawDifference);
+    //UE_LOG(LogTemp, Warning, TEXT("DistanceMoved: %f, YawDifference: %f"), DistanceMoved, YawDifference);s
 
     if(DistanceMoved < MinimapUpdateThreshold * MinimapUpdateThreshold &&
        YawDifference < MinimapYawUpdateThreshold)
@@ -83,6 +84,11 @@ void ATestUIController::UpdateMinimapPlayerPosition()
         return; // 임계값 이하로 이동/회전했으면 업데이트하지 않음
     }
 
+    UpdateMinimapPlayerPosition();
+}
+
+void ATestUIController::UpdateMinimapPlayerPosition()
+{
     if (!MinimapViewModel)
     {
         if (UMVVMSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
@@ -93,8 +99,8 @@ void ATestUIController::UpdateMinimapPlayerPosition()
 
     if (MinimapViewModel)
     {
-        MinimapViewModel->UpdatePlayerPosition(CurrentLocation, CurrentYaw);
-        LastPawnLocation = CurrentLocation;
-        LastPawnYaw = CurrentYaw;
+        MinimapViewModel->UpdatePlayerPosition(CurrentPawnLocation, CurrentPawnYaw);
+        LastPawnLocation = CurrentPawnLocation;
+        LastPawnYaw = CurrentPawnYaw;
     }
 }
