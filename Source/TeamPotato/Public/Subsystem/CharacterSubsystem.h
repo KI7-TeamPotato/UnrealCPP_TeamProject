@@ -42,7 +42,6 @@ public:
     // 캐릭터 타입으로 캐릭터 테이블의 행을 반환
     const FCharacterDataTableRow& GetCharacterDataRowByType(ECharacterType InCharacterType) const;
 
-
     // 현재 플레이어 타입의 초기 상태로 리셋
     UFUNCTION(BlueprintCallable, Category = "Character")
     void ResetPlayerDataToInitialState();

@@ -53,6 +53,9 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
     TObjectPtr<UTextBlock> WeaponDamageText = nullptr;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UTextBlock> WeaponAttackSpeedText = nullptr;
+
     // --- 캐릭터 일러스트 ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
     TObjectPtr<UImage> CharacterIllustImage = nullptr;

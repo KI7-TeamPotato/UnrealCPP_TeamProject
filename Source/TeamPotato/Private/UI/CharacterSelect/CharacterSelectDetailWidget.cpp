@@ -17,5 +17,6 @@ void UCharacterSelectDetailWidget::UpdateCharacterDetails(ECharacterType InChara
     WeaponIconImage->SetBrushFromTexture(CharacterDataRow.DefaultWeaponDataAsset->WeaponIcon);
     WeaponNameText->SetText(CharacterDataRow.DefaultWeaponDataAsset->WeaponName);
     WeaponDamageText->SetText(FText::AsNumber(static_cast<int32>(CharacterDataRow.DefaultWeaponDataAsset->AttackDamage)));
+    WeaponAttackSpeedText->SetText(FText::AsNumber(CharacterDataRow.DefaultWeaponDataAsset->AttackSpeed));
     CharacterIllustImage->SetBrushFromTexture(CharacterDataRow.CharacterIllustration);
 }
