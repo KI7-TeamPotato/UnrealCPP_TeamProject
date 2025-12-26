@@ -21,7 +21,7 @@ AGunWeaponActor::AGunWeaponActor()
 
     // 트레일 초기화
     ShootEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Muzzle"));
-    ShootEffect->SetupAttachment(WeaponMesh);
+    ShootEffect->SetupAttachment(WeaponMesh, TEXT("FirePoint"));
     ShootEffect->bAutoActivate = false;
 }
 
