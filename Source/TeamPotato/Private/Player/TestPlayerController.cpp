@@ -54,7 +54,7 @@ void ATestPlayerController::BeginPlay()
             PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
 
             // 테스트용, 실제 게임에서는 다른 타이밍에 뷰포트 추가
-            AddPerkSelectionScreenToViewport();
+            //AddPerkSelectionScreenToViewport();
         }
 
         // 인게임 메뉴 처리
