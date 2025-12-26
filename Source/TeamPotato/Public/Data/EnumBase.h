@@ -53,6 +53,13 @@ enum class EMovingDirection : uint8
     BackRight   UMETA(DisplayName = "BackRight"),
     BackLeft    UMETA(DisplayName = "BackLeft"),
 };
+
+UENUM(BlueprintType)
+enum class EBulletType : uint8
+{
+    Straight    UMETA(DisplayName = "Straight Shot"),
+    Bomb        UMETA(DisplayName = "Rolling Bomb")
+};
 /**
  * 
  */

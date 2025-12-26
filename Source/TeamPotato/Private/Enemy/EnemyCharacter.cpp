@@ -51,7 +51,7 @@ void AEnemyCharacter::BeginPlay()
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    // 1. 부모 클래스의 기본 로직 실행 (필수)
+    //부모 클래스의 기본 로직 실행
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     // 데미지가 0 이하거나 이미 죽었다면 무시
@@ -60,10 +60,9 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
         return 0.0f;
     }
 
-    // 2. 체력 감소
+    //체력 감소
     CurrentHealth -= ActualDamage;
 
-    // 로그로 확인 (디버깅용)
     UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
 
     // 위젯 업데이트
