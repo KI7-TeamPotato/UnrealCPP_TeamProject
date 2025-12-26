@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuSoundOptionWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCloseButtonClicked);
+
 class USlider;
 class UTextBlock;
 class UButton;
@@ -37,34 +39,41 @@ private:
     UFUNCTION()
     void OnCancelButtonClick();
 
+    UFUNCTION()
+    void OnCloseButtonClick();
+
+public:
+    UPROPERTY()
+    FOnCloseButtonClicked OnCloseButtonClickedDelegate;
+
 protected:
     // ---  배경 음악 볼륨 슬라이더 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<USlider> MusicSlider;
+    TObjectPtr<USlider> MusicSlider = nullptr;
 
     // ---  효과음 볼륨 슬라이더 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<USlider> SFXSlider;
+    TObjectPtr<USlider> SFXSlider = nullptr;
 
     // ---  배경 음악 볼륨을 텍스트로 표시 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<UTextBlock> MusicSoundPercent;
+    TObjectPtr<UTextBlock> MusicSoundPercent = nullptr;
 
     // ---  효과음 볼륨을 텍스트로 표시 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<UTextBlock> SFXSoundPercent;
+    TObjectPtr<UTextBlock> SFXSoundPercent = nullptr;
 
     // ---  적용 버튼 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<UButton> ApplyButton;
+    TObjectPtr<UButton> ApplyButton = nullptr;
 
     // --- 취소 버튼 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<UButton> CancelButton;
+    TObjectPtr<UButton> CancelButton = nullptr;
 
     // --- 창 닫기 버튼 ---
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    TObjectPtr<UButton> CloseButton;
+    TObjectPtr<UButton> CloseButton = nullptr;
 
 private:
     TObjectPtr<UAudioSubsystem> CachedAudioSubsystem = nullptr;

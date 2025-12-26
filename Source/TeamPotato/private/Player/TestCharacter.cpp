@@ -66,6 +66,8 @@ void ATestCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
+    UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::BeginPlay"));
+
     if (GetMesh())
     {
         AnimInstance = GetMesh()->GetAnimInstance();	// ABP 객체 가져오기
@@ -85,7 +87,6 @@ void ATestCharacter::BeginPlay()
         }
     }
 
-
     UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
     UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
 
@@ -94,7 +95,12 @@ void ATestCharacter::BeginPlay()
     {
         if (GameStateSubsystem->GetCurrentGameState() == EGameState::Lobby)
         {
+            // 타이밍을 맞출 수 있다면 캐릭터 서브시스템으로 이관하는 것이 좋음
             CharacterSubsystem->ResetPlayerDataToInitialState();
+
+            // 캐릭터 변경을 알리는 델리게이트 브로드캐스트
+            CharacterSubsystem->OnSelectedCharacterChanged.Broadcast();
+            InitializeCharacterStat();
         }
     }
 
@@ -104,6 +110,8 @@ void ATestCharacter::BeginPlay()
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
+
+    UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::BeginPlay - Character initialized with equipped weapons."));
 }
 
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -138,6 +146,22 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		enhancedInputComponent->BindAction(IA_Interact, ETriggerEvent::Started, this, &ATestCharacter::OnInteract);
 		enhancedInputComponent->BindAction(IA_Skill, ETriggerEvent::Started, this, &ATestCharacter::OnSkillInput);
         enhancedInputComponent->BindAction(IA_WeaponSwap, ETriggerEvent::Started, this, &ATestCharacter::OnWeaponSwap);
+    }
+}
+
+void ATestCharacter::InitializeCharacterStat()
+{
+    if (ResourceManager)
+    {
+        UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+        if (CharacterSubsystem)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Initializing Character Stats"));
+            FPlayerSaveData CurrentPlayerData = CharacterSubsystem->GetCurrentPlayerData();
+            ResourceManager->SetMaxHealth(CurrentPlayerData.MaxHealth);
+            ResourceManager->SetMaxEnergy(CurrentPlayerData.MaxEnergy);
+            MovementComponent->MaxWalkSpeed = CurrentPlayerData.WalkSpeed;
+        }
     }
 }
 
@@ -529,6 +553,11 @@ void ATestCharacter::AddMaxHealth(float InMaxHealth)
 void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 {
     ResourceManager->AddMaxEnergy(InMaxEnergy);
+}
+
+void ATestCharacter::AddMoveSpeed(float InMoveSpeed)
+{
+    MovementComponent->MaxWalkSpeed += InMoveSpeed;
 }
 
 EMovingDirection ATestCharacter::GetPlayerDirection()

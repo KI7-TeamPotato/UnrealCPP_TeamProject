@@ -24,9 +24,20 @@ public:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
     FString CharacterName = "";
 
+    // 스폰될 캐릭터 클래스
     UPROPERTY(EditAnyWhere, BlueprintReadOnly)
     TSubclassOf<ATestCharacter> CharacterClass = nullptr;
 
+    UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+    float MaxHealth = 100.0f;
+
+    UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+    float MaxEnergy = 100.0f;
+
+    UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+    float WalkSpeed = 600.0f;
+
+    // 캐릭터가 들고 있을 기본 무기
     UPROPERTY(EditAnyWhere, BlueprintReadOnly)
     TObjectPtr<UWeaponDataAsset> DefaultWeaponDataAsset = nullptr;
 

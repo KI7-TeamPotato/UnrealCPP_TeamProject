@@ -15,6 +15,7 @@ void UMainMenuSoundOptionWidget::NativeConstruct()
     SFXSlider->OnValueChanged.AddDynamic(this, &UMainMenuSoundOptionWidget::UpdateSFXVolumeText);
     ApplyButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnApplyButtonClick);
     CancelButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnCancelButtonClick);
+    CloseButton->OnClicked.AddDynamic(this, &UMainMenuSoundOptionWidget::OnCloseButtonClick);
 
     if (CachedAudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>())
     {
@@ -38,16 +39,26 @@ void UMainMenuSoundOptionWidget::UpdateSFXVolumeText(float InVolume)
 
 void UMainMenuSoundOptionWidget::OnApplyButtonClick()
 {
+    if (!CachedAudioSubsystem)
+    {
+        CachedAudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+    }
     if (CachedAudioSubsystem)
     {
-        CachedAudioSubsystem->SetMusicVolume(MusicSlider->GetValue());
-        CachedAudioSubsystem->SetSFXVolume(SFXSlider->GetValue());
+        CachedAudioSubsystem->SetMusicVolume(MusicSlider->GetValue(), this);
+        CachedAudioSubsystem->SetSFXVolume(SFXSlider->GetValue(), this);
     }
 }
 
 void UMainMenuSoundOptionWidget::OnCancelButtonClick()
 {
     LoadSavedVolumeFromSubsystem();
+}
+
+void UMainMenuSoundOptionWidget::OnCloseButtonClick()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Close Button Clicked in Sound Option Widget"));
+    OnCloseButtonClickedDelegate.Broadcast();
 }
 
 

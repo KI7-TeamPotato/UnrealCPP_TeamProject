@@ -5,6 +5,14 @@
 #include "Components/Image.h"
 #include "Data/Object/CharacterDataObject.h"
 
+void UCharacterPreviewTile::NativeConstruct()
+{
+    Super::NativeConstruct();
+
+    this->SetRenderScale(FVector2D(1.f, 1.f));
+    this->SetRenderOpacity(UnselectedColor.A);
+}
+
 void UCharacterPreviewTile::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
@@ -17,6 +25,24 @@ void UCharacterPreviewTile::NativeOnListItemObjectSet(UObject* ListItemObject)
 	{
 		SetCharacterIcon(CharacterData->CharacterIcon);
 	}
+}
+
+void UCharacterPreviewTile::NativeOnItemSelectionChanged(bool bIsSelected)
+{
+    IUserObjectListEntry::NativeOnItemSelectionChanged(bIsSelected);
+
+    if (bIsSelected)
+    {
+        // 선택 되었다면 크기를 1.1f 키우고 알파 값을 1.0f로 설정
+        this->SetRenderScale(FVector2D(SelectedScaleFactor, SelectedScaleFactor));
+        this->SetRenderOpacity(SelectedColor.A);
+    }
+    else
+    {
+        // 선택 해제 되었다면 크기를 원래대로 돌리고 알파 값을 0.7f로 설정
+        this->SetRenderScale(FVector2D(1.f, 1.f));
+        this->SetRenderOpacity(UnselectedColor.A);
+    }
 }
 
 void UCharacterPreviewTile::SetCharacterIcon(UTexture2D* NewIcon)

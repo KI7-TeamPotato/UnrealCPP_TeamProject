@@ -104,6 +104,8 @@ public:
     //최대 스태미나 증가
     UFUNCTION(BlueprintCallable, Category = "Resource|Energy")
     void AddMaxEnergy(float InMaxEnergy);
+    // 이동 속도 증가
+    void AddMoveSpeed(float InMoveSpeed);
 
     //Getter
     //현재 활성화된 무기 확인
@@ -186,6 +188,11 @@ protected:
 
     // 무기 교체 함수
     void OnWeaponSwap();
+
+
+    // 캐릭터 스탯 초기화 함수
+    UFUNCTION()
+    void InitializeCharacterStat();
 
 private:
     UFUNCTION()

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PerkEffectBase.h"
+#include "Data/EnumBase.h"
 #include "BuffPerkEffect.generated.h"
 
 /**
@@ -18,4 +19,8 @@ public:
 	virtual void OnEquip(AActor* OwnerCharacter) override;
 
 	virtual void OnUnequip(AActor* OwnerCharacter) override;
+
+private:
+    UPROPERTY(EditAnywhere, Category = "Buff Perk Effect", meta = (AllowPrivate = "true"))
+    EBuffType BuffType = EBuffType::None;
 };

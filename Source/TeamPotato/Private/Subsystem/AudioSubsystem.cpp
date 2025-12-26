@@ -56,12 +56,16 @@ void UAudioSubsystem::InitializeSaveSettings()
     }
 }
 
-void UAudioSubsystem::SetMusicVolume(float InVolume)
+void UAudioSubsystem::SetMusicVolume(float InVolume, UObject* WorldContextObject)
 {
     CurrnetMusicVolume = InVolume;
 
+    UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+    
+    if (!World) return;
+
     UGameplayStatics::SetSoundMixClassOverride(
-        GetWorld(),
+        World,
         CachedMasterSoundMix,
         CachedMusicSoundClass,
         InVolume
@@ -73,12 +77,16 @@ void UAudioSubsystem::SetMusicVolume(float InVolume)
     }
 }
 
-void UAudioSubsystem::SetSFXVolume(float InVolume)
+void UAudioSubsystem::SetSFXVolume(float InVolume, UObject* WorldContextObject)
 {
     CurrnetSFXVolume = InVolume;
 
+    UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+
+    if (!World) return;
+
     UGameplayStatics::SetSoundMixClassOverride(
-        GetWorld(),
+        World,
         CachedMasterSoundMix,
         CachedSFXSoundClass,
         InVolume

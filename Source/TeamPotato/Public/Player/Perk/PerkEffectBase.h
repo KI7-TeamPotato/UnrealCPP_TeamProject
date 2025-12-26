@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "PerkEffectBase.generated.h"
-
 /**
  * 
  */
@@ -26,6 +25,6 @@ public:
     float GetAmount() const { return Amount; }
 
 protected:
-    UPROPERTY(EditaNywhere, BlueprintReadOnly, Category = "Buff Perk Effect")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Buff Perk Effect")
     float Amount = 10.f;
 };

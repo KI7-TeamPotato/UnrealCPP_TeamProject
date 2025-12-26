@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "UI/InGameMenu/MenuPlayerStatWidget.h"
 #include "UI/InGameMenu/PauseMenuWidget.h"
+#include "UI/MainMenu/MainMenuSoundOptionWidget.h"
 #include "UI/ConfirmPopupWidget.h"
 #include "Subsystem/GameStateSubsystem.h"
 
@@ -25,8 +26,33 @@ void UInGameMenuWidget::NativeConstruct()
     {
         PlayingPlayerStatPanel->GetBackButton()->OnClicked.AddDynamic(this, &UInGameMenuWidget::OnBackToPauseClicked);
     }
+    if (InGameSoundOptionMenuPanel)
+    {
+        InGameSoundOptionMenuPanel->OnCloseButtonClickedDelegate.AddDynamic(this, &UInGameMenuWidget::OnBackToPauseClicked);
+    }
 
     SetIsFocusable(true);
+}
+
+void UInGameMenuWidget::NativeDestruct()
+{
+    if (PauseMenuPanel)
+    {
+        PauseMenuPanel->GetContinueButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnContinueButtonClicked);
+        PauseMenuPanel->GetShowCharacterStatButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnShowCharacterStatButtonClicked);
+        PauseMenuPanel->GetSettingButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnSettingButtonClicked);
+        PauseMenuPanel->GetGiveUpButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnGiveUpButtonClicked);
+        PauseMenuPanel->GetQuitButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnQuitButtonClicked);
+    }
+    if (PlayingPlayerStatPanel)
+    {
+        PlayingPlayerStatPanel->GetBackButton()->OnClicked.RemoveDynamic(this, &UInGameMenuWidget::OnBackToPauseClicked);
+    }
+    if (InGameSoundOptionMenuPanel)
+    {
+        InGameSoundOptionMenuPanel->OnCloseButtonClickedDelegate.RemoveDynamic(this, &UInGameMenuWidget::OnBackToPauseClicked);
+    }
+    Super::NativeDestruct();
 }
 
 void UInGameMenuWidget::InitializePauseMenu()
@@ -51,11 +77,13 @@ void UInGameMenuWidget::OnShowCharacterStatButtonClicked()
     // 위젯 스위처를 사용하여 플레이어 스탯 패널로 전환
     MenuWidgetSwitcher->SetActiveWidgetIndex(1);
 }
+
 void UInGameMenuWidget::OnSettingButtonClicked()
 {
     // 위젯 스위처로 설정 패널로 전환
     MenuWidgetSwitcher->SetActiveWidgetIndex(2);
 }
+
 void UInGameMenuWidget::OnGiveUpButtonClicked()
 {
     // 확인 팝업 생성 후에 이벤트 연결

@@ -44,10 +44,9 @@ void UMVVMSubsystem::HandlePlayerChanged()
 
     if (PlayerStatusViewModel && CharacterSubsystem)
     {
-        UE_LOG(LogTemp, Warning, TEXT("UMVVMSubsystem::HandlePlayerChanged - Player Changed"));
         // PlayerStatusViewModel의 아이콘 갱신 실행
         PlayerStatusViewModel = GetPlayerStatusViewModel();
-        PlayerStatusViewModel->SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
+        PlayerStatusViewModel -> SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
     }
 }
 

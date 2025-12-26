@@ -11,6 +11,7 @@
  */
 class UProgressBar;
 class UImage;
+class UTextBlock;
 class UPlayerStatusViewModel;
 
 UCLASS()
@@ -33,7 +34,7 @@ private:
 
 	/// --- 뷰모델 바인딩 함수 ---
 	UFUNCTION()
-	void SetPlayerHealthBar(float NewHealthPercent);
+	void SetPlayerHealthBar(float NewHealthPercent, FText NewHealthText);
 
 	UFUNCTION()
 	void SetPlayerIcon(UTexture2D* NewPlayerIcon);
@@ -48,6 +49,9 @@ protected:
 	// --- 플레이어의 아이콘 이미지 ---
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> PlayerIconImage;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UTextBlock> HealthText;
 
 private:
     // --- 플레이어 상태 뷰모델 ---

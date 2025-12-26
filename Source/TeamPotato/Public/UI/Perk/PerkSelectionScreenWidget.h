@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "PerkSelectionScreenWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPerkSelected);
+
 class UPerkCardWidget;
 class UPerkViewModel;
 class UDataTable;
@@ -40,6 +42,10 @@ private:
 
     void BindViewModel();
     void UnbindViewModel();
+
+public:
+    UPROPERTY(BlueprintAssignable, Category = "Perk")
+    FOnPerkSelected OnPerkSelected;
 
 protected:
 	UPROPERTY(meta = (BindWidget))

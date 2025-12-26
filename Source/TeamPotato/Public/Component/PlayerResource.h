@@ -30,6 +30,10 @@ public:
     inline float GetEnergyAmount() { return Energy; }
     inline int GetCurrentGold() { return CurrentGold; }
 
+    //Setter
+    inline void SetMaxHealth(float InMaxHealth);
+    inline void SetMaxEnergy(float InMaxEnergy);
+
     //inline float GetStaminaAmount() { return Stamina; }
 
     //리소스 사용
