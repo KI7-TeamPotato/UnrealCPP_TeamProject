@@ -174,7 +174,7 @@ protected:
 
     //공격 함수
     UFUNCTION()
-    void OnAttack();
+    void OnAttack(bool bIsAutoFiring = false);
     void OnAttackStarted();
     void OnAttackCompleted();
 
@@ -334,6 +334,12 @@ private:
     float OnHitInvincibleTime = 1.0f;
 
     bool bIsCanTakeDamage = true;
+
+    // 공격 속도(애니메이션 조절 및 마우스 클릭 연사 방지용)
+    float AttackSpeed = 1.0f;
+
+    // 마지막으로 공격을 실행한 절대 시간
+    float LastAttackTime = 0.0f;
 
     //무기, 상황별로 구분해서 맞는 애니메이션 호출하는 함수
     UPROPERTY()

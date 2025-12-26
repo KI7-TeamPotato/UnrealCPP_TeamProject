@@ -219,12 +219,12 @@ void ATestCharacter::InvincibleDeactivate()
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
-    PlayAnimMontage(AttackMontage_Sword_Combo1);
+    PlayAnimMontage(AttackMontage_Sword_Combo1, AttackSpeed);
 }
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
-    PlayAnimMontage(AttackMontage_Sword_Combo2);
+    PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -375,13 +375,29 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
     AddControllerPitchInput(SightDegree);
 }
 
-void ATestCharacter::OnAttack()
+void ATestCharacter::OnAttack(bool bIsAutoFiring)
 {
     float Cost = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost;
+    AttackSpeed = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackSpeed;
+    
+    // 공격 속도에 따른 최소 시간 계산
+    float MinInterval = (AttackSpeed > 0) ? (1.0f / AttackSpeed) : 1.0f;
+    float CurrentTime = GetWorld()->GetTimeSeconds();
+
+    // 마우스 연타시에만 쿨타임 체크
+    if (!bIsAutoFiring)
+    {
+        if (CurrentTime - LastAttackTime < MinInterval)
+        {
+            return;
+        }
+    }
+    
     if (IsActionAvailable())
     {
         if (UseEnergy(Cost))
         {
+            LastAttackTime = CurrentTime;
             PlayerAnimation->PlayAttackAnimation();
             WeaponComponent->WeaponAttack();
         }
@@ -394,15 +410,22 @@ void ATestCharacter::OnAttack()
     }
     else if (bIsOnAttacking && bIsComboInputAvailable)
     {
-        if(UseEnergy(Cost))
-            bIsOnComboInput = true;
+        // 총일 때는 콤보 입력을 무시하도록 설정
+        if (WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
+        {
+            if (UseEnergy(Cost))
+                bIsOnComboInput = true;
+        }
     }
 }
 
 void ATestCharacter::OnAttackStarted()
 {
+    // 이미 공격 타이머가 작동 중이라면 중복 실행 방지
+    if (GetWorldTimerManager().IsTimerActive(AttackTimerHandle)) return;
+
     // 누르면 공격 일단 실행
-    OnAttack();
+    OnAttack(false);
 
     // 무기 데이터에서 공격 속도 가져옴
     float FireRate = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackSpeed;
@@ -410,10 +433,10 @@ void ATestCharacter::OnAttackStarted()
     {
         float interval = 1.0f / FireRate;
 
+        // 연사 타이머에서 true를 넘겨 타이머 재생 방지
         GetWorldTimerManager().SetTimer(
             AttackTimerHandle,
-            this,
-            &ATestCharacter::OnAttack,
+            FTimerDelegate::CreateUObject(this, &ATestCharacter::OnAttack, true),
             interval,
             true
         );
