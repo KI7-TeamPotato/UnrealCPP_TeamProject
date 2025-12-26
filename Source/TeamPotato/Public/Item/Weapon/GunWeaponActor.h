@@ -10,6 +10,7 @@
 class ABulletActor;
 class USkeletalMeshComponent;
 class UNiagaraComponent;
+class USoundBase;
 
 UCLASS()
 class TEAMPOTATO_API AGunWeaponActor : public AWeaponBase	
@@ -31,6 +32,6 @@ protected:
 	float BulletSpeed = 3000.f;
 
     // 무기 발사 이펙트
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
     TObjectPtr<UNiagaraComponent> ShootEffect = nullptr;
 };

@@ -5,6 +5,7 @@
 #include "Player/TestCharacter.h"
 #include "Component/PlayerResource.h"
 #include "Data/WeaponDataAsset.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -25,10 +26,15 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
     Super::BeginPlay();
+
+    if(EquipSound)
+        UGameplayStatics::PlaySound2D(this, EquipSound);
 }
 
 void::AWeaponBase::Attack(class ATestCharacter* OwningPlayer)
 {
+    if (AttackSound)
+        UGameplayStatics::PlaySound2D(this, AttackSound);
 }
 
 void AWeaponBase::InitializeFromData(UWeaponDataAsset* InData)

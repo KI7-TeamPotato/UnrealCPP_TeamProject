@@ -84,8 +84,8 @@ void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
         SpawnParams
 	);
 
-    // 이펙트 효과
-    ShootEffect->Activate();
+    if(ShootEffect)
+       ShootEffect->Activate();
 
 	if (Bullet)
 	{

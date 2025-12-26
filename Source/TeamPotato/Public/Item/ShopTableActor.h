@@ -12,6 +12,7 @@ class UWidgetComponent;
 class UShopInteractWidget;
 class USphereComponent;
 class UShopInteractWidget;
+class USoundBase;
 
 UCLASS()
 class TEAMPOTATO_API AShopTableActor : public AActor, public IInteractable
@@ -71,6 +72,14 @@ protected:
     // 무기 스폰 데이터 테이블
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shop")
     TObjectPtr<UDataTable> WeaponDataTable = nullptr;
+
+    // 상점 구매 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shop")
+    TObjectPtr<USoundBase> BuySound = nullptr;
+
+    // 상점 구매 실패 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shop")
+    TObjectPtr<USoundBase> FailSound = nullptr;
 
 private:
     UPROPERTY()
