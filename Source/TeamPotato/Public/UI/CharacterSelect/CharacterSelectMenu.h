@@ -31,8 +31,6 @@ protected:
 private:
 	void LoadCharacterDataFromSubsystem();
 
-	void SetCharacterIllustration(UTexture2D* InIllustration);
-
 	UCharacterSubsystem* GetCharacterSubsystem() const;
 
 protected:

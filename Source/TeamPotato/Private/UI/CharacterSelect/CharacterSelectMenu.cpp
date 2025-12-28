@@ -29,7 +29,10 @@ void UCharacterSelectMenu::NativeConstruct()
 		SelectButton->SetIsEnabled(false); //초기에는 비활성화 => 캐릭터가 선택되면 활성화
 	}
 
-    UE_LOG(LogTemp, Log, TEXT("UCharacterSelectMenu::NativeConstruct - Character Select Menu Constructed"));
+    if(CharacterSelectDetailPanel)
+    {
+        CharacterSelectDetailPanel->SetVisibility(ESlateVisibility::Hidden);
+    }
 
     APlayerController* PC = GetWorld()->GetFirstPlayerController();
     if (PC)
@@ -103,6 +106,8 @@ void UCharacterSelectMenu::OnCharacterPreviewTileSelected(UObject* SelectedItem)
 		SelectedCharacterData = CharacterDataObj;
 
         CharacterSelectDetailPanel->UpdateCharacterDetails(SelectedCharacterData->CharacterType);
+
+        CharacterSelectDetailPanel->SetVisibility(ESlateVisibility::Visible);
 
 		if (SelectButton)
 		{

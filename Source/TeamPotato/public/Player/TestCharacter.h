@@ -378,4 +378,7 @@ private:
 
     //회피 애니메이션 중 움직이지 않는 애니메이션 재생시 캐릭터를 움직일 정도
     float LaunchPlayerPower = 1000.0f;
+
+    UPROPERTY()
+    TObjectPtr<class UCharacterSubsystem> CharacterSubsystem = nullptr;
 };

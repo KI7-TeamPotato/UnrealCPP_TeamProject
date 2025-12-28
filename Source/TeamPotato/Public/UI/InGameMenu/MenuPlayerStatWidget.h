@@ -8,6 +8,7 @@
 
 class UInventoryPerkTileWidget;
 class UPlayerStatWeaponWidget;
+class UPlayerStatPanelWidget;
 class UButton;
 /**
  * 
@@ -20,6 +21,7 @@ class TEAMPOTATO_API UMenuPlayerStatWidget : public UUserWidget
 public:
     UInventoryPerkTileWidget* GetInventoryPerkTileWidget() const { return InventoryPerkTile; }
     UPlayerStatWeaponWidget* GetPlayerWeaponWidget() const { return WeaponInfo; }
+    UPlayerStatPanelWidget* GetPlayerStatPanelWidget() const { return PlayerStatPanel; }
     UButton* GetBackButton() const { return BackButton; }
 
 protected:
@@ -34,5 +36,8 @@ private:
 
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UButton> BackButton = nullptr;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UPlayerStatPanelWidget> PlayerStatPanel = nullptr;
 };
 

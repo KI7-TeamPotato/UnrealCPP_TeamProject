@@ -30,6 +30,7 @@ void UMVVMSubsystem::Initialize(FSubsystemCollectionBase& Collection)
         PlayerStatusViewModel->SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
 
         CharacterSubsystem->OnSelectedCharacterChanged.AddDynamic(this, &UMVVMSubsystem::HandlePlayerChanged);
+        CharacterSubsystem->OnWalkSpeedChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::UpdateWalkSpeed);
     }
 }
 
