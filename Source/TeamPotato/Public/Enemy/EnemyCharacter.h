@@ -20,6 +20,10 @@ public:
 
     UFUNCTION(BlueprintCallable)
 
+<<<<<<< Updated upstream
+=======
+    virtual void OnDie();
+>>>>>>> Stashed changes
 
     void OnDie();
 protected:

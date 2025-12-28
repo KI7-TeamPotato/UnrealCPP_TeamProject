@@ -40,11 +40,9 @@ void AArcherEnemy::InitBulletPool()
 
 void AArcherEnemy::Shoot()
 {
-    // 1. 타겟(플레이어) 확인
     ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(this, 0);
     if (!PlayerChar) return;
 
-    // 2. 풀에서 사용 가능한(비활성) 총알 찾기
     ABulletBase* BulletToFire = nullptr;
     for (ABulletBase* Bullet : BulletPool)
     {
