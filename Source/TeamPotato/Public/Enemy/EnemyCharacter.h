@@ -23,7 +23,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
 
-    void OnDie();
+    virtual void OnDie();
 
 protected:
 	// Called when the game starts or when spawned

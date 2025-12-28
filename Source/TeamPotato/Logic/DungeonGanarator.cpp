@@ -55,6 +55,7 @@ void ADungeonGanarator::BeginPlay()
 
 void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    Super::EndPlay(EndPlayReason);
     if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
     {
         Subsystem->UnregisterDungeonGeneratorActor(this);
