@@ -11,9 +11,11 @@ class UPerkViewModel;
 class UWeaponViewModel;
 class UItemViewModel;
 class UMinimapViewModel;
+class UEnemyViewModel;
 class UPlayerResource;
 class UPerkComponent;
 class UWeaponComponent;
+class ABossBase;
 /**
  * 
  */
@@ -34,6 +36,8 @@ public:
     UItemViewModel* GetItemViewModel();
     UFUNCTION(BlueprintPure)
     UMinimapViewModel* GetMinimapViewModel();
+    UFUNCTION(BlueprintPure)
+    UEnemyViewModel* GetEnemyViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
@@ -63,6 +67,12 @@ public:
     UFUNCTION()
     void UnregisterDungeonGeneratorActor(class ADungeonGanarator* ExitingActor);
 
+    // --- 보스 액터 등록 및 해제 함수 ---
+    UFUNCTION()
+    void RegisterBossActor(class ABossBase* NewActor);
+    UFUNCTION()
+    void UnregisterBossActor(class ABossBase* ExitingActor);
+
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
@@ -87,4 +97,7 @@ private:
     
     UPROPERTY()
     TObjectPtr<UMinimapViewModel> MinimapViewModel;
+
+    UPROPERTY()
+    TObjectPtr<UEnemyViewModel> EnemyViewModel;
 };

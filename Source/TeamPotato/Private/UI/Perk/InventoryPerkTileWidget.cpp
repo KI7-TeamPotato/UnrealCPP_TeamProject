@@ -69,6 +69,7 @@ void UInventoryPerkTileWidget::BindViewModel()
     {
         // Model -> ViewModel 바인딩
         PerkViewModel->OnPerkEquipped.AddDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnTryAllPerkClear.AddDynamic(PerkTileView, &UTileView::ClearListItems);
     }
 }
 void UInventoryPerkTileWidget::UnbindViewModel()
@@ -76,5 +77,6 @@ void UInventoryPerkTileWidget::UnbindViewModel()
     if (PerkViewModel)
     {
         PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnTryAllPerkClear.RemoveDynamic(PerkTileView, &UTileView::ClearListItems);
     }
 }

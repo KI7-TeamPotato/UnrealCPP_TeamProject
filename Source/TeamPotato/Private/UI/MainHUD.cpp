@@ -21,3 +21,25 @@ void AMainHUD::BeginPlay()
         MainHUDWidget->AddToViewport();
     }
 }
+
+void AMainHUD::TryShowBossWidget()
+{
+    if (MainHUDWidget)
+    {
+        if (UMVVMSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
+        {
+            MainHUDWidget->ShowBossWidget(Subsystem);
+        }
+    }
+}
+
+void AMainHUD::TryHideBossWidget()
+{
+    if (MainHUDWidget)
+    {
+        if (UMVVMSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
+        {
+            MainHUDWidget->HideBossWidget(Subsystem);
+        }
+    }
+}

@@ -2,8 +2,10 @@
 
 
 #include "Enemy/BossBase.h"
+#include "UI/MainHUD.h"
+#include "Subsystem/MVVMSubsystem.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Kismet/GameplayStatics.h"
 
 ABossBase::ABossBase()
 {
@@ -15,6 +17,25 @@ ABossBase::ABossBase()
 void ABossBase::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->RegisterBossActor(this);
+    }
+    
+    AMainHUD* MainHUD = Cast<AMainHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+    if (MainHUD)
+    {
+        OnBossSpawn.AddDynamic(MainHUD, &AMainHUD::TryShowBossWidget);
+        OnBossDie.AddDynamic(MainHUD, &AMainHUD::TryHideBossWidget);
+    }
+
+    if (OnBossSpawn.IsBound())
+    {
+        OnBossSpawn.Broadcast();
+    }
+
+    OnBossHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 }
 
 float ABossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -25,6 +46,8 @@ float ABossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
     {
         return 0.0f;
     }
+
+    OnBossHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 
     if (CurrentPhase == 1 && CurrentHealth <= MaxHealth * 0.5f)
     {
@@ -39,6 +62,10 @@ void ABossBase::OnDie()
     Super::OnDie();
     UE_LOG(LogTemp, Log, TEXT("BossIsDie"));
 
+    if (OnBossDie.IsBound())
+    {
+        OnBossDie.Broadcast();
+    }
 }
 
 void ABossBase::ExecutePattern(int32 PatternIndex)

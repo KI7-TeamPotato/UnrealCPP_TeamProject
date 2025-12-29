@@ -44,7 +44,7 @@ void AEnemyCharacter::BeginPlay()
         RotateTimerHandle,
         this,
         &AEnemyCharacter::RotateHealthBarToPlayer,
-        0.1f,
+        0.01f,
         true
     );
 }

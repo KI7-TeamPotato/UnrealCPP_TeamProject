@@ -8,6 +8,7 @@
 #include "PerkComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkStateChanged, UPerkDataAsset*, InData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPerkEquipmentCleared);
 
 class UPerkDataAsset;
 
@@ -22,6 +23,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:	
 	// --- 1.Equipment ---
 
@@ -58,6 +60,9 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnPerkStateChanged OnEquipmentUpdated;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnPerkEquipmentCleared OnPerkEquipmentCleared;
 
 protected:
 	// --- Equipment Slot Array ---

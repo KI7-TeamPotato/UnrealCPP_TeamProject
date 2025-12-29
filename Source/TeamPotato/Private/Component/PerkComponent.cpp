@@ -30,6 +30,8 @@ void UPerkComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		Subsystem->UnregisterPerkComp(this);
 	}
 
+    ClearAllEquippedPerks();
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -114,6 +116,12 @@ void UPerkComponent::ClearAllEquippedPerks()
 	{
 		UnequipPerk(i);
 	}
+
+    if (OnPerkEquipmentCleared.IsBound())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::ClearAllEquippedPerks - Broadcasting OnPerkEquipmentCleared"));
+        OnPerkEquipmentCleared.Broadcast();
+    }
 }
 
 bool UPerkComponent::IsPerkEquipped(UPerkDataAsset* PerkToCheck) const
