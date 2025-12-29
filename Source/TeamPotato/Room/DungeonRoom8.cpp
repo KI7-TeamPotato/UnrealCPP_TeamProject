@@ -21,32 +21,26 @@ void ADungeonRoom8::SpawnShopTable()
 {
     if (ShopTable_HP)
     {
-        HPPickUpInstance = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_HP);
-        if (HPPickUpInstance)
-        {
-            HPPickUpInstance->SetActorLocation(ShopTableSpawnPoint_HP->GetComponentLocation());
-            HPPickUpInstance->SetActorRotation(ShopTableSpawnPoint_HP->GetComponentRotation());
-        }
+        HPPickUpInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_HP,
+            ShopTableSpawnPoint_HP->GetComponentTransform()
+        );
     }
 
     if (ShopTable_Energy)
     {
-        EnergyPickUPInstance = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_Energy);
-        if (EnergyPickUPInstance)
-        {
-            EnergyPickUPInstance->SetActorLocation(ShopTableSpawnPoint_Energy->GetComponentLocation());
-            EnergyPickUPInstance->SetActorRotation(ShopTableSpawnPoint_Energy->GetComponentRotation());
-        }
+        EnergyPickUPInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_Energy,
+            ShopTableSpawnPoint_Energy->GetComponentTransform()
+        );
     }
 
     if (ShopTable_Weapon)
     {
-        WeaponPickupleInstance = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_Weapon);
-        if (WeaponPickupleInstance)
-        {
-            WeaponPickupleInstance->SetActorLocation(ShopTableSpawnPoint_Weapon->GetComponentLocation());
-            WeaponPickupleInstance->SetActorRotation(ShopTableSpawnPoint_Weapon->GetComponentRotation());
-        }
+        WeaponPickupleInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_Weapon,
+            ShopTableSpawnPoint_Weapon->GetComponentTransform()
+        );
     }
 }
 
