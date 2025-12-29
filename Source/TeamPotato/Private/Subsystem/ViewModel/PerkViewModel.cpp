@@ -31,10 +31,8 @@ bool UPerkViewModel::RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex)
 
 void UPerkViewModel::RequestClearAllPerks()
 {
-    UE_LOG(LogTemp, Warning, TEXT("PerkViewModel::RequestClearAllPerks called"));
     if (OnTryAllPerkClear.IsBound())
     {
-        UE_LOG(LogTemp, Warning, TEXT("PerkViewModel::RequestClearAllPerks - Broadcasting OnTryAllPerkClear"));
         OnTryAllPerkClear.Broadcast();
     }
 }

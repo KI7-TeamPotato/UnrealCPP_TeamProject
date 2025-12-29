@@ -25,13 +25,12 @@ void UPerkComponent::BeginPlay()
 
 void UPerkComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    ClearAllEquippedPerks();
+
 	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
 	{
 		Subsystem->UnregisterPerkComp(this);
 	}
-
-    ClearAllEquippedPerks();
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -119,7 +118,6 @@ void UPerkComponent::ClearAllEquippedPerks()
 
     if (OnPerkEquipmentCleared.IsBound())
     {
-        UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::ClearAllEquippedPerks - Broadcasting OnPerkEquipmentCleared"));
         OnPerkEquipmentCleared.Broadcast();
     }
 }
