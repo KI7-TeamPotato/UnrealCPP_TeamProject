@@ -563,13 +563,16 @@ void ADungeonGanarator::GoToNextStage(int32 NewChapter)
 
 void ADungeonGanarator::CalculateDungeonMinMaxPoint()
 {
-    // 추가 작업
-    // 생성된 이 미로의 전체 크기를 저장하여 미니맵 생성에 활용(2D)
     FVector2D MinPoint(FLT_MAX, FLT_MAX);
     FVector2D MaxPoint(-FLT_MAX, -FLT_MAX);
 
     for (AActor* actor : GeneratedActors)
     {
+        if (!IsValid(actor))
+        {
+            continue;
+        }
+
         FVector2D actorMin, actorMax;
 
         FVector Origin, Extend;

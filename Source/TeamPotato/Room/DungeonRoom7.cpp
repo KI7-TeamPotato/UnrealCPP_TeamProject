@@ -26,6 +26,7 @@ void ADungeonRoom7::SpawnTreasureBox()
     TSubclassOf<AWeaponBoxActor> Box;
     int32 RoomIndex = 0;
     Box = TreasureBox[RoomIndex];
+
     AWeaponBoxActor* SpawnedBox = this->GetWorld()->SpawnActor<AWeaponBoxActor>(Box);
     SpawnedBox->SetActorLocation(TreasureBoxSpawnPoint->GetComponentLocation());
     SpawnedBox->SetActorRotation(TreasureBoxSpawnPoint->GetComponentRotation());

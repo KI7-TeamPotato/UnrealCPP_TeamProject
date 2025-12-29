@@ -6,6 +6,8 @@
 #include "RoomBase.h"
 #include "DungeonRoom8.generated.h"
 class AShopTableActor;
+class APickupActor;
+class AWeaponPickupActor;
 /**
  * 
  */
@@ -25,7 +27,13 @@ protected:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 private:
     UPROPERTY()
-    AShopTableActor* ShopTableInstance;
+    AShopTableActor* HPPickUpInstance;
+
+    UPROPERTY()
+    AShopTableActor* EnergyPickUPInstance;
+
+    UPROPERTY()
+    AShopTableActor* WeaponPickupleInstance;
 
     UPROPERTY(VisibleAnywhere, Category = "Components")
     TObjectPtr<UArrowComponent>  ShopTableSpawnPoint_HP;
