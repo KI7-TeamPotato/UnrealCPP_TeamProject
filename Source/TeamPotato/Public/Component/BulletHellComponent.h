@@ -28,7 +28,21 @@ public:
     void SpawnThreeWayShot(float Speed);
 
     UFUNCTION(BlueprintCallable, Category = "Patterns")
-    void SpawnCircleSpiraPatternAtLocation(FVector CenterLocation, int32 NumProjectiles, float Speed, float OffsetAngle = 0.0f);
+    void SpawnRainPattern(int32 NumProjectiles, float AreaWidth, 
+        float SpawnHeight, float Speed, float ForwardOffset = 0.0f);
+
+    UFUNCTION(BlueprintCallable, Category = "Spawning")
+    void SpawnGridAtLocation(TSubclassOf<AActor> ActorToSpawn,
+        FVector TargetLocation, int32 Rows, 
+        int32 Cols, float Spacing);
+
+    UFUNCTION(BlueprintCallable, Category = "Patterns")
+    void SpawnCircleSpiraPatternAtLocation(FVector CenterLocation, 
+        int32 NumProjectiles, float Speed, float OffsetAngle = 0.0f);
+
+    UFUNCTION(BlueprintCallable, Category = "Spawning")
+    void SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
+        FVector Origin, int32 Count, float MinSpeed, float MaxSpeed);
 private:
     void SpawnProjectile(FVector Location, FRotator Rotation, float Speed);
 };

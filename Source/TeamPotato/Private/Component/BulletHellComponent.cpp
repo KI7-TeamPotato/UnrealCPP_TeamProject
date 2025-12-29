@@ -2,6 +2,8 @@
 #include "Enemy/Bullet/EnemyProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+
 UBulletHellComponent::UBulletHellComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
@@ -66,6 +68,59 @@ void UBulletHellComponent::SpawnThreeWayShot(float Speed)
     }
 }
 
+void UBulletHellComponent::SpawnRainPattern(int32 NumProjectiles, float AreaWidth, float SpawnHeight, float Speed, float ForwardOffset)
+{
+    if (NumProjectiles <= 1) return;
+
+    FVector OwnerLoc = GetOwner()->GetActorLocation();
+    FVector ForwardDir = GetOwner()->GetActorForwardVector();
+
+    FVector CenterLocation = OwnerLoc + (ForwardDir * ForwardOffset);
+    CenterLocation.Z += SpawnHeight;
+
+    float StepDistance = AreaWidth / (float)(NumProjectiles - 1);
+
+    FVector RightDir = GetOwner()->GetActorRightVector();
+
+    FVector StartLocation = CenterLocation - (RightDir * (AreaWidth / 2.0f));
+
+    FRotator DownwardRotation = FRotator(-90.0f, 0.0f, 0.0f);
+
+    for (int32 i = 0; i < NumProjectiles; i++)
+    {
+        FVector SpawnPos = StartLocation + (RightDir * (i * StepDistance));
+        SpawnProjectile(SpawnPos, DownwardRotation, Speed);
+    }
+}
+
+void UBulletHellComponent::SpawnGridAtLocation(TSubclassOf<AActor> ActorToSpawn,
+    FVector TargetLocation, int32 Rows, int32 Cols, float Spacing)
+{
+    if (!ActorToSpawn) return;
+
+    float HalfWidth = ((Rows - 1) * Spacing) / 2.0f;
+    float HalfDepth = ((Cols - 1) * Spacing) / 2.0f;
+
+    FVector StartPos = TargetLocation;
+    StartPos.X -= HalfWidth;
+    StartPos.Y -= HalfDepth;
+    for (int32 i = 0; i < Rows; i++)
+    {
+        for (int32 j = 0; j < Cols; j++)
+        {
+            FVector SpawnPos = StartPos;
+            SpawnPos.X += i * Spacing;
+            SpawnPos.Y += j * Spacing;
+
+            FRotator SpawnRot = FRotator(-90.0f, 0.0f, 0.0f);
+
+            GetWorld()->SpawnActor<AActor>(ActorToSpawn, SpawnPos, SpawnRot);
+        }
+    }
+}
+
+
+
 void UBulletHellComponent::SpawnCircleSpiraPatternAtLocation(FVector CenterLocation, int32 NumProjectiles, float Speed, float OffsetAngle)
 {
     if (NumProjectiles <= 0) return;
@@ -79,6 +134,43 @@ void UBulletHellComponent::SpawnCircleSpiraPatternAtLocation(FVector CenterLocat
         FRotator SpawnRotation = FRotator(0.0f, FinalAngle, 0.0f);
 
         SpawnProjectile(CenterLocation, SpawnRotation, Speed);
+    }
+}
+
+void UBulletHellComponent::SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
+    FVector Origin, int32 Count, float MinSpeed, float MaxSpeed)
+{
+    if (!ActorToSpawn) return;
+
+    FVector FixedDir = FVector(0.0f, 0.0f, 1.0f); 
+    float FixedSpread = 55.0f;                   
+
+    for (int32 i = 0; i < Count; i++)
+    {
+        FVector RandomDir = FMath::VRandCone(FixedDir, FMath::DegreesToRadians(FixedSpread));
+
+        float RandomSpeed = FMath::RandRange(MinSpeed, MaxSpeed);
+
+        FRotator SpawnRotation = RandomDir.Rotation();
+
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawn, Origin, SpawnRotation);
+
+        if (SpawnedActor)
+        {
+            UProjectileMovementComponent* PMC = SpawnedActor->FindComponentByClass<UProjectileMovementComponent>();
+            if (PMC)
+            {
+                // 속도 적용
+                PMC->InitialSpeed = RandomSpeed;
+                PMC->MaxSpeed = RandomSpeed;
+                PMC->Velocity = RandomDir * RandomSpeed;
+
+                if (PMC->ProjectileGravityScale == 0.0f)
+                {
+                    PMC->ProjectileGravityScale = 0.5f;
+                }
+            }
+        }
     }
 }
 
