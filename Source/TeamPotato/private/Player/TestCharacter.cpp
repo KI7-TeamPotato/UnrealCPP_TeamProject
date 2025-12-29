@@ -355,15 +355,6 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttackInput()
 {
-    //if(!bIsOnAction)
-    //{
- //       if(UseStamina(10))            //테스트용. 스태미너 사용은 무기에서 할 예정.
- //       {
- //           PlayerAnimation->PlayAttackAnimation();     
- //           WeaponComponent->WeaponAttack();
- //       }
-    //}
-
     if (IsActionAvailable())
     {
         float Cost = WeaponComponent->GetCurrentWeapon()->GetWeaponData()->AttackCost;
@@ -543,7 +534,6 @@ void ATestCharacter::SetOnAttacking(bool InAttacking)
 
 void ATestCharacter::OnRollInput()
 {
-    //KillPlayer();				//테스트용으로 사망 연출 실행해봄
     if (IsActionAvailable())
     {
         /*if (ResourceManager->UseStamina(RollStamina))
