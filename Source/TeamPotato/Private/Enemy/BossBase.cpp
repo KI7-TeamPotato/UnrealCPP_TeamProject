@@ -8,6 +8,8 @@
 ABossBase::ABossBase()
 {
     BulletPatternComp = CreateDefaultSubobject<UBulletHellComponent>(TEXT("BulletPatternComp"));
+    MaxHealth = 300;
+    CurrentHealth = MaxHealth;
 }
 
 void ABossBase::BeginPlay()
@@ -17,28 +19,25 @@ void ABossBase::BeginPlay()
 
 float ABossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
     {
         return 0.0f;
     }
 
-    CurrentHealth -= ActualDamage;
-
-    UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
-
     if (CurrentPhase == 1 && CurrentHealth <= MaxHealth * 0.5f)
     {
         CurrentPhase = 2;
     }
-
-    if (CurrentHealth <= 0.0f)
-    {
-        OnDie();
-    }
-
     return ActualDamage;
+
+}
+
+void ABossBase::OnDie()
+{
+    Super::OnDie();
+    UE_LOG(LogTemp, Log, TEXT("BossIsDie"));
 
 }
 
