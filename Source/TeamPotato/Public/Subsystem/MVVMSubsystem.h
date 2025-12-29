@@ -25,7 +25,7 @@ class TEAMPOTATO_API UMVVMSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
-	// --- 뷰모델 반환 함수 ---
+	// --- 뷰모델 생성 함수 ---
 	UFUNCTION(BlueprintPure)
 	UPlayerStatusViewModel* GetPlayerStatusViewModel();
 	UFUNCTION(BlueprintPure)

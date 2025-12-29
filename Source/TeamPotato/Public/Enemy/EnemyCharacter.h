@@ -83,7 +83,7 @@ private:
     void SetupHealthBarWidget();
 
     // --- 체력 위젯 컴포넌트를 플레이어 방향으로 회전시키는 함수 ---
-    void RotateHealthBarToPlayer();
+    void RotateHealthBarToViewport();
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
