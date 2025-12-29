@@ -27,6 +27,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Patterns")
     void SpawnThreeWayShot(float Speed);
 
+    UFUNCTION(BlueprintCallable, Category = "Patterns")
+    void SpawnCircleSpiraPatternAtLocation(FVector CenterLocation, int32 NumProjectiles, float Speed, float OffsetAngle = 0.0f);
 private:
     void SpawnProjectile(FVector Location, FRotator Rotation, float Speed);
 };

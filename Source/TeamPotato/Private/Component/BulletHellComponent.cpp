@@ -66,6 +66,22 @@ void UBulletHellComponent::SpawnThreeWayShot(float Speed)
     }
 }
 
+void UBulletHellComponent::SpawnCircleSpiraPatternAtLocation(FVector CenterLocation, int32 NumProjectiles, float Speed, float OffsetAngle)
+{
+    if (NumProjectiles <= 0) return;
+
+    const float AngleStep = 360.0f / NumProjectiles;
+
+    for (int32 i = 0; i < NumProjectiles; i++)
+    {
+        float FinalAngle = (i * AngleStep) + OffsetAngle;
+
+        FRotator SpawnRotation = FRotator(0.0f, FinalAngle, 0.0f);
+
+        SpawnProjectile(CenterLocation, SpawnRotation, Speed);
+    }
+}
+
 
 void UBulletHellComponent::SpawnSpiralShot(UPARAM(ref) float& CurrentAngle, float AngleStep, float Speed)
 {
