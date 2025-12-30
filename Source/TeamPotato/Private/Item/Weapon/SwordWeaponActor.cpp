@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraComponent.h"
+#include "Player/TestCharacter.h"
 
 ASwordWeaponActor::ASwordWeaponActor()
 {
@@ -70,7 +71,10 @@ void ASwordWeaponActor::DamageToTarget(AActor* InTarget)
 {
 	//UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"),*OtherActor->GetName());
 	float finalDamage = AttackDamage;
-	AController* instigator = nullptr;
+	//AController* instigator = nullptr;
+
+    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+    AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
 
 	UGameplayStatics::ApplyDamage(InTarget, finalDamage, instigator, this, DamageType);
 }

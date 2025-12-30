@@ -10,9 +10,11 @@
 #include "Subsystem/ViewModel/WeaponViewModel.h"
 #include "Subsystem/ViewModel/ItemViewModel.h"
 #include "Subsystem/ViewModel/MinimapViewModel.h"
+#include "Subsystem/ViewModel/EnemyViewModel.h"
 #include "Data/WeaponDataAsset.h"
 #include "TeamPotato/Logic/DungeonGanarator.h"
 #include "Subsystem/CharacterSubsystem.h"
+#include "Enemy/BossBase.h"
 
 void UMVVMSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -30,6 +32,7 @@ void UMVVMSubsystem::Initialize(FSubsystemCollectionBase& Collection)
         PlayerStatusViewModel->SetPlayerIcon(CharacterSubsystem->GetPlayerIcon());
 
         CharacterSubsystem->OnSelectedCharacterChanged.AddDynamic(this, &UMVVMSubsystem::HandlePlayerChanged);
+        CharacterSubsystem->OnWalkSpeedChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::UpdateWalkSpeed);
     }
 }
 
@@ -96,6 +99,15 @@ UMinimapViewModel* UMVVMSubsystem::GetMinimapViewModel()
     return MinimapViewModel;
 }
 
+UEnemyViewModel* UMVVMSubsystem::GetEnemyViewModel()
+{
+    if (!EnemyViewModel)
+    {
+        EnemyViewModel = NewObject<UEnemyViewModel>(this);
+    }
+    return EnemyViewModel;
+}
+
 
 // ==============================================================================
 // 컴포넌트 등록 및 해제 함수들
@@ -140,6 +152,8 @@ void UMVVMSubsystem::RegisterPerkComp(UPerkComponent* NewComp)
 	// Model->ViewModel (장착된 퍽이 바뀌면 뷰모델에 반영)
 	NewComp->OnEquipmentUpdated.AddDynamic(VM, &UPerkViewModel::SetPerkDataAsset);
 
+    NewComp->OnPerkEquipmentCleared.AddDynamic(VM, &UPerkViewModel::RequestClearAllPerks);
+
     // ViewModel->Model (장착 요청시에 컴포넌트에서 장착)
     VM->OnEquipPerkRequest.BindDynamic(NewComp, &UPerkComponent::EquipPerk);
 }
@@ -150,6 +164,7 @@ void UMVVMSubsystem::UnregisterPerkComp(UPerkComponent* ExitingComp)
 	{
 		// 델리게이트 언바인딩
 		ExitingComp->OnEquipmentUpdated.RemoveDynamic(PerkViewModel, &UPerkViewModel::SetPerkDataAsset);
+        ExitingComp->OnPerkEquipmentCleared.RemoveDynamic(PerkViewModel, &UPerkViewModel::RequestClearAllPerks);
         PerkViewModel->OnEquipPerkRequest.Unbind();
 	}
 }
@@ -202,6 +217,28 @@ void UMVVMSubsystem::UnregisterDungeonGeneratorActor(ADungeonGanarator* ExitingA
     {
         // 델리게이트 언바인딩
         ExitingActor->OnDungeonGenerationCompleted.RemoveDynamic(MinimapViewModel, &UMinimapViewModel::RequestMinimapCapture);
+    }
+}
+
+void UMVVMSubsystem::RegisterBossActor(ABossBase* NewActor)
+{
+    if (!NewActor) return;
+
+    UnregisterBossActor(NewActor);
+
+    // 뷰모델 가져오기
+    UEnemyViewModel* VM = GetEnemyViewModel();
+
+    // BossActor -> ViewModel -> 보스 스폰 알림 뿌림
+    NewActor->OnBossHealthChanged.AddDynamic(VM, &UEnemyViewModel::SetBossHealth);
+}
+
+void UMVVMSubsystem::UnregisterBossActor(ABossBase* ExitingActor)
+{
+    if (ExitingActor && EnemyViewModel)
+    {
+        // 델리게이트 언바인딩
+        ExitingActor->OnBossHealthChanged.RemoveDynamic(EnemyViewModel, &UEnemyViewModel::SetBossHealth);
     }
 }
 

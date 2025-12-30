@@ -43,8 +43,8 @@ void AEnemyCharacter::BeginPlay()
     (
         RotateTimerHandle,
         this,
-        &AEnemyCharacter::RotateHealthBarToPlayer,
-        0.1f,
+        &AEnemyCharacter::RotateHealthBarToViewport,
+        0.01f,
         true
     );
 }
@@ -215,16 +215,16 @@ void AEnemyCharacter::SetupHealthBarWidget()
     }
 }
 
-void AEnemyCharacter::RotateHealthBarToPlayer()
+void AEnemyCharacter::RotateHealthBarToViewport()
 {
-    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    if (Player && HealthBarWidget)
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+    FRotator ViewportRotation = PlayerController->GetControlRotation();
+    FRotator WidgetRotationForLookAtViewport = FRotator(0.0f, ViewportRotation.Yaw + 180.0f, 0.0f);
+
+    if (PlayerController && HealthBarWidget)
     {
-        // 위젯을 플레이어를 바라보게 회전
-        FVector PlayerLocation = Player->GetActorLocation();
-        FVector WidgetLocation = HealthBarWidgetComponent->GetComponentLocation();
-        FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(WidgetLocation, PlayerLocation);
-        LookAtRotation.Pitch = 0.0f; // 수직 회전은 제거
-        HealthBarWidgetComponent->SetWorldRotation(LookAtRotation);
+        // 위젯을 카메라를 바라보게 회전
+        HealthBarWidgetComponent->SetWorldRotation(WidgetRotationForLookAtViewport);
     }
 }

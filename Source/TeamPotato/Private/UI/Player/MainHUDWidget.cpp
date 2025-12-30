@@ -7,6 +7,7 @@
 #include "UI/Perk/InventoryPerkTileWidget.h"
 #include "UI/Player/PlayerWeaponWidget.h"
 #include "UI/Player/PlayerGoldWidget.h"
+#include "UI/Enemy/BossWidget.h"
 
 void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
 {
@@ -29,5 +30,26 @@ void UMainHUDWidget::InitializeViewModels(UMVVMSubsystem* Subsystem)
     if (PlayerGoldPanel)
     {
         PlayerGoldPanel->SetViewModel(Subsystem->GetItemViewModel());
+    }
+    if (BossWidget)
+    {
+        BossWidget->SetViewModel(Subsystem->GetEnemyViewModel());
+        BossWidget->SetVisibility(ESlateVisibility::Collapsed); // 초기에는 숨김
+    }
+}
+
+void UMainHUDWidget::ShowBossWidget(UMVVMSubsystem* Subsystem)
+{
+    if (BossWidget)
+    {
+        BossWidget->SetVisibility(ESlateVisibility::Visible);
+    }
+}
+
+void UMainHUDWidget::HideBossWidget(UMVVMSubsystem* Subsystem)
+{
+    if (BossWidget)
+    {
+        BossWidget->SetVisibility(ESlateVisibility::Collapsed);
     }
 }

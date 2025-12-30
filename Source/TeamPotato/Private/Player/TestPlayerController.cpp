@@ -10,6 +10,7 @@
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "UI/InGameMenu/MenuPlayerStatWidget.h"
+#include "UI/InGameMenu/PlayerStatPanelWidget.h"
 #include "UI/Perk/InventoryPerkTileWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystem/CharacterSubsystem.h"
@@ -68,6 +69,10 @@ void ATestPlayerController::BeginPlay()
             InGameMenuWidget->GetPlayingPlayerStatPanel()
                 ->GetPlayerWeaponWidget()
                 ->SetViewModel(MVVMSubsystem->GetWeaponViewModel());
+
+            InGameMenuWidget->GetPlayingPlayerStatPanel()
+                ->GetPlayerStatPanelWidget()
+                ->SetViewModel(MVVMSubsystem->GetPlayerStatusViewModel(), MVVMSubsystem->GetWeaponViewModel());
 
             // 계속하기 버튼 처리
             InGameMenuWidget->OnInGameMenuClosed.AddDynamic(this, &ATestPlayerController::OnPauseInput);

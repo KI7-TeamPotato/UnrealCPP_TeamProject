@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuSoundOptionWidget.generated.h"
 
+// 종료 요청 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCloseButtonClicked);
 
 class USlider;

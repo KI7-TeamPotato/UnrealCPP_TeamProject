@@ -88,7 +88,7 @@ void ATestCharacter::BeginPlay()
     }
 
     UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
-    UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+    CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
 
     // 게임 상태가 로비일 때 캐릭터 초기화 작업 수행
     if (GameStateSubsystem && CharacterSubsystem)
@@ -107,6 +107,7 @@ void ATestCharacter::BeginPlay()
     // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
     if (CharacterSubsystem)
     {
+        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
         WeaponComponent->InitializeBaseWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
@@ -153,7 +154,7 @@ void ATestCharacter::InitializeCharacterStat()
 {
     if (ResourceManager)
     {
-        UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+        CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
         if (CharacterSubsystem)
         {
             UE_LOG(LogTemp, Warning, TEXT("Initializing Character Stats"));
@@ -583,6 +584,11 @@ void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 void ATestCharacter::AddMoveSpeed(float InMoveSpeed)
 {
     MovementComponent->MaxWalkSpeed += InMoveSpeed;
+
+    if (CharacterSubsystem)
+    {
+        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
+    }
 }
 
 EMovingDirection ATestCharacter::GetPlayerDirection()
