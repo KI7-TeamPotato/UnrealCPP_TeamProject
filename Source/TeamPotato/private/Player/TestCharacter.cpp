@@ -254,8 +254,11 @@ void ATestCharacter::PlaySwordAttackMontage()
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
-    PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
-    WeaponComponent->WeaponAttack();
+    if(UseEnergy(WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost))
+    {
+        PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
+        WeaponComponent->WeaponAttack();
+    }
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -444,10 +447,7 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
         // 총일 때는 콤보 입력을 무시하도록 설정
         if (WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
         {
-            if (UseEnergy(Cost))
-            {
-                bIsOnComboInput = true;
-            }
+               bIsOnComboInput = true;
         }
     }
 }
