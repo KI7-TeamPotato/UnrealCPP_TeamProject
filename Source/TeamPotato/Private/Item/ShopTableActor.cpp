@@ -110,6 +110,16 @@ void AShopTableActor::BeginPlay()
     }
 }
 
+void AShopTableActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (IsValid(SpawnItem))
+    {
+        SpawnItem->Destroy();
+    }
+
+    Super::EndPlay(EndPlayReason);
+}
+
 void AShopTableActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
     bool bFromSweep, const FHitResult& SweepResult)

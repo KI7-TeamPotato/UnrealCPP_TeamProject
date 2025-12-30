@@ -19,17 +19,29 @@ ADungeonRoom8::ADungeonRoom8()
 
 void ADungeonRoom8::SpawnShopTable()
 {
-    AShopTableActor* HPPostionTable = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_HP);
-    HPPostionTable->SetActorLocation(ShopTableSpawnPoint_HP->GetComponentLocation());
-    HPPostionTable->SetActorRotation(ShopTableSpawnPoint_HP->GetComponentRotation());
+    if (ShopTable_HP)
+    {
+        HPPickUpInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_HP,
+            ShopTableSpawnPoint_HP->GetComponentTransform()
+        );
+    }
 
-    AShopTableActor* EnergyPostionTable = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_Energy);
-    EnergyPostionTable->SetActorLocation(ShopTableSpawnPoint_Energy->GetComponentLocation());
-    EnergyPostionTable->SetActorRotation(ShopTableSpawnPoint_Energy->GetComponentRotation());
+    if (ShopTable_Energy)
+    {
+        EnergyPickUPInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_Energy,
+            ShopTableSpawnPoint_Energy->GetComponentTransform()
+        );
+    }
 
-    AShopTableActor* WeaponTable = this->GetWorld()->SpawnActor<AShopTableActor>(ShopTable_Weapon);
-    WeaponTable->SetActorLocation(ShopTableSpawnPoint_Weapon->GetComponentLocation());
-    WeaponTable->SetActorRotation(ShopTableSpawnPoint_Weapon->GetComponentRotation());
+    if (ShopTable_Weapon)
+    {
+        WeaponPickupleInstance = this->GetWorld()->SpawnActor<AShopTableActor>(
+            ShopTable_Weapon,
+            ShopTableSpawnPoint_Weapon->GetComponentTransform()
+        );
+    }
 }
 
 void ADungeonRoom8::BeginPlay()
@@ -48,9 +60,20 @@ void ADungeonRoom8::BeginPlay()
 
 void ADungeonRoom8::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    if (ShopTableInstance && IsValid(ShopTableInstance))
+    if (IsValid(HPPickUpInstance))
     {
-        ShopTableInstance->Destroy();
+        HPPickUpInstance->Destroy();
     }
+
+    if (IsValid(EnergyPickUPInstance))
+    {
+        EnergyPickUPInstance->Destroy();
+    }
+
+    if (IsValid(WeaponPickupleInstance))
+    {
+        WeaponPickupleInstance->Destroy();
+    }
+
     Super::EndPlay(EndPlayReason);
 }
