@@ -49,6 +49,8 @@ ARoomBase::ARoomBase()
     SpawnPoint3 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint3"));
     SpawnPoint4 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint4"));
     SpawnPoint5 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint5"));
+    SpawnPoint6 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint6"));
+    SpawnPoint7 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint7"));
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
     OnEnterRoomCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("OnEnterRoomCollision"));
 
@@ -94,6 +96,8 @@ ARoomBase::ARoomBase()
     SpawnPoint3->SetupAttachment(SpawnPointsFolder);
     SpawnPoint4->SetupAttachment(SpawnPointsFolder);
     SpawnPoint5->SetupAttachment(SpawnPointsFolder);
+    SpawnPoint6->SetupAttachment(SpawnPointsFolder);
+    SpawnPoint7->SetupAttachment(SpawnPointsFolder);
 
 	BoxCollision->SetupAttachment(OverlapFolder);
     OnEnterRoomCollision->SetupAttachment(SpawnPointsFolder);
@@ -225,6 +229,8 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
         Points.Add(SpawnPoint3);
         Points.Add(SpawnPoint4);
         Points.Add(SpawnPoint5);
+        Points.Add(SpawnPoint6);
+        Points.Add(SpawnPoint7);
 
         WaveSystemComp->StartWaveSystem(Points);
 

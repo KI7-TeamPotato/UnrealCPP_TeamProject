@@ -90,11 +90,19 @@ protected:
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-    float MaxHealth = 20.0f;
+    float MaxHealth = 35.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
     float CurrentHealth = 0.0f;
+protected:
+    bool bIsInvincible = false;
 
+    FTimerHandle InvincibilityTimerHandle;
+
+    UPROPERTY(EditAnywhere, Category = "Combat")
+    float InvincibilityDuration = 0.1f;
+
+    void ResetInvincibility();
 private:
     UPROPERTY()
     TObjectPtr<UEnemyHealthBarWidget> HealthBarWidget;
