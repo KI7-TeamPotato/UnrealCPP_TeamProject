@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 ALastBoss::ALastBoss()
 {
+
 }
 
 void ALastBoss::BeginPlay()

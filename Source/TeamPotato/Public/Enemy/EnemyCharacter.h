@@ -90,7 +90,7 @@ protected:
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-    float MaxHealth = 100.0f;
+    float MaxHealth = 20.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
     float CurrentHealth = 0.0f;

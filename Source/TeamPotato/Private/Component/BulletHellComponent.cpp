@@ -9,9 +9,21 @@ UBulletHellComponent::UBulletHellComponent()
     PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UBulletHellComponent::SpawnProjectile(FVector Location, FRotator Rotation, float Speed)
+void UBulletHellComponent::SetBulletClass(TSubclassOf<class AEnemyProjectile> NewBulletClass)
 {
-    if (!ProjectileClass) return;
+    if (NewBulletClass)
+    {
+        BulletClass = NewBulletClass;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SetBulletClass called with None!"));
+    }
+}
+
+void UBulletHellComponent::SpawnBullet(FVector Location, FRotator Rotation, float Speed)
+{
+    if (!BulletClass) return;
 
     UWorld* World = GetWorld();
     if (World)
@@ -19,7 +31,7 @@ void UBulletHellComponent::SpawnProjectile(FVector Location, FRotator Rotation, 
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = GetOwner();
 
-        AEnemyProjectile* Bullet = World->SpawnActor<AEnemyProjectile>(ProjectileClass, Location, Rotation, SpawnParams);
+        AEnemyProjectile* Bullet = World->SpawnActor<AEnemyProjectile>(BulletClass, Location, Rotation, SpawnParams);
         if (Bullet)
         {
             // 속도 덮어쓰기
@@ -40,7 +52,7 @@ void UBulletHellComponent::SpawnCircleSpiraPattern(int32 NumProjectiles, float S
         float FinalAngle = (i * AngleStep) + OffsetAngle;
 
         FRotator SpawnRotation = FRotator(0.0f, FinalAngle, 0.0f);
-        SpawnProjectile(SpawnLocation, SpawnRotation, Speed);
+        SpawnBullet(SpawnLocation, SpawnRotation, Speed);
     }
 }
 
@@ -62,7 +74,7 @@ void UBulletHellComponent::SpawnThreeWayShot(float Speed)
         FRotator SpawnRotation = LookAtRotation;
         SpawnRotation.Yaw += AngleOffset;
 
-        SpawnProjectile(SpawnLocation, SpawnRotation, Speed);
+        SpawnBullet(SpawnLocation, SpawnRotation, Speed);
 
         AngleOffset += 15.0f;
     }
@@ -89,7 +101,7 @@ void UBulletHellComponent::SpawnRainPattern(int32 NumProjectiles, float AreaWidt
     for (int32 i = 0; i < NumProjectiles; i++)
     {
         FVector SpawnPos = StartLocation + (RightDir * (i * StepDistance));
-        SpawnProjectile(SpawnPos, DownwardRotation, Speed);
+        SpawnBullet(SpawnPos, DownwardRotation, Speed);
     }
 }
 
@@ -133,7 +145,7 @@ void UBulletHellComponent::SpawnCircleSpiraPatternAtLocation(FVector CenterLocat
 
         FRotator SpawnRotation = FRotator(0.0f, FinalAngle, 0.0f);
 
-        SpawnProjectile(CenterLocation, SpawnRotation, Speed);
+        SpawnBullet(CenterLocation, SpawnRotation, Speed);
     }
 }
 
@@ -180,7 +192,7 @@ void UBulletHellComponent::SpawnSpiralShot(UPARAM(ref) float& CurrentAngle, floa
     FVector SpawnLocation = GetOwner()->GetActorLocation();
     FRotator SpawnRotation = FRotator(0.0f, CurrentAngle, 0.0f);
 
-    SpawnProjectile(SpawnLocation, SpawnRotation, Speed);
+    SpawnBullet(SpawnLocation, SpawnRotation, Speed);
 
     // 각도 갱신 (다음 발사를 위해)
     CurrentAngle += AngleStep;

@@ -15,8 +15,11 @@ class TEAMPOTATO_API UBulletHellComponent : public UActorComponent
 public:
     UBulletHellComponent();
 
+    UFUNCTION(BlueprintCallable, Category = "Bullet|Config")
+    void SetBulletClass(TSubclassOf<class AEnemyProjectile> NewBulletClass);
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet|Combat")
-    TSubclassOf<class AEnemyProjectile> ProjectileClass;
+    TSubclassOf<class AEnemyProjectile> BulletClass;
 
     UFUNCTION(BlueprintCallable, Category = "Patterns")
     void SpawnCircleSpiraPattern(int32 NumProjectiles, float Speed, float OffsetAngle = 0.0f);
@@ -44,5 +47,5 @@ public:
     void SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
         FVector Origin, int32 Count, float MinSpeed, float MaxSpeed);
 private:
-    void SpawnProjectile(FVector Location, FRotator Rotation, float Speed);
+    void SpawnBullet(FVector Location, FRotator Rotation, float Speed);
 };
