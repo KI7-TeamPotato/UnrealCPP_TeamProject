@@ -107,6 +107,12 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Components")
     TObjectPtr<UArrowComponent> SpawnPoint5;
 
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint6;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint7;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> Wall1;
 

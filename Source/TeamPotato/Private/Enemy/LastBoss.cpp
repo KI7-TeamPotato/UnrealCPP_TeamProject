@@ -6,7 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 ALastBoss::ALastBoss()
 {
-
+    MaxHealth = 600;
+    CurrentHealth = MaxHealth;
 }
 
 void ALastBoss::BeginPlay()

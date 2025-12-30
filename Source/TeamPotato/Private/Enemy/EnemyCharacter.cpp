@@ -51,6 +51,11 @@ void AEnemyCharacter::BeginPlay()
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    if (bIsInvincible)
+    {
+        return 0.0f;
+    }
+
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
     if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
@@ -67,6 +72,18 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
     if (CurrentHealth <= 0.0f)
     {
         OnDie();
+    }
+    else
+    {
+        bIsInvincible = true;
+
+        GetWorld()->GetTimerManager().SetTimer(
+            InvincibilityTimerHandle,
+            this,
+            &AEnemyCharacter::ResetInvincibility,
+            InvincibilityDuration,
+            false 
+        );
     }
 
     return ActualDamage;
@@ -227,4 +244,9 @@ void AEnemyCharacter::RotateHealthBarToViewport()
         // 위젯을 카메라를 바라보게 회전
         HealthBarWidgetComponent->SetWorldRotation(WidgetRotationForLookAtViewport);
     }
+}
+
+void AEnemyCharacter::ResetInvincibility()
+{
+    bIsInvincible = false;
 }
