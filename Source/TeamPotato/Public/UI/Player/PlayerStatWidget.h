@@ -40,7 +40,7 @@ private:
 	void SetPlayerIcon(UTexture2D* NewPlayerIcon);
 
     UFUNCTION()
-    void UpdateDelayBar();
+    void UpdatePlayerDelayBar();
 
     UFUNCTION()
     void StartDelayBarTimer();
@@ -62,6 +62,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DelayBar")
     float DelayBarInterval = 0.02f;
 
+    /// --- 딜레이 바 커브 ---
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DelayBar")
+    TObjectPtr<UCurveFloat> DelayBarHealthCurve = nullptr;
+
     // ==========================================
     // --- 위젯 바인딩 함수 ---
     // ==========================================
@@ -79,9 +83,6 @@ protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     TObjectPtr<UTextBlock> HealthText;
 
-    /// --- 딜레이 바 커브 ---
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossWidget")
-    TObjectPtr<UCurveFloat> DelayBarCurve;
 private:
     // --- 플레이어 상태 뷰모델 ---
 	UPROPERTY()
