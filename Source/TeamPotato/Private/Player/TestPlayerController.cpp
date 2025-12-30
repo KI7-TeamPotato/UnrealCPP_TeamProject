@@ -140,7 +140,7 @@ void ATestPlayerController::RemovePerkSelectionScreenFromViewport()
     if (PerkSelectionScreen)
     {
         SetGameOnlyInputMode();
-        PerkSelectionScreen->RemoveFromViewport();
+        PerkSelectionScreen->RemoveFromParent();
     }
 }
 

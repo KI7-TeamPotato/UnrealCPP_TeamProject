@@ -98,18 +98,25 @@ void UPlayerStatWidget::StartDelayBarTimer()
 {
     InterpAlpha = 0.0f;
     // 딜레이 바 업데이트 반복 실행
-    GetWorld()->GetTimerManager().SetTimer(DelayBarTimerHandle, this, &UPlayerStatWidget::UpdateDelayBar, DelayBarInterval, true);
+    GetWorld()->GetTimerManager().SetTimer(DelayBarTimerHandle, this, &UPlayerStatWidget::UpdatePlayerDelayBar, DelayBarInterval, true);
 }
 
-void UPlayerStatWidget::UpdateDelayBar()
+void UPlayerStatWidget::UpdatePlayerDelayBar()
 {
-    if (InterpAlpha < 1.0f && DelayBarCurve)
+    //UE_LOG(LogTemp, Warning, TEXT("UPlayerStatWidget::UpdatePlayerDelayBar called,"));
+    //UE_LOG(LogTemp, Warning, TEXT("InterpAlpha = %f, CurrentHealthPercent = %f, DelayBarPercent = %f"), InterpAlpha, CurrentHealthPercent, DelayBarPercent);
+    if (DelayBarHealthCurve.IsNull())
     {
+        UE_LOG(LogTemp, Warning, TEXT("DelayBarHealthCurve is null!"));
+    }
+    if (InterpAlpha < 1.0f && !DelayBarHealthCurve.IsNull())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Updating Delay Bar: InterpAlpha = %f"), InterpAlpha);
         // 커브를 사용하여 보간
         InterpAlpha += DelayBarInterval / InterpDuration;
         InterpAlpha = FMath::Clamp(InterpAlpha, 0.0f, 1.0f);
 
-        float CurveValue = DelayBarCurve->GetFloatValue(InterpAlpha);
+        float CurveValue = DelayBarHealthCurve->GetFloatValue(InterpAlpha);
         DelayBarPercent = FMath::Lerp(DelayBarPercent, CurrentHealthPercent, CurveValue);
 
         DelayProgressBar->SetPercent(DelayBarPercent);
