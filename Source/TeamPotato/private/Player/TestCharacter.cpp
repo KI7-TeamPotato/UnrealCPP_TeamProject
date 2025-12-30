@@ -178,6 +178,10 @@ void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
         CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
+void ATestCharacter::PlayerAttack()
+{
+}
+
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 {
     Super::NotifyActorBeginOverlap(OtherActor);
@@ -251,6 +255,7 @@ void ATestCharacter::PlaySwordAttackMontage()
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
     PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
+    WeaponComponent->WeaponAttack();
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -411,7 +416,7 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
     float CurrentTime = GetWorld()->GetTimeSeconds();
 
     // 마우스 연타시에만 쿨타임 체크
-    if (!bIsAutoFiring)
+    if ((!bIsAutoFiring) && (ActivatedWeapon == EWeaponType::Gun))
     {
         if (CurrentTime - LastAttackTime < MinInterval)
         {
@@ -440,7 +445,9 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
         if (WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
         {
             if (UseEnergy(Cost))
+            {
                 bIsOnComboInput = true;
+            }
         }
     }
 }

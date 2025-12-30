@@ -140,6 +140,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
+    UFUNCTION()
+    void PlayerAttack();
+
 protected:
     // 앞뒤양옆으로 움직이는 함수
     UFUNCTION()
