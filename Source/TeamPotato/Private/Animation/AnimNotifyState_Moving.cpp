@@ -16,7 +16,6 @@ void UAnimNotifyState_Moving::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
     if(OwnerCharacter.IsValid())
     {
         OwnerCharacter->SetAnimRootMotionIgnore();
-        UE_LOG(LogTemp, Log, TEXT("RootMotion Ignored"));
     }
     else
     {
@@ -29,7 +28,6 @@ void UAnimNotifyState_Moving::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
     if (OwnerCharacter.IsValid())
     {
         OwnerCharacter->SetAnimRootMotionFromMontage();
-        UE_LOG(LogTemp, Log, TEXT("RootMotion Unignored"));
     }
     else
     {
