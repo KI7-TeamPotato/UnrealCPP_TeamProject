@@ -658,14 +658,9 @@ void ATestCharacter::OnRollInput()
     //KillPlayer();				//테스트용으로 사망 연출 실행해봄
     if (IsActionAvailable())
     {
-        /*if (ResourceManager->UseStamina(RollStamina))
-        {
-            PlayerAnimation->PlayRollMontage();
-        }*/
         MovementComponent->bUseControllerDesiredRotation = false;
         MovementComponent->bOrientRotationToMovement = true;
         bUseControllerRotationYaw = false;
         PlayerAnimation->PlayRollMontage();
     }
 }
-
