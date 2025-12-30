@@ -280,13 +280,15 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
         }
     }
 
+
+    /// 보스방 생성 성공시에 처리(Minimap)
+    CalculateDungeonMinMaxPoint();
+
+
     if (EndedCreate.IsBound())
     {
         EndedCreate.Broadcast();
     }
-
-    /// 보스방 생성 성공시에 처리(Minimap)
-    CalculateDungeonMinMaxPoint();
 }
 
 //닫힌 벽 막는 함수

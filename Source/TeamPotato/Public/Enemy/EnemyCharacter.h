@@ -100,7 +100,9 @@ protected:
     FTimerHandle InvincibilityTimerHandle;
 
     UPROPERTY(EditAnywhere, Category = "Combat")
+
     float InvincibilityDuration = 0.1f;
+
 
     void ResetInvincibility();
 private:
