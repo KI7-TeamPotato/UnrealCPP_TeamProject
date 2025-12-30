@@ -29,6 +29,32 @@ void UInventoryPerkTileWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
+
+void UInventoryPerkTileWidget::SetViewModel(UPerkViewModel* InViewModel)
+{
+    UnbindViewModel();
+    PerkViewModel = InViewModel;
+    BindViewModel();
+}
+
+void UInventoryPerkTileWidget::BindViewModel()
+{
+    if (PerkViewModel)
+    {
+        // Model -> ViewModel 바인딩
+        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnTryAllPerkClear.AddDynamic(PerkTileView, &UTileView::ClearListItems);
+    }
+}
+void UInventoryPerkTileWidget::UnbindViewModel()
+{
+    if (PerkViewModel)
+    {
+        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
+        PerkViewModel->OnTryAllPerkClear.RemoveDynamic(PerkTileView, &UTileView::ClearListItems);
+    }
+}
+
 void UInventoryPerkTileWidget::LoadPerkDataFromDataAsset(UPerkDataAsset* InData)
 {
     if (!InData || !PerkTileView) return;
@@ -54,29 +80,4 @@ void UInventoryPerkTileWidget::OnPerkitemHoveredChanged(UObject* Item, bool bIsH
 	{
 		//설명창 띄우기
 	}
-}
-
-void UInventoryPerkTileWidget::SetViewModel(UPerkViewModel* InViewModel)
-{
-    UnbindViewModel();
-    PerkViewModel = InViewModel;
-    BindViewModel();
-}
-
-void UInventoryPerkTileWidget::BindViewModel()
-{
-    if (PerkViewModel)
-    {
-        // Model -> ViewModel 바인딩
-        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
-        PerkViewModel->OnTryAllPerkClear.AddDynamic(PerkTileView, &UTileView::ClearListItems);
-    }
-}
-void UInventoryPerkTileWidget::UnbindViewModel()
-{
-    if (PerkViewModel)
-    {
-        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UInventoryPerkTileWidget::LoadPerkDataFromDataAsset);
-        PerkViewModel->OnTryAllPerkClear.RemoveDynamic(PerkTileView, &UTileView::ClearListItems);
-    }
 }

@@ -23,7 +23,7 @@ protected:
 	virtual void NativeDestruct() override;
 
 	UFUNCTION()
-	void OnCharacterPreviewTileSelected(UObject* SelectedItem);	
+	void OnCharacterPreviewTileSelected(UObject* SelectedItem);
 
 	UFUNCTION()
 	void OnSelectButtonClicked();

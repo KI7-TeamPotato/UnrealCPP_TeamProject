@@ -40,12 +40,12 @@ void UPlayerStatPanelWidget::BindViewModel()
     {
         UE_LOG(LogTemp, Warning, TEXT("UPlayerStatPanelWidget::BindViewModel - Binding to PlayerStatusViewModel"));
 
-        PlayerStatusViewModel->OnPlayerHealthChangedCurrentMaxHealth.AddDynamic(this, &UPlayerStatPanelWidget::OnPlayerStatHealthChanged);
+        PlayerStatusViewModel->OnPlayerHealthChangedCurrentMaxHealth.AddDynamic(this, &UPlayerStatPanelWidget::UpdateHealthUI);
         PlayerStatusViewModel->OnPlayerWalkSpeedChanged.AddDynamic(this, &UPlayerStatPanelWidget::UpdateWalkSpeedUI);
 
         UE_LOG(LogTemp, Warning, TEXT("UPlayerStatPanelWidget::BindViewModel - Binding to WeaponViewModel"));
 
-        PlayerWeaponViewModel->OnPlayerResourceUpdate.AddDynamic(this, &UPlayerStatPanelWidget::OnPlayerStatEnergyChanged);
+        PlayerWeaponViewModel->OnPlayerResourceUpdate.AddDynamic(this, &UPlayerStatPanelWidget::UpdateEnergyUI);
         PlayerWeaponViewModel->OnMainWeaponUpdate.AddDynamic(this, &UPlayerStatPanelWidget::UpdateWeaponDataUI);
 
         bIsBound = true;
@@ -56,25 +56,25 @@ void UPlayerStatPanelWidget::UnbindViewModel()
 {
     if(PlayerStatusViewModel && bIsBound)
     {
-        PlayerStatusViewModel->OnPlayerHealthChangedCurrentMaxHealth.RemoveDynamic(this, &UPlayerStatPanelWidget::OnPlayerStatHealthChanged);
+        PlayerStatusViewModel->OnPlayerHealthChangedCurrentMaxHealth.RemoveDynamic(this, &UPlayerStatPanelWidget::UpdateHealthUI);
         bIsBound = false;
     }
     if(PlayerWeaponViewModel && bIsBound)
     {
-        PlayerWeaponViewModel->OnPlayerResourceUpdate.RemoveDynamic(this, &UPlayerStatPanelWidget::OnPlayerStatEnergyChanged);
+        PlayerWeaponViewModel->OnPlayerResourceUpdate.RemoveDynamic(this, &UPlayerStatPanelWidget::UpdateEnergyUI);
         bIsBound = false;
     }
 }
 
-void UPlayerStatPanelWidget::OnPlayerStatHealthChanged(float InCurrentHealth, float InMaxHealth)
-{
-    UpdateHealthUI(InCurrentHealth, InMaxHealth);
-}
-
-void UPlayerStatPanelWidget::OnPlayerStatEnergyChanged(float CurrentResource, float MaxResource)
-{
-    UpdateEnergyUI(CurrentResource, MaxResource);
-}
+//void UPlayerStatPanelWidget::OnPlayerStatHealthChanged(float InCurrentHealth, float InMaxHealth)
+//{
+//    UpdateHealthUI(InCurrentHealth, InMaxHealth);
+//}
+//
+//void UPlayerStatPanelWidget::OnPlayerStatEnergyChanged(float CurrentResource, float MaxResource)
+//{
+//    UpdateEnergyUI(CurrentResource, MaxResource);
+//}
 
 void UPlayerStatPanelWidget::UpdateHealthUI(float InCurrentHealth, float InMaxHealth)
 {

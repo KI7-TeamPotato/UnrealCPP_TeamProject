@@ -31,19 +31,22 @@ private:
     void BindViewModel();
     void UnbindViewModel();
 
-    UFUNCTION()
-    void OnPlayerStatHealthChanged(float InCurrentHealth, float InMaxHealth);
+    //UFUNCTION()
+    //void OnPlayerStatHealthChanged(float InCurrentHealth, float InMaxHealth);
 
-    UFUNCTION()
-    void OnPlayerStatEnergyChanged(float CurrentResource, float MaxResource);
+    //UFUNCTION()
+    //void OnPlayerStatEnergyChanged(float CurrentResource, float MaxResource);
 
     UFUNCTION()
     void UpdateWeaponDataUI(UWeaponDataAsset* InWeaponData);
 
     UFUNCTION()
     void UpdateWalkSpeedUI(float NewWalkSpeed);
-
+    
+    UFUNCTION()
     void UpdateHealthUI(float InCurrentHealth, float InMaxHealth);
+    
+    UFUNCTION()
     void UpdateEnergyUI(float CurrentResource, float MaxResource);
 
 protected:

@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PerkSelectionScreenWidget.generated.h"
 
+// --- 퍽이 선택되었음을 알리기 위한 델리게이트 ---
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPerkSelected);
 
 class UPerkCardWidget;
