@@ -536,14 +536,9 @@ void ATestCharacter::OnRollInput()
 {
     if (IsActionAvailable())
     {
-        /*if (ResourceManager->UseStamina(RollStamina))
-        {
-            PlayerAnimation->PlayRollMontage();
-        }*/
         MovementComponent->bUseControllerDesiredRotation = false;
         MovementComponent->bOrientRotationToMovement = true;
         bUseControllerRotationYaw = false;
         PlayerAnimation->PlayRollMontage();
     }
 }
-

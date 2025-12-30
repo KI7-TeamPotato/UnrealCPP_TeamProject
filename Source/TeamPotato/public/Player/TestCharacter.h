@@ -186,9 +186,11 @@ protected:
     void OnWeaponSwap();
 
 private:
+    //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)
     UFUNCTION()
     bool IsActionAvailable();
 
+    //피격무적
     UFUNCTION()
     void OnHitInvincible();
 
