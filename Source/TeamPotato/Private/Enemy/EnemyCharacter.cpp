@@ -51,24 +51,19 @@ void AEnemyCharacter::BeginPlay()
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    //부모 클래스의 기본 로직 실행
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-    // 데미지가 0 이하거나 이미 죽었다면 무시
     if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
     {
         return 0.0f;
     }
 
-    //체력 감소
     CurrentHealth -= ActualDamage;
 
     UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
 
-    // 위젯 업데이트
     SetupHealthBarWidget();
 
-    // 3. 사망 체크
     if (CurrentHealth <= 0.0f)
     {
         OnDie();
