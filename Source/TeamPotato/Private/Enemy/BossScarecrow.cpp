@@ -13,6 +13,7 @@ ABossScarecrow::ABossScarecrow()
 void ABossScarecrow::BeginPlay()
 {
     Super::BeginPlay();
+    CurrentHealth = MaxHealth;
 }
 
 void ABossScarecrow::OnDie()
