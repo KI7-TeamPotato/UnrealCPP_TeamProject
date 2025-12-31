@@ -23,11 +23,11 @@ class TEAMPOTATO_API ATestPlayerController : public APlayerController
 
 public:
     // 선택창을 뷰포트에 추가
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void AddPerkSelectionScreenToViewport();
 
     UFUNCTION()
-    void RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk);
+    void RemovePerkSelectionScreenFromViewport();
 
     UFUNCTION(BlueprintCallable, Category = "Input")
     void SetGameOnlyInputMode();

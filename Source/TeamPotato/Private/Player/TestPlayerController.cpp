@@ -55,8 +55,10 @@ void ATestPlayerController::BeginPlay()
             PerkSelectionScreen = CreateWidget<UPerkSelectionScreenWidget>(this, PerkSelectionScreenClass);
 
             PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
+
+            PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
         }
-        MVVMSubsystem->GetPerkViewModel()->OnPerkEquipped.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
+        //MVVMSubsystem->GetPerkViewModel()->OnPerkEquipped.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
 
         // 인게임 메뉴 처리
         if (InGameMenuWidget)
@@ -152,7 +154,7 @@ void ATestPlayerController::AddPerkSelectionScreenToViewport()
     }
 }
 
-void ATestPlayerController::RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk)
+void ATestPlayerController::RemovePerkSelectionScreenFromViewport()
 {
     if (PerkSelectionScreen)
     {

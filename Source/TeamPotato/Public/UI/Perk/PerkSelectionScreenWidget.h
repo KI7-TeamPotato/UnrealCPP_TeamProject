@@ -14,6 +14,7 @@ class UPerkViewModel;
 class UDataTable;
 class UPerkDataAsset;
 struct FPerkSelectDataTableRow;
+
 /**
  * 
  */
