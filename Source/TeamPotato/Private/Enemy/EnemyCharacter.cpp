@@ -11,6 +11,7 @@
 #include "BrainComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Enemy/EnemyHealthBarWidget.h"
+#include "Item/PickupActor.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -222,6 +223,8 @@ void AEnemyCharacter::OnDie()
     }
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCharacterMovement()->DisableMovement();
+
+    EnemyItemDrop();
 }
 
 void AEnemyCharacter::SetupHealthBarWidget()
@@ -243,6 +246,41 @@ void AEnemyCharacter::RotateHealthBarToViewport()
     {
         // 위젯을 카메라를 바라보게 회전
         HealthBarWidgetComponent->SetWorldRotation(WidgetRotationForLookAtViewport);
+    }
+}
+
+void AEnemyCharacter::EnemyItemDrop()
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    float RandomChance = FMath::FRand();
+
+    DropCount = FMath::RandRange(1, 4) * Elitemultiple * Bossmultiple;
+    for (int32 i = 0; i < DropCount; i++)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        UE_LOG(LogTemp, Log, TEXT("DropItem"))
+        World->SpawnActor<APickupActor>(GoldPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
+    }
+
+    if (RandomChance <= 0.5f)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        DropCount = FMath::RandRange(1, 2);
+        for (int32 i = 0; i < DropCount; i++)
+        {
+            World->SpawnActor<APickupActor>(StaminaPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
+        }
+    }
+
+    if (RandomChance <= 0.1f)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        World->SpawnActor<APickupActor>(HealthPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
     }
 }
 

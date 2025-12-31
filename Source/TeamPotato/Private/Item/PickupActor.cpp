@@ -6,7 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "NiagaraComponent.h"
-
+#include "Player/TestCharacter.h"
 // Sets default values
 APickupActor::APickupActor()
 {
@@ -18,7 +18,7 @@ APickupActor::APickupActor()
 	SphereCollision->InitSphereRadius(120.0f);
 	SphereCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	RootComponent = SphereCollision;
-
+     
 	// 아이템 메쉬 초기화
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
@@ -80,8 +80,10 @@ void APickupActor::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	if (!ItemInteraction())
 	{
 		// 무기가 아닐 경우 아이템 획득 함수 실행
-		if (OtherActor && OtherActor->IsA<ACharacter>())
+		if (OtherActor && OtherActor->IsA<ATestCharacter>())
 		{
+            UE_LOG(LogTemp, Log, TEXT("OnPickup"));
+
 			OnPickup(OtherActor);
 		}
 	}
@@ -143,5 +145,6 @@ void APickupActor::OnTimeLineUpdate(float Value)
 void APickupActor::OnTimelineFinished()
 {
     UseItem(PickupOwner.Get());
+    UE_LOG(LogTemp, Log, TEXT("OnTimelineFinished"));
     Destroy();
 }
