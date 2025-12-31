@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDying);
 
 class UWidgetComponent;
 class UEnemyHealthBarWidget;
+class UPoolingSubsystem;
 
 UCLASS()
 class TEAMPOTATO_API AEnemyCharacter : public ACharacter, public IEnemyInterface
@@ -126,7 +127,13 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
 
+<<<<<<< HEAD
     //몬스터(일반 몬스터) 체력 기본값 35
+=======
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<USceneComponent> DamagePopupSpawnPoint;
+
+>>>>>>> UI_Test
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float MaxHealth = 35.0f;
 
@@ -151,4 +158,7 @@ private:
 
     UPROPERTY()
     TObjectPtr<UEnemyHealthBarWidget> HealthBarWidget;
+
+    UPROPERTY()
+    TObjectPtr<UPoolingSubsystem> PoolingSubsystem;
 };

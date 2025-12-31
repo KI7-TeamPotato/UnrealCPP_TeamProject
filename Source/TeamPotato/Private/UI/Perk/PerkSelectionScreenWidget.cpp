@@ -116,6 +116,7 @@ void UPerkSelectionScreenWidget::HandlePerkSelected(UPerkDataAsset* SelectedPerk
     UE_LOG(LogTemp, Warning, TEXT("UPerkSelectionScreenWidget::HandlePerkSelected called"));
 
     PerkViewModel->RequestEquipPerk(SelectedPerkData);
+    OnPerkSelected.Broadcast();
 }
 
 
