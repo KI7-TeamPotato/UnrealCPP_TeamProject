@@ -127,13 +127,10 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;
 
-<<<<<<< HEAD
     //몬스터(일반 몬스터) 체력 기본값 35
-=======
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USceneComponent> DamagePopupSpawnPoint;
 
->>>>>>> UI_Test
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float MaxHealth = 35.0f;
 
