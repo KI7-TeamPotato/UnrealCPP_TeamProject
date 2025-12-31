@@ -211,6 +211,7 @@ private:
 	//방지 타이머;
 	FTimerHandle GenerationTimeoutHandle;
 
+    const int32 MaxAmout = 3;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

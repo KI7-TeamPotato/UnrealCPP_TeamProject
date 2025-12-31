@@ -318,7 +318,7 @@ bool ADungeonGanarator::SpawnLastRoom()
     //보스방 생성
     TArray<TSubclassOf<ARoomBase>>* TargetRoomArray;
 
-    if (chapter == 5)
+    if (chapter == MaxAmout)
     {
         TargetRoomArray = &BossRoomClass;
         UE_LOG(LogTemp, Warning, TEXT("createboss"));
@@ -555,7 +555,7 @@ void ADungeonGanarator::GoToNextStage(int32 NewChapter)
     SetSeed();
     int32 NextStage = NewChapter+1;
     UE_LOG(LogTemp, Error, TEXT("%d스테이지-%d챕터"), Stage, NewChapter);
-    if (NextStage > 5)
+    if (NextStage > MaxAmout)
     {
         chapter = 1;
         Stage++;
