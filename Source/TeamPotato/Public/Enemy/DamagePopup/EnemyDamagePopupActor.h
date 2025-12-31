@@ -7,6 +7,7 @@
 #include "EnemyDamagePopupActor.generated.h"
 
 class UWidgetComponent;
+class UEnemyDamagePopupWidget;
 
 UCLASS()
 class TEAMPOTATO_API AEnemyDamagePopupActor : public AActor
@@ -16,10 +17,18 @@ class TEAMPOTATO_API AEnemyDamagePopupActor : public AActor
 public:	
 	AEnemyDamagePopupActor();
 
+    UFUNCTION()
+    void ShowDamagePopup(float DamageAmount, FVector Location);
+
+    UFUNCTION()
+    void HideDamagePopup();
+
 protected:
 	virtual void BeginPlay() override;
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWidgetComponent> DamagePopupWidgetComponent;
+
+    TObjectPtr<UEnemyDamagePopupWidget> DamagePopupWidget;
 };

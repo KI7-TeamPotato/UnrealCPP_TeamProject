@@ -13,6 +13,9 @@
 #include "UI/Enemy/EnemyHealthBarWidget.h"
 #include "Subsystem/PoolingSubsystem.h"
 #include "Item/PickupActor.h"
+#include "Item/PickupHealthActor.h"
+#include "Item/PickupStaminaActor.h"
+#include "Item/PickupGoldActor.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -25,6 +28,9 @@ AEnemyCharacter::AEnemyCharacter()
 
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
     GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+    DamagePopupSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("DamagePopupSpawnPoint"));
+    DamagePopupSpawnPoint->SetupAttachment(RootComponent);
 }
 
 void AEnemyCharacter::SetDropItemClasses(TSubclassOf<class APickupHealthActor> InHealthClass, TSubclassOf<class APickupStaminaActor> InStaminaClass, TSubclassOf<class APickupGoldActor> InGoldClass)
@@ -50,7 +56,8 @@ void AEnemyCharacter::BeginPlay()
     }
 
     // 풀링 서브시스템 참조 가져오기
-    PoolingSubsystem = GetGameInstance()->GetSubsystem<UPoolingSubsystem>();
+    //PoolingSubsystem = GetGameInstance()->GetSubsystem<UPoolingSubsystem>();
+    PoolingSubsystem = GetWorld()->GetSubsystem<UPoolingSubsystem>();
 
     // 주기적으로 체력바를 플레이어 쪽으로 회전시키는 타이머 설정
     FTimerHandle RotateTimerHandle;
@@ -86,7 +93,8 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
     SetupHealthBarWidget();
 
     // PoolinmgSubsystem을 통해 PopupWidget 재생
-    //PoolingSubsystem->
+    FVector PopupLocation = DamagePopupSpawnPoint->GetComponentLocation();
+    PoolingSubsystem->GetPooledDamagePopupActor(ActualDamage, PopupLocation);
 
     if (CurrentHealth <= 0.0f)
     {

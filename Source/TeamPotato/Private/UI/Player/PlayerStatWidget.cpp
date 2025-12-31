@@ -105,7 +105,7 @@ void UPlayerStatWidget::UpdatePlayerDelayBar()
 {
     //UE_LOG(LogTemp, Warning, TEXT("UPlayerStatWidget::UpdatePlayerDelayBar called,"));
     //UE_LOG(LogTemp, Warning, TEXT("InterpAlpha = %f, CurrentHealthPercent = %f, DelayBarPercent = %f"), InterpAlpha, CurrentHealthPercent, DelayBarPercent);
-    if (DelayBarHealthCurve.IsNull())
+    if (!DelayBarHealthCurve)
     {
         UE_LOG(LogTemp, Warning, TEXT("DelayBarHealthCurve is null!"));
     }

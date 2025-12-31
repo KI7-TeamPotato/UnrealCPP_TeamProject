@@ -41,3 +41,28 @@ void UPoolingSubsystem::InitializeDamagePopupActorPool()
         }
     }
 }
+
+void UPoolingSubsystem::GetPooledDamagePopupActor(float DamageAmount, FVector Location)
+{
+    if(AvailableDamagePopupActors.Num() <= 0)
+    {
+        return;
+    }
+    if (AvailableDamagePopupActors.Num() > 0)
+    {
+        // 사용 가능한 액터가 있으면 가져오기
+        AEnemyDamagePopupActor* PooledActor = AvailableDamagePopupActors.Pop();
+        UsedDamagePopupActor.Add(PooledActor);
+        PooledActor->ShowDamagePopup(DamageAmount, Location);
+    }
+}
+
+void UPoolingSubsystem::ReturnDamagePopupActorToPool(AEnemyDamagePopupActor* DamagePopupActor)
+{
+    if (DamagePopupActor)
+    {
+        // 사용 중인 배열에서 제거하고 사용 가능 배열에 다시 추가
+        UsedDamagePopupActor.Remove(DamagePopupActor);
+        AvailableDamagePopupActors.Add(DamagePopupActor);
+    }
+}

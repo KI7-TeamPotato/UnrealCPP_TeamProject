@@ -16,7 +16,12 @@ class TEAMPOTATO_API UPoolingSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 	
 public:
-    // 풀의 데미지 팝업 위젯 가져와서
+    // 풀의 데미지 팝업 위젯 가져와서 해당 위치로 이동
+    UFUNCTION(BlueprintCallable, Category = "PoolingSubsystem")
+    void GetPooledDamagePopupActor(float DamageAmount, FVector Location);
+
+    UFUNCTION(BlueprintCallable, Category = "PoolingSubsystem")
+    void ReturnDamagePopupActorToPool(AEnemyDamagePopupActor* DamagePopupActor);
     
 
 protected:
