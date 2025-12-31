@@ -6,6 +6,8 @@
 #include "EnhancedInputSubSystems.h"
 #include "InputMappingContext.h"
 #include "Subsystem/MVVMSubsystem.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
 #include "UI/InGameMenu/InGameMenuWidget.h"
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "UI/Perk/PerkSelectionScreenWidget.h"
@@ -43,7 +45,6 @@ void ATestPlayerController::BeginPlay()
         InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
     }
 
-
     if (UMVVMSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
     {
         // 퍽 선택 화면 위젯 바인딩 && 퍽 인벤토리 뷰모델 설정
@@ -52,11 +53,9 @@ void ATestPlayerController::BeginPlay()
             PerkSelectionScreen = CreateWidget<UPerkSelectionScreenWidget>(this, PerkSelectionScreenClass);
 
             PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
-            PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
-
-            // 테스트용, 실제 게임에서는 다른 타이밍에 뷰포트 추가
-            //AddPerkSelectionScreenToViewport();
         }
+
+        MVVMSubsystem->GetPerkViewModel()->OnPerkEquipped.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
 
         // 인게임 메뉴 처리
         if (InGameMenuWidget)
@@ -130,12 +129,11 @@ void ATestPlayerController::AddPerkSelectionScreenToViewport()
     if (PerkSelectionScreen)
     {
         SetGameAndUIInputMode();
-
         PerkSelectionScreen->AddToViewport(5);
     }
 }
 
-void ATestPlayerController::RemovePerkSelectionScreenFromViewport()
+void ATestPlayerController::RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk)
 {
     if (PerkSelectionScreen)
     {
@@ -163,4 +161,14 @@ void ATestPlayerController::SetGameAndUIInputMode()
     InputMode.SetWidgetToFocus(InGameMenuWidget->TakeWidget());
     SetInputMode(InputMode);
     SetShowMouseCursor(true);
+}
+
+void ATestPlayerController::TryPerkSelectionScreen(int32 InStage, int32 InChapter)
+{
+    if (InChapter == 2 || InChapter == 4)
+    {
+        AddPerkSelectionScreenToViewport();
+    }
+    else
+        return;
 }

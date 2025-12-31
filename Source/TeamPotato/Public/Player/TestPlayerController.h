@@ -26,7 +26,7 @@ public:
     void AddPerkSelectionScreenToViewport();
 
     UFUNCTION()
-    void RemovePerkSelectionScreenFromViewport();
+    void RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk);
 
     UFUNCTION(BlueprintCallable, Category = "Input")
     void SetGameOnlyInputMode();
@@ -37,6 +37,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Input")
     void SetGameAndUIInputMode();
 
+    // 스테이지와 챕터 정보를 받아서 원하는 스테이지와 챕터에서 퍽 선택 화면을 띄움
+    UFUNCTION(BlueprintCallable, Category = "Perk|Selection")
+    void TryPerkSelectionScreen(int32 InStage, int32 InChapter);
 
 protected:
     // --- 빙의 시점에 강제로 Input을 GameModeOnly로 바꿈 ---

@@ -109,7 +109,7 @@ void UPlayerStatWidget::UpdatePlayerDelayBar()
     {
         UE_LOG(LogTemp, Warning, TEXT("DelayBarHealthCurve is null!"));
     }
-    if (InterpAlpha < 1.0f && !DelayBarHealthCurve.IsNull())
+    if (InterpAlpha < 1.0f && DelayBarHealthCurve)
     {
         UE_LOG(LogTemp, Warning, TEXT("Updating Delay Bar: InterpAlpha = %f"), InterpAlpha);
         // 커브를 사용하여 보간

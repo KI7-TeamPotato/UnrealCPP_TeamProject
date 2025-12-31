@@ -284,11 +284,14 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
     /// 보스방 생성 성공시에 처리(Minimap)
     CalculateDungeonMinMaxPoint();
 
-
     if (EndedCreate.IsBound())
     {
         EndedCreate.Broadcast();
     }
+
+    // 스테이지 및 챕터 변경 델리게이트 호출
+    OnStageAndChapterChanged.Broadcast(Stage, chapter);
+
 }
 
 //닫힌 벽 막는 함수
