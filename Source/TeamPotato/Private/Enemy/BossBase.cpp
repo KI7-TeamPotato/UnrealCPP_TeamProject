@@ -12,6 +12,7 @@ ABossBase::ABossBase()
     BulletPatternComp = CreateDefaultSubobject<UBulletHellComponent>(TEXT("BulletPatternComp"));
     MaxHealth = 300;
     CurrentHealth = MaxHealth;
+    Bossmultiple = 5.0;
 }
 
 void ABossBase::BeginPlay()

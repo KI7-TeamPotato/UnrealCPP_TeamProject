@@ -25,6 +25,23 @@ public:
 
     virtual void OnDie();
 
+    UPROPERTY(VisibleAnywhere)
+    bool ImNormal = true;
+
+    UPROPERTY(VisibleAnywhere)
+    float Elitemultiple = 1.0f;
+
+    UPROPERTY(VisibleAnywhere)
+    float Bossmultiple = 1.0f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    TSubclassOf<class APickupHealthActor> HealthPickupClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    TSubclassOf<class APickupStaminaActor> StaminaPickupClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    TSubclassOf<class APickupGoldActor> GoldPickupClass;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -85,6 +102,9 @@ private:
     // --- 체력 위젯 컴포넌트를 플레이어 방향으로 회전시키는 함수 ---
     void RotateHealthBarToViewport();
 
+    void EnemyItemDrop();
+
+    int32 DropCount = 0;
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWidgetComponent> HealthBarWidgetComponent;

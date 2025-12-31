@@ -16,6 +16,7 @@ AEliteEnemy::AEliteEnemy()
 {
     MaxHealth = 200;
     CurrentHealth = MaxHealth;
+    Elitemultiple = 2.0f;
 }
 
 float AEliteEnemy::SetMovementSpeed_Implementation(EEnemySpeed State)
@@ -66,6 +67,11 @@ void AEliteEnemy::BeginPlay()
 void AEliteEnemy::DefaultAttack()
 {
     Super::DefaultAttack();
+}
+
+void AEliteEnemy::OnDie()
+{
+    Super::OnDie();
 }
 
 void AEliteEnemy::PerformSpecialAttack()
