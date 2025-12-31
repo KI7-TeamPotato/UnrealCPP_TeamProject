@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDying);
 
 class UWidgetComponent;
 class UEnemyHealthBarWidget;
+class UPoolingSubsystem;
 
 UCLASS()
 class TEAMPOTATO_API AEnemyCharacter : public ACharacter, public IEnemyInterface
@@ -135,4 +136,7 @@ protected:
 private:
     UPROPERTY()
     TObjectPtr<UEnemyHealthBarWidget> HealthBarWidget;
+
+    UPROPERTY()
+    TObjectPtr<UPoolingSubsystem> PoolingSubsystem;
 };

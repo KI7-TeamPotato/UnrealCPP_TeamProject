@@ -11,6 +11,7 @@
 #include "BrainComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Enemy/EnemyHealthBarWidget.h"
+#include "Subsystem/PoolingSubsystem.h"
 #include "Item/PickupActor.h"
 
 // Sets default values
@@ -48,6 +49,9 @@ void AEnemyCharacter::BeginPlay()
         }
     }
 
+    // 풀링 서브시스템 참조 가져오기
+    PoolingSubsystem = GetGameInstance()->GetSubsystem<UPoolingSubsystem>();
+
     // 주기적으로 체력바를 플레이어 쪽으로 회전시키는 타이머 설정
     FTimerHandle RotateTimerHandle;
     GetWorld()->GetTimerManager().SetTimer
@@ -78,7 +82,11 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
     UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
 
+    // 체력바 위젯 업데이트
     SetupHealthBarWidget();
+
+    // PoolinmgSubsystem을 통해 PopupWidget 재생
+    //PoolingSubsystem->
 
     if (CurrentHealth <= 0.0f)
     {
