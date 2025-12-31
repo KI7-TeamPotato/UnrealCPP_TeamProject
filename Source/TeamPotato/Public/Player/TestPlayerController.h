@@ -10,9 +10,10 @@
 class UInputMappingContext;
 class UPerkSelectionScreenWidget;
 class UPlayerKilledWidget;
+class UMinimapWidget;
 class UInGameMenuWidget;
 class UPerkDataAsset;
-
+class UMinimapViewModel;
 /**
  * 
  */
@@ -48,7 +49,17 @@ protected:
 
 	virtual void BeginPlay() override;
 
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	virtual void SetupInputComponent() override;
+
+    // --- 플레이어 움직임이 미니맵 업데이트 임계값을 넘었는지 확인 ---
+    UFUNCTION()
+    void IsMinimapUpdateThresholdReached();
+
+    // --- 미니맵 플레이어 위치 업데이트 ---
+    UFUNCTION()
+    void UpdateMinimapPlayerPosition();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
@@ -71,7 +82,9 @@ protected:
 private:
 	int32 priority = 1;
 
+    // ===============================
     // --- 메뉴 UI 관련 변수 --- 
+    // ===============================
     bool bIsMenuOpen = false;
 
     UPROPERTY()
@@ -80,17 +93,42 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UInGameMenuWidget> InGameMenuWidgetClass;
 
+    // ===============================
     // --- 퍽 UI 관련 변수 ---
+    // ===============================
     UPROPERTY()
     TObjectPtr<UPerkSelectionScreenWidget> PerkSelectionScreen;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UPerkSelectionScreenWidget> PerkSelectionScreenClass;
 
+    // ===============================
     // --- 사망 UI 위젯 관련 변수 ---
+    // ===============================
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UPlayerKilledWidget> PlayerKilledWidget;
 
-    //UPROPERTY(EditDefaultsOnly, Category = "UI")
-    //TSubclassOf<UPlayerKilledWidget> PlayerKilledWidgetClass;
+    // ===============================
+    // --- 미니맵 관련 변수 ---
+    // ===============================
+    UPROPERTY(VisibleDefaultsOnly, Category = "UI")
+    TObjectPtr<UMinimapWidget> MinimapWidgetRef = nullptr;
+
+    TObjectPtr<UMinimapViewModel> MinimapViewModel = nullptr;
+
+    FVector CurrentPawnLocation = FVector::ZeroVector;
+    float CurrentPawnYaw = 0.f;
+
+    FVector LastPawnLocation = FVector::ZeroVector;
+    float LastPawnYaw = 0.f;
+
+    // --- 미니맵 거리 업데이트 임계값 ---
+    UPROPERTY(EditDefaultsOnly, Category = "Minimap")
+    float MinimapUpdateThreshold = 10.f;
+
+    // --- 미니맵 회전 업데이트 임계값 ---
+    UPROPERTY(EditDefaultsOnly, Category = "Minimap")
+    float MinimapYawUpdateThreshold = 5.f;
+
+    FTimerHandle MinimapUpdateTimer;
 };
