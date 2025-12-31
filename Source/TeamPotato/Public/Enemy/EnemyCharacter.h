@@ -34,14 +34,21 @@ public:
     UPROPERTY(VisibleAnywhere)
     float Bossmultiple = 1.0f;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    UPROPERTY(VisibleAnywhere, Category = "Drops")
     TSubclassOf<class APickupHealthActor> HealthPickupClass;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    UPROPERTY(VisibleAnywhere, Category = "Drops")
     TSubclassOf<class APickupStaminaActor> StaminaPickupClass;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Drops")
+    UPROPERTY(VisibleAnywhere, Category = "Drops")
     TSubclassOf<class APickupGoldActor> GoldPickupClass;
+
+    UFUNCTION(BlueprintCallable, Category = "Drops")
+    void SetDropItemClasses(
+        TSubclassOf<class APickupHealthActor> InHealthClass,
+        TSubclassOf<class APickupStaminaActor> InStaminaClass,
+        TSubclassOf<class APickupGoldActor> InGoldClass
+    );
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

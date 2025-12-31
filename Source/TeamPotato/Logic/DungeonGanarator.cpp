@@ -549,6 +549,7 @@ void ADungeonGanarator::StageConfigSetting()
 
 void ADungeonGanarator::GoToNextStage(int32 NewChapter)
 {
+    SetSeed();
     int32 NextStage = NewChapter+1;
     UE_LOG(LogTemp, Error, TEXT("%d스테이지-%d챕터"), Stage, NewChapter);
     if (NextStage > 5)
