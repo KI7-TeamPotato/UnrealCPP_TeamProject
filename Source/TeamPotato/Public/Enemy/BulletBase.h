@@ -19,7 +19,7 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    void Launch(const FVector& StartLocation, const FVector& Direction);
+    void Launch(const FVector& StartLocation, const FVector& Direction, float Speed);
 
     void Deactivate();
 
@@ -43,6 +43,9 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Bullet Settings")
     float RollingStrength = 1000.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    float ProjectileSpeed = 3000.0f; 
 private:
     bool bIsActive;
 

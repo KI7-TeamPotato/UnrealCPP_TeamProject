@@ -60,7 +60,7 @@ void AArcherEnemy::Shoot()
         FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f);
         FVector Direction = (PlayerChar->GetActorLocation() - StartLocation).GetSafeNormal();
 
-        BulletToFire->Launch(StartLocation, Direction);
+        BulletToFire->Launch(StartLocation, Direction, this->BulletSpeed);
     }
 }
 

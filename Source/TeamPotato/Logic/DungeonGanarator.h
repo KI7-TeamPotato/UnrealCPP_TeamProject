@@ -68,12 +68,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo")
 	int32 RoomAmount = 0;
 
+    //테마를 나누는 스테이지
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo")
 	int32 Stage = 1;
 
+    //테마 별 스테이지
     UPROPERTY(EditAnywhere, Category = "DungeonInfo")
     int32 chapter = 1;
 
+    //스테이지 정보를 담은 배열
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo|Config")
 	TMap<int32, FStageRoomConfig> StageConfigMap;
 
@@ -89,6 +92,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rooms")
 	TArray<TSubclassOf<ARoomBase>> BossRoomClass; // 연결할 보스 방 클래스
 
+    //포탈방
     UPROPERTY(EditAnywhere, Category = "Rooms")
     TArray<TSubclassOf<ARoomBase>> PotalRoomClass; // 연결할 포탈 방 클래스 
 
@@ -108,15 +112,14 @@ public:
     //TArray<TSubclassOf<ADoor>> Doors;
     TSubclassOf<ADoor> Doors;
 
+    //던전 생성 완료를 알리는 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnCreateDungeonEnded EndedCreate;
 
+    //스테이지를 건네주는 getter
     UFUNCTION(BlueprintCallable)
     int32 GetChapter() const { return chapter; }
 
-    //=================================
-    //=================================
-    //=================================
     // 던전 생성 완료 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "DungeonGanarator|Delegate")
     FOnDungeonGenerationCompleted OnDungeonGenerationCompleted;
@@ -135,6 +138,7 @@ protected:
 	//출구(다음방 통로)
 	TArray<USceneComponent*> Exits;
 
+    //문들 리스트(열고닫을떄씀)
 	TArray<USceneComponent*> DoorList;
 
 	//Seed 시스템용 랜덤스트림
@@ -184,10 +188,13 @@ protected:
 	//시드 설정하는 함수
 	void SetSeed();
 
+    //던전 을 드나들 수 있는 문을 생성하는 함수
     void SpawnDoors();
 
+    //스테이지를 생성할때 스테이지의 정보(방 종류나 개수)를 설정하는 함수 
     void StageConfigSetting();
 
+    //다음 스테이지 혹은 챕터로 넘어가는 함수
     UFUNCTION(BlueprintCallable)
     void GoToNextStage(int32 NewChapter);
 
@@ -199,7 +206,7 @@ private:
     UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
 	TArray<AActor*> GeneratedActors;
 
-	//RoomAmount를 실시간으로 감소시키면서 방을 생성하기 때문에 RoomAmount의 초기값을 저장해야 함, 그ㅡ때쓰는 변수
+	//RoomAmount를 실시간으로 감소시키면서 방을 생성하기 때문에 RoomAmount의 초기값을 저장해야 함, 그때쓰는 변수
 	int32 InitialRoomAmount = 0;
 
 	//현재 리셋 카운트

@@ -40,4 +40,6 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Combat")
     int32 PoolSize = 5;
 
+    UPROPERTY(EditAnywhere, Category = "Combat")
+    int32 BulletSpeed = 1000;
 };

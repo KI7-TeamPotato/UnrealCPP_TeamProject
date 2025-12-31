@@ -20,8 +20,8 @@ ABulletBase::ABulletBase()
 
     MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
     MovementComp->UpdatedComponent = CapsuleComp;
-    MovementComp->InitialSpeed = 3000.0f;
-    MovementComp->MaxSpeed = 3000.0f;
+    MovementComp->InitialSpeed = ProjectileSpeed; 
+    MovementComp->MaxSpeed = ProjectileSpeed;
     MovementComp->bRotationFollowsVelocity = true;
     MovementComp->ProjectileGravityScale = 0.0f; 
     MovementComp->bAutoActivate = false; 
@@ -34,7 +34,7 @@ void ABulletBase::BeginPlay()
     Deactivate();
 }
 
-void ABulletBase::Launch(const FVector& StartLocation, const FVector& Direction)
+void ABulletBase::Launch(const FVector& StartLocation, const FVector& Direction, float Speed)
 {
     if (bIsActive) return; // 이미 날아가고 있다면 무시 (혹은 강제 초기화 선택)
 
@@ -46,8 +46,11 @@ void ABulletBase::Launch(const FVector& StartLocation, const FVector& Direction)
     SetActorHiddenInGame(false);
     CapsuleComp->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
+    MovementComp->InitialSpeed = ProjectileSpeed;
+    MovementComp->MaxSpeed = ProjectileSpeed;
+
     MovementComp->Activate();
-    MovementComp->Velocity = Direction.GetSafeNormal() * MovementComp->InitialSpeed;
+    MovementComp->Velocity = Direction.GetSafeNormal() * Speed;
 
     GetWorld()->GetTimerManager().SetTimer(LifeTimerHandle, this, &ABulletBase::OnLifeTimeExpired, MaxLifeTime, false);
 }
