@@ -5,17 +5,19 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
 #include "InputMappingContext.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "Subsystem/ViewModel/PerkViewModel.h"
-#include "TeamPotato/Logic/DungeonGanarator.h"
+#include "Subsystem/CharacterSubsystem.h"
 #include "UI/InGameMenu/InGameMenuWidget.h"
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "UI/InGameMenu/MenuPlayerStatWidget.h"
 #include "UI/InGameMenu/PlayerStatPanelWidget.h"
 #include "UI/Perk/InventoryPerkTileWidget.h"
+#include "UI/InGameMenu/PlayerKilledWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystem/CharacterSubsystem.h"
+#include "Player/TestCharacter.h"
 
 void ATestPlayerController::OnPossess(APawn* InPawn)
 {
@@ -54,7 +56,6 @@ void ATestPlayerController::BeginPlay()
 
             PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
         }
-
         MVVMSubsystem->GetPerkViewModel()->OnPerkEquipped.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
 
         // 인게임 메뉴 처리
@@ -76,6 +77,13 @@ void ATestPlayerController::BeginPlay()
             // 계속하기 버튼 처리
             InGameMenuWidget->OnInGameMenuClosed.AddDynamic(this, &ATestPlayerController::OnPauseInput);
         }
+    }
+
+    // 플레이어 사망 델리게이트 바인딩
+    ATestCharacter* TestCharacter = Cast<ATestCharacter>(GetPawn());
+    if (TestCharacter)
+    {
+        TestCharacter->OnPlayerKilled.AddDynamic(this, &ATestPlayerController::OnAddPlayerKilledWidget);
     }
 }
 
@@ -120,6 +128,17 @@ void ATestPlayerController::OnPauseInput()
         InGameMenuWidget->SetVisibility(ESlateVisibility::Visible);
 
         bIsMenuOpen = true;
+    }
+}
+
+void ATestPlayerController::OnAddPlayerKilledWidget()
+{
+    UE_LOG(LogTemp, Log, TEXT("Player Killed Widget Added to Viewport"));
+
+    if (PlayerKilledWidget)
+    {
+        SetGameAndUIInputMode();
+        PlayerKilledWidget->AddToViewport(100);
     }
 }
 

@@ -9,6 +9,7 @@
 
 class UInputMappingContext;
 class UPerkSelectionScreenWidget;
+class UPlayerKilledWidget;
 class UInGameMenuWidget;
 class UPerkDataAsset;
 
@@ -57,6 +58,10 @@ protected:
     UFUNCTION()
     void OnPauseInput();
 
+private:
+    UFUNCTION()
+    void OnAddPlayerKilledWidget();
+
 protected:
     //IA
     // 일시 정지 입력
@@ -66,7 +71,7 @@ protected:
 private:
 	int32 priority = 1;
 
-    // --- 메뉴 관련 변수 --- 
+    // --- 메뉴 UI 관련 변수 --- 
     bool bIsMenuOpen = false;
 
     UPROPERTY()
@@ -75,10 +80,17 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UInGameMenuWidget> InGameMenuWidgetClass;
 
-    // --- 퍽 관련 변수 ---
+    // --- 퍽 UI 관련 변수 ---
     UPROPERTY()
     TObjectPtr<UPerkSelectionScreenWidget> PerkSelectionScreen;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UPerkSelectionScreenWidget> PerkSelectionScreenClass;
+
+    // --- 사망 UI 위젯 관련 변수 ---
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UPlayerKilledWidget> PlayerKilledWidget;
+
+    //UPROPERTY(EditDefaultsOnly, Category = "UI")
+    //TSubclassOf<UPlayerKilledWidget> PlayerKilledWidgetClass;
 };

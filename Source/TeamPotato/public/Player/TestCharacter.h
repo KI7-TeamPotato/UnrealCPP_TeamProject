@@ -12,6 +12,8 @@
 class AWeaponPickupActor;
 class AWeaponBoxActor;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerKilled);
+
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
 {
@@ -218,6 +220,9 @@ public:
     //콤보공격 입력을 받을 수 있는지
     UPROPERTY()
     bool bIsComboInputAvailable = false;
+
+    UPROPERTY(BlueprintAssignable, Category = "Event")
+    FOnPlayerKilled OnPlayerKilled;
 
 protected:
 	//IA
