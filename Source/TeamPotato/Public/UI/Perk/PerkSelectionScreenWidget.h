@@ -23,7 +23,7 @@ class TEAMPOTATO_API UPerkSelectionScreenWidget : public UUserWidget
 	GENERATED_BODY()
     
 public:
-    UFUNCTION(BlueprintCallable, Category = "MVVM")
+    //UFUNCTION(BlueprintCallable, Category = "MVVM")
     void SetViewModel(UPerkViewModel* InViewModel);
 
 protected:
@@ -38,11 +38,8 @@ private:
     UFUNCTION()
     void HandlePerkSelected(UPerkDataAsset* SelectedPerkData);
 
-    UFUNCTION()
-    void OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk);
-
-    void BindViewModel();
-    void UnbindViewModel();
+    //void BindViewModel();
+    //void UnbindViewModel();
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "Perk")

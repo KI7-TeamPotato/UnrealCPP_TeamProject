@@ -233,6 +233,11 @@ void ATestCharacter::KillPlayer()
 
     //애니메이션 재생을 막기 위함
     bIsOnAction = true;
+    
+    if (OnPlayerKilled.IsBound())
+    {
+        OnPlayerKilled.Broadcast();
+    }
 }
 
 void ATestCharacter::InvincibleActivate()

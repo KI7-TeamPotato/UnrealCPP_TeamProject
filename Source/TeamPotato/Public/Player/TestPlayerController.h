@@ -9,6 +9,7 @@
 
 class UInputMappingContext;
 class UPerkSelectionScreenWidget;
+class UPlayerKilledWidget;
 class UInGameMenuWidget;
 class UPerkDataAsset;
 
@@ -26,7 +27,7 @@ public:
     void AddPerkSelectionScreenToViewport();
 
     UFUNCTION()
-    void RemovePerkSelectionScreenFromViewport();
+    void RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk);
 
     UFUNCTION(BlueprintCallable, Category = "Input")
     void SetGameOnlyInputMode();
@@ -37,6 +38,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Input")
     void SetGameAndUIInputMode();
 
+    // 스테이지와 챕터 정보를 받아서 원하는 스테이지와 챕터에서 퍽 선택 화면을 띄움
+    UFUNCTION(BlueprintCallable, Category = "Perk|Selection")
+    void TryPerkSelectionScreen(int32 InStage, int32 InChapter);
 
 protected:
     // --- 빙의 시점에 강제로 Input을 GameModeOnly로 바꿈 ---
@@ -54,6 +58,10 @@ protected:
     UFUNCTION()
     void OnPauseInput();
 
+private:
+    UFUNCTION()
+    void OnAddPlayerKilledWidget();
+
 protected:
     //IA
     // 일시 정지 입력
@@ -63,7 +71,7 @@ protected:
 private:
 	int32 priority = 1;
 
-    // --- 메뉴 관련 변수 --- 
+    // --- 메뉴 UI 관련 변수 --- 
     bool bIsMenuOpen = false;
 
     UPROPERTY()
@@ -72,10 +80,17 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<UInGameMenuWidget> InGameMenuWidgetClass;
 
-    // --- 퍽 관련 변수 ---
+    // --- 퍽 UI 관련 변수 ---
     UPROPERTY()
     TObjectPtr<UPerkSelectionScreenWidget> PerkSelectionScreen;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UPerkSelectionScreenWidget> PerkSelectionScreenClass;
+
+    // --- 사망 UI 위젯 관련 변수 ---
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UPlayerKilledWidget> PlayerKilledWidget;
+
+    //UPROPERTY(EditDefaultsOnly, Category = "UI")
+    //TSubclassOf<UPlayerKilledWidget> PlayerKilledWidgetClass;
 };

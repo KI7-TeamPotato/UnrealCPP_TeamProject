@@ -5,15 +5,19 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
 #include "InputMappingContext.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
 #include "Subsystem/MVVMSubsystem.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
+#include "Subsystem/CharacterSubsystem.h"
 #include "UI/InGameMenu/InGameMenuWidget.h"
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "UI/InGameMenu/MenuPlayerStatWidget.h"
 #include "UI/InGameMenu/PlayerStatPanelWidget.h"
 #include "UI/Perk/InventoryPerkTileWidget.h"
+#include "UI/InGameMenu/PlayerKilledWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystem/CharacterSubsystem.h"
+#include "Player/TestCharacter.h"
 
 void ATestPlayerController::OnPossess(APawn* InPawn)
 {
@@ -43,7 +47,6 @@ void ATestPlayerController::BeginPlay()
         InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
     }
 
-
     if (UMVVMSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
     {
         // 퍽 선택 화면 위젯 바인딩 && 퍽 인벤토리 뷰모델 설정
@@ -52,11 +55,8 @@ void ATestPlayerController::BeginPlay()
             PerkSelectionScreen = CreateWidget<UPerkSelectionScreenWidget>(this, PerkSelectionScreenClass);
 
             PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
-            PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
-
-            // 테스트용, 실제 게임에서는 다른 타이밍에 뷰포트 추가
-            //AddPerkSelectionScreenToViewport();
         }
+        MVVMSubsystem->GetPerkViewModel()->OnPerkEquipped.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
 
         // 인게임 메뉴 처리
         if (InGameMenuWidget)
@@ -77,6 +77,13 @@ void ATestPlayerController::BeginPlay()
             // 계속하기 버튼 처리
             InGameMenuWidget->OnInGameMenuClosed.AddDynamic(this, &ATestPlayerController::OnPauseInput);
         }
+    }
+
+    // 플레이어 사망 델리게이트 바인딩
+    ATestCharacter* TestCharacter = Cast<ATestCharacter>(GetPawn());
+    if (TestCharacter)
+    {
+        TestCharacter->OnPlayerKilled.AddDynamic(this, &ATestPlayerController::OnAddPlayerKilledWidget);
     }
 }
 
@@ -124,18 +131,28 @@ void ATestPlayerController::OnPauseInput()
     }
 }
 
+void ATestPlayerController::OnAddPlayerKilledWidget()
+{
+    UE_LOG(LogTemp, Log, TEXT("Player Killed Widget Added to Viewport"));
+
+    if (PlayerKilledWidget)
+    {
+        SetGameAndUIInputMode();
+        PlayerKilledWidget->AddToViewport(100);
+    }
+}
+
 // 델리게이트로 스테이지 클리어 후 뷰포트에 추가 !!!!!!!!!
 void ATestPlayerController::AddPerkSelectionScreenToViewport()
 {
     if (PerkSelectionScreen)
     {
         SetGameAndUIInputMode();
-
         PerkSelectionScreen->AddToViewport(5);
     }
 }
 
-void ATestPlayerController::RemovePerkSelectionScreenFromViewport()
+void ATestPlayerController::RemovePerkSelectionScreenFromViewport(UPerkDataAsset* _EquippedPerk)
 {
     if (PerkSelectionScreen)
     {
@@ -163,4 +180,14 @@ void ATestPlayerController::SetGameAndUIInputMode()
     InputMode.SetWidgetToFocus(InGameMenuWidget->TakeWidget());
     SetInputMode(InputMode);
     SetShowMouseCursor(true);
+}
+
+void ATestPlayerController::TryPerkSelectionScreen(int32 InStage, int32 InChapter)
+{
+    if (InChapter == 2 || InChapter == 4)
+    {
+        AddPerkSelectionScreenToViewport();
+    }
+    else
+        return;
 }

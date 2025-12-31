@@ -10,8 +10,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateDungeonEnded);
 // 던전 생성 완료시에 최대, 최소 지점 알려주는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDungeonGenerationCompleted, FVector2D, InMinPoint, FVector2D, InMaxPoint);
 
-// 던전 생성 실행시 사용할 델리게이트
-
+// 현재 스테이지와 챕터를 알리는 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStageAndChapterChanged, int32, InStage, int32, InChapter);
 
 USTRUCT(BlueprintType)
 struct FStageRoomConfig
@@ -120,6 +120,10 @@ public:
     // 던전 생성 완료 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "DungeonGanarator|Delegate")
     FOnDungeonGenerationCompleted OnDungeonGenerationCompleted;
+
+    // 현재 스테이지와 챕터 변경 델리게이트
+    UPROPERTY(BlueprintAssignable, Category = "DungeonGanarator|Delegate")
+    FOnStageAndChapterChanged OnStageAndChapterChanged;
 
 protected:
 	//마지막으로 생성된 방
