@@ -54,10 +54,11 @@ void ATestPlayerController::BeginPlay()
     UMyGameSettings* GameSettings = UMyGameSettings::Get();
     if (GameSettings && GameSettings->MinimapWidget)
     {
+        UE_LOG(LogTemp, Warning, TEXT("Minimap"));
         MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, GameSettings->MinimapWidget.Get());
         if (MinimapWidgetRef)
         {
-            MinimapWidgetRef->AddToViewport(10);
+            //MinimapWidgetRef->AddToViewport(10);
         }
     }
 
