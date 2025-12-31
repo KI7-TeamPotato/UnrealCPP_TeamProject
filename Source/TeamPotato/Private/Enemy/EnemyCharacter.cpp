@@ -26,6 +26,13 @@ AEnemyCharacter::AEnemyCharacter()
     GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
 
+void AEnemyCharacter::SetDropItemClasses(TSubclassOf<class APickupHealthActor> InHealthClass, TSubclassOf<class APickupStaminaActor> InStaminaClass, TSubclassOf<class APickupGoldActor> InGoldClass)
+{
+    HealthPickupClass = InHealthClass;
+    StaminaPickupClass = InStaminaClass;
+    GoldPickupClass = InGoldClass;
+}
+
 // Called when the game starts or when spawned
 void AEnemyCharacter::BeginPlay()
 {

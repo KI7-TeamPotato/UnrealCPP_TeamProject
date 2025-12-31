@@ -65,11 +65,21 @@ void APickupActor::BeginPlay()
     FTimerManager& timerManager = GetWorldTimerManager();
     timerManager.ClearTimer(PickupableTimer);
 
+    // this를 약참조로 변환
+    TWeakObjectPtr<APickupActor> WeakThis(this);
+
     timerManager.SetTimer(
         PickupableTimer,
-        [this]() {
-            if (bIsSell) return;
-            SphereCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+        [WeakThis]() {
+            // 실행 시점에 액터가 여전히 유효한지(Destroy되지 않았는지) 확인
+            if (WeakThis.IsValid())
+            {
+                if (WeakThis->bIsSell) return;
+                if (WeakThis->SphereCollision)
+                {
+                    WeakThis->SphereCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+                }
+            }
         },
         PickupableTime, false);
 }
