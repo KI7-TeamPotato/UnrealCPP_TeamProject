@@ -21,7 +21,7 @@ void AArcherEnemy::InitBulletPool()
 {
     if (!BulletClass) return;
 
-    for (int32 i = 0; i < PoolSize; i++)
+    for (int32 i = 0; i < PoolSize; i++) 
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this;
