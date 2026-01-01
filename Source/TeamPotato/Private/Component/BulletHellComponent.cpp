@@ -186,6 +186,20 @@ void UBulletHellComponent::SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
     }
 }
 
+void UBulletHellComponent::SpawnScatterPattern(FVector Origin, int32 Count, float Speed)
+{
+    if (!BulletClass) return;
+
+    for (int32 i = 0; i < Count; i++)
+    {
+        // 0~360도 사이의 랜덤한 방향(Yaw) 생성
+        float RandomYaw = FMath::RandRange(0.0f, 360.0f);
+        FRotator RandomRot = FRotator(0.0f, RandomYaw, 0.0f);
+
+
+        SpawnBullet(Origin, RandomRot, Speed);
+    }
+}
 
 void UBulletHellComponent::SpawnSpiralShot(UPARAM(ref) float& CurrentAngle, float AngleStep, float Speed)
 {
@@ -198,5 +212,7 @@ void UBulletHellComponent::SpawnSpiralShot(UPARAM(ref) float& CurrentAngle, floa
     CurrentAngle += AngleStep;
     if (CurrentAngle >= 360.0f) CurrentAngle -= 360.0f;
 }
+
+
 
 
