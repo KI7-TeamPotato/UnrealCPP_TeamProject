@@ -46,6 +46,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Spawning")
     void SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
         FVector Origin, int32 Count, float MinSpeed, float MaxSpeed);
+
+    UFUNCTION(BlueprintCallable, Category = "Patterns")
+    void SpawnScatterPattern(FVector Origin, int32 Count, float Speed);
 private:
     void SpawnBullet(FVector Location, FRotator Rotation, float Speed);
 };
