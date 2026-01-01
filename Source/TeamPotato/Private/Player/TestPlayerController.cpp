@@ -58,7 +58,8 @@ void ATestPlayerController::BeginPlay()
         MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, GameSettings->MinimapWidget.Get());
         if (MinimapWidgetRef)
         {
-            //MinimapWidgetRef->AddToViewport(10);
+            MinimapWidgetRef->AddToViewport(10);
+            MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
         }
     }
 
@@ -136,6 +137,11 @@ void ATestPlayerController::SetupInputComponent()
         {
             EnhancedInput->BindAction(IA_Pause, ETriggerEvent::Started, this, &ATestPlayerController::OnPauseInput);
         }
+
+        if(IA_Minimap)
+        {
+            EnhancedInput->BindAction(IA_Minimap, ETriggerEvent::Started, this, &ATestPlayerController::OnMinimapInput);
+        }
     }
 
 }
@@ -167,6 +173,29 @@ void ATestPlayerController::OnPauseInput()
         InGameMenuWidget->SetVisibility(ESlateVisibility::Visible);
 
         bIsMenuOpen = true;
+    }
+}
+
+void ATestPlayerController::OnMinimapInput()
+{
+    if(bIsMinimapOpen && MinimapWidgetRef)
+    {
+        //SetPause(false);
+        // 미니맵 닫기
+        SetGameOnlyInputMode();
+        bShowMouseCursor = false;
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+        bIsMinimapOpen = false;
+    }
+    else
+    {
+        //SetPause(true);
+
+        // 미니맵 열기
+        SetGameAndUIInputMode();
+        bShowMouseCursor = false;
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Visible);
+        bIsMinimapOpen = true;
     }
 }
 

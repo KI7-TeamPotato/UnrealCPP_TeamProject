@@ -28,6 +28,11 @@ public:
     UFUNCTION(BlueprintPure)
     UMaterialInstanceDynamic* GetMinimapMaterial() const { return MinimapMaterial; }
 
+    // --- 포그 오브 워 업데이트 ---
+    void RevealArea(FVector2D UV, float Radius);
+
+    void UpdateFogTexture();
+
 private:
     // 미니맵 머티리얼 인스턴스
     TObjectPtr<UMaterialInstanceDynamic> MinimapMaterial = nullptr;
@@ -37,4 +42,11 @@ private:
 
     // 오쏘의 한변 길이
     float OrthoWidth = 0.f;
+
+    UPROPERTY()
+    TObjectPtr<UTexture2D> FogTexture = nullptr;
+
+    TArray<FColor> FogData;
+    int32 FogResolution = 128;
+    bool bFogDirty = false;
 };

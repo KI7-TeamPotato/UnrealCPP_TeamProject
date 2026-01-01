@@ -69,6 +69,10 @@ protected:
     UFUNCTION()
     void OnPauseInput();
 
+    // --- 일시 정지 후 미니맵 처리 ---
+    UFUNCTION()
+    void OnMinimapInput();
+
 private:
     UFUNCTION()
     void OnAddPlayerKilledWidget();
@@ -78,6 +82,10 @@ protected:
     // 일시 정지 입력
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
     TObjectPtr<UInputAction> IA_Pause = nullptr;
+
+    // 미니맵 입력
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction")
+    TObjectPtr<UInputAction> IA_Minimap = nullptr;
 
 private:
 	int32 priority = 1;
@@ -111,6 +119,8 @@ private:
     // ===============================
     // --- 미니맵 관련 변수 ---
     // ===============================
+    bool bIsMinimapOpen = false;
+
     UPROPERTY(VisibleDefaultsOnly, Category = "UI")
     TObjectPtr<UMinimapWidget> MinimapWidgetRef = nullptr;
 

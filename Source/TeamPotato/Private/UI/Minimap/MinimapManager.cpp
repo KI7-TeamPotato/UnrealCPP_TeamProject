@@ -33,6 +33,14 @@ void UMinimapManager::InitializeMinimapManager(UTextureRenderTarget2D* InRenderT
 
     WorldMinPoint = InMinPoint;
     OrthoWidth = InOrthoWidth;
+
+    // 포그 오브 워 설정
+    FogTexture = UTexture2D::CreateTransient(FogResolution, FogResolution, EPixelFormat::PF_B8G8R8A8);
+    FogTexture->UpdateResource();
+
+    FogData.Init(FColor::Black, FogResolution * FogResolution);
+    MinimapMaterial->SetTextureParameterValue(TEXT("FogTexture"), FogTexture);
+    MinimapMaterial->SetScalarParameterValue(TEXT("ViewRadius"), 0.15f);
 }
 
 FVector2D UMinimapManager::WorldToMinimapUV(const FVector2D& InWorldLocation2D) const
@@ -71,4 +79,46 @@ void UMinimapManager::UpdatePlayerPosition(const FVector& InWorldLocation, float
     MinimapMaterial->SetScalarParameterValue(TEXT("PlayerPosX"), PlayerUV.X);
     MinimapMaterial->SetScalarParameterValue(TEXT("PlayerPosY"), PlayerUV.Y);
     MinimapMaterial->SetScalarParameterValue(TEXT("PlayerRotation"), InYaw/360.f);
+
+    RevealArea(PlayerUV, 0.1f);
+}
+
+void UMinimapManager::RevealArea(FVector2D UV, float Radius)
+{
+    int32 CenterX = FMath::RoundToInt(UV.X * FogResolution);
+    int32 CenterY = FMath::RoundToInt(UV.Y * FogResolution);
+    int32 RadiusPixels = FMath::RoundToInt(Radius * FogResolution);
+
+    // 원형 영역의 픽셀을 흰색으로 설정
+    for (int32 Y = -RadiusPixels; Y <= RadiusPixels; Y++)
+    {
+        for (int32 X = -RadiusPixels; X <= RadiusPixels; X++)
+        {
+            if (X * X + Y * Y <= RadiusPixels * RadiusPixels)
+            {
+                int32 PX = FMath::Clamp(CenterX + X, 0, FogResolution - 1);
+                int32 PY = FMath::Clamp(CenterY + Y, 0, FogResolution - 1);
+
+                FogData[PY * FogResolution + PX] = FColor::White;
+                bFogDirty = true;
+            }
+        }
+    }
+
+    if(bFogDirty)
+    {
+        UpdateFogTexture();
+        bFogDirty = false;
+    }
+}
+
+void UMinimapManager::UpdateFogTexture()
+{
+    if (!FogTexture) return;
+
+    // 텍스처 데이터 업데이트
+    void* TextureData = FogTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+    FMemory::Memcpy(TextureData, FogData.GetData(), FogData.Num() * sizeof(FColor));
+    FogTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+    FogTexture->UpdateResource();
 }
