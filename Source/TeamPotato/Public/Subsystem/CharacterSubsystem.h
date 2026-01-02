@@ -146,5 +146,5 @@ private:
     //=============================================================
 
 	// 이번 게임의 선택된 캐릭터 정보(로비로 이동하면 캐릭터 타입을 제외하고 전부 초기화, 이후 챕터 진행에서는 저장)
-    FPlayerSaveData PlayerSaveData;  
+    FPlayerSaveData PlayerSaveData; 
 };

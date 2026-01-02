@@ -90,6 +90,8 @@ void ATestCharacter::BeginPlay()
     UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
     CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
 
+    InitializeCharacterStat();
+
     // 게임 상태가 로비일 때 캐릭터 초기화 작업 수행
     if (GameStateSubsystem && CharacterSubsystem)
     {
@@ -111,6 +113,8 @@ void ATestCharacter::BeginPlay()
         WeaponComponent->InitializeBaseWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
+
+
 
     UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::BeginPlay - Character initialized with equipped weapons."));
 }
