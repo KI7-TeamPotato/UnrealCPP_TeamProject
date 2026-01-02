@@ -46,15 +46,19 @@ private:
     UPROPERTY()
     float OrthoWidth = 0.f;
 
+    // 포그 오브 워 관련
     UPROPERTY()
     TObjectPtr<UTexture2D> FogTexture = nullptr;
 
+    // 플레이어가 밝혀낸 영역 데이터
     UPROPERTY()
     TArray<FColor> FogData;
 
+    // 포그 텍스처 해상도
     UPROPERTY()
     int32 FogResolution = 128;
 
+    // 포그 데이터가 변경되었는지 여부
     UPROPERTY()
     bool bFogDirty = false;
 };
