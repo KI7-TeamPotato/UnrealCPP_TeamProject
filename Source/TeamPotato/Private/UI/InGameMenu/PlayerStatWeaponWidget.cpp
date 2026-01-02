@@ -3,6 +3,7 @@
 
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "Subsystem/ViewModel/WeaponViewModel.h"
 #include "Data/WeaponDataAsset.h"
 
@@ -25,6 +26,7 @@ void UPlayerStatWeaponWidget::UpdateMainWeaponIcon(UWeaponDataAsset* InDataAsset
     if (InDataAsset)
     {
         MainWeaponIcon->SetBrushFromTexture(InDataAsset->WeaponIcon);
+        MainWeaponName->SetText(InDataAsset->WeaponName);
     }
 }
 
@@ -33,6 +35,7 @@ void UPlayerStatWeaponWidget::UpdateSubWeaponIcon(UWeaponDataAsset* InDataAsset)
     if (InDataAsset)
     {
         SubWeaponIcon->SetBrushFromTexture(InDataAsset->WeaponIcon);
+        SubWeaponName->SetText(InDataAsset->WeaponName);
     }
 }
 
