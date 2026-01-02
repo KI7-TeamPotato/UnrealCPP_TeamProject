@@ -65,14 +65,18 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnAllWavesCleared OnAllWavesCleared;
 
+    //몬스터 스폰시 이펙트
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<AActor> EnemyEffect;
 private:
+    //몬스터 웨이브 스폰하는 함수
     void SpawnWave(int32 WaveIndex);
 
+    //남은 적 관리하고 웨이브 적이 없으면 다음 웨이브로 넘어가는 함수
     UFUNCTION()
     void OnEnemyKilled();
 
+    //웨이브에 있는 몬스터를 스폰하는 함수
     void SpawnEnemiesDelayed(int32 WaveIndex);
 
     FTimerHandle WaveTimerHandle;

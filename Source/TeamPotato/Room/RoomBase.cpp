@@ -232,7 +232,7 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
         UE_LOG(LogTemp, Warning, TEXT("Battle Start"));
 
         SetGlobalDoorState(true);
-
+        //SpawnPoint 위치 배열로 WaveSystemComp에 전달
         TArray<UArrowComponent*> Points;
         Points.Add(SpawnPoint1);
         Points.Add(SpawnPoint2);
@@ -241,7 +241,7 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
         Points.Add(SpawnPoint5);
         Points.Add(SpawnPoint6);
         Points.Add(SpawnPoint7);
-
+        //웨이브 시작
         WaveSystemComp->StartWaveSystem(Points);
 
         OnEnterRoomCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
