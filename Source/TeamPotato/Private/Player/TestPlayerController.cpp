@@ -51,16 +51,29 @@ void ATestPlayerController::BeginPlay()
     }
 
     // 미니맵 위젯 생성
-    UMyGameSettings* GameSettings = UMyGameSettings::Get();
-    if (GameSettings && GameSettings->MinimapWidget)
+    if (!MinimapWidgetRef)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Minimap"));
-        MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, GameSettings->MinimapWidget.Get());
-        if (MinimapWidgetRef)
+        UMyGameSettings* GameSettings = UMyGameSettings::Get();
+        if (GameSettings && GameSettings->MinimapWidget)
         {
-            MinimapWidgetRef->AddToViewport(10);
-            MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+            UE_LOG(LogTemp, Warning, TEXT("Minimap"));
+            UClass* MinimapWidgetClass = GameSettings->MinimapWidget.LoadSynchronous();
+            if (MinimapWidgetClass)
+            {
+                MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, MinimapWidgetClass);
+            }
+            if (MinimapWidgetRef)
+            {
+                MinimapWidgetRef->AddToViewport(10);
+                MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+            }
         }
+    }
+
+    if (MinimapWidgetRef)
+    {
+        MinimapWidgetRef->AddToViewport(10);
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
     }
 
     // MVVM 서브시스템으로 위젯들에 뷰모델 주입
