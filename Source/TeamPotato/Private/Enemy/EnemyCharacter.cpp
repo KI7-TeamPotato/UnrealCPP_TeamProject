@@ -139,7 +139,7 @@ void AEnemyCharacter::WieldWeapon()
 void AEnemyCharacter::DefaultAttack()
 {
     ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    
+    //공격 전 위치랑 회전 설정
     if (Player)
     {
         FVector MyLoc = GetActorLocation();
@@ -157,6 +157,7 @@ void AEnemyCharacter::DefaultAttack()
             GetController()->SetControlRotation(LookAtRot);
         }
     }
+    //적은 몽타주만 재생하고 데미지는 무기가 넣음
     if (AttackMontage)
     {
         PlayAnimMontage(AttackMontage);
