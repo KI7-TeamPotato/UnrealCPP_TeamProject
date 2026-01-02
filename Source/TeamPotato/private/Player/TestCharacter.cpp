@@ -531,7 +531,10 @@ void ATestCharacter::OnHitInvincible()
 
 void ATestCharacter::OnWeaponSwap()
 {
-    WeaponComponent->SwapWeapon();
+    if(IsActionAvailable())
+    {
+        WeaponComponent->SwapWeapon();
+    }
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
