@@ -35,18 +35,26 @@ public:
 
 private:
     // 미니맵 머티리얼 인스턴스
+    UPROPERTY()
     TObjectPtr<UMaterialInstanceDynamic> MinimapMaterial = nullptr;
 
     // 찍고 있는 월드 좌표 범위
+    UPROPERTY()
     FVector2D WorldMinPoint = FVector2D::ZeroVector;
 
     // 오쏘의 한변 길이
+    UPROPERTY()
     float OrthoWidth = 0.f;
 
     UPROPERTY()
     TObjectPtr<UTexture2D> FogTexture = nullptr;
 
+    UPROPERTY()
     TArray<FColor> FogData;
+
+    UPROPERTY()
     int32 FogResolution = 128;
+
+    UPROPERTY()
     bool bFogDirty = false;
 };

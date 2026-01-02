@@ -194,8 +194,11 @@ void ATestPlayerController::OnMinimapInput()
         // 미니맵 열기
         SetGameAndUIInputMode();
         bShowMouseCursor = false;
-        MinimapWidgetRef->SetVisibility(ESlateVisibility::Visible);
-        bIsMinimapOpen = true;
+        if (MinimapWidgetRef)
+        {
+            MinimapWidgetRef->SetVisibility(ESlateVisibility::Visible);
+            bIsMinimapOpen = true;
+        }
     }
 }
 
