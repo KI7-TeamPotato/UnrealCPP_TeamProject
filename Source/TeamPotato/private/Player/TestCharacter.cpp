@@ -660,8 +660,7 @@ void ATestCharacter::SetOnAttacking(bool InAttacking)
 
 void ATestCharacter::OnRollInput()
 {
-    //KillPlayer();				//테스트용으로 사망 연출 실행해봄
-    if (IsActionAvailable())
+    if (!bIsOnAction && (ActivatedWeapon != EWeaponType::None))
     {
         MovementComponent->bUseControllerDesiredRotation = false;
         MovementComponent->bOrientRotationToMovement = true;
