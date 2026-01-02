@@ -19,21 +19,33 @@ void ALastBoss::OnDie()
 {
     Super::OnDie();
 
-    AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ADungeonRoom9::StaticClass());
-
-    // 3. 찾았다면 캐스팅 후 함수 실행
-    if (ADungeonRoom9* Room = Cast<ADungeonRoom9>(FoundActor))
-    {
-        Room->SpawnPortal();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("CannotfindDungeonRoom9"));
-    }
+    GetWorldTimerManager().SetTimer(VictoryWidgetTimerHandle, this, &ALastBoss::ShowVictoryWidget, 14.0f, false);
 }
 
 float ALastBoss::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
     return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+}
+
+void ALastBoss::ShowVictoryWidget()
+{
+    if (VictoryWidgetClass)
+    {
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        if (PC)
+        {
+            VictoryWidget = CreateWidget<UUserWidget>(PC, VictoryWidgetClass);
+            if (VictoryWidget)
+            {
+                VictoryWidget->AddToViewport();
+
+                // 마우스 커서 및 입력 모드 설정
+                PC->SetShowMouseCursor(true);
+                FInputModeUIOnly InputMode;
+                InputMode.SetWidgetToFocus(VictoryWidget->TakeWidget());
+                PC->SetInputMode(InputMode);
+            }
+        }
+    }
 }

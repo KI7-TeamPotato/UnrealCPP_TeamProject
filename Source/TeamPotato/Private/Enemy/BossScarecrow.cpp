@@ -7,6 +7,8 @@
 ABossScarecrow::ABossScarecrow()
 {
     MaxHealth = 300;
+
+
     CurrentHealth = MaxHealth;
 }
 
