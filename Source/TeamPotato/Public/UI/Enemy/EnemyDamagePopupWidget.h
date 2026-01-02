@@ -22,9 +22,6 @@ public:
     UFUNCTION()
     void SetActivateDamagePopup(float DamageAmount);
 
-    UFUNCTION()
-    UWidgetAnimation* GetDamagePopupAnimation() const { return DamagePopupAnimation; }
-
 protected:
     virtual void NativeConstruct() override;
 
