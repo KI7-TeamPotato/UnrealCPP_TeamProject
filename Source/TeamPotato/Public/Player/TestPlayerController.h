@@ -121,7 +121,7 @@ private:
     // ===============================
     bool bIsMinimapOpen = false;
 
-    UPROPERTY(VisibleDefaultsOnly, Category = "UI")
+    UPROPERTY(EditAnywhere, Category = "UI")
     TObjectPtr<UMinimapWidget> MinimapWidgetRef = nullptr;
 
     TObjectPtr<UMinimapViewModel> MinimapViewModel = nullptr;
