@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkEquipped, UPerkDataAsset*, NewPerkDataAsset);
 DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(bool, FOnEquipPerkRequest, UPerkDataAsset*, PerkToEquip, int32, InIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTryAllPerkClear);
 /**
  * 
  */
@@ -25,12 +26,19 @@ public:
 	UFUNCTION(BlueprintCallable)
     bool RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex = -1);
 
+    // 모든 퍽 해제 요청(View to Model)
+    UFUNCTION(BlueprintCallable)
+    void RequestClearAllPerks();
+
 	// --- 컴포넌트 -> PerPanelWidget ---
 	UPROPERTY(BlueprintAssignable)
 	FOnPerkEquipped OnPerkEquipped;
 	
-	UPROPERTY()
-	FOnEquipPerkRequest OnEquipPerkRequest;
+    UPROPERTY()
+    FOnEquipPerkRequest OnEquipPerkRequest;
+    
+    UPROPERTY(BlueprintAssignable)
+    FTryAllPerkClear OnTryAllPerkClear;
 
 private:
     UPROPERTY()

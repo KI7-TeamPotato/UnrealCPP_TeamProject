@@ -10,6 +10,8 @@
 
 class ULevelDataAsset;
 class USoundMix;
+class AEnemyDamagePopupActor;
+class UMinimapWidget;
 /**
  * 
  */
@@ -49,11 +51,22 @@ public:
     TSoftObjectPtr<USoundClass> SFXSoundClass;
 
     // 로딩 화면 위젯 클래스
-    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Widget")
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "UI")
     TSoftClassPtr<UUserWidget> LoadingWidgetClass;
-    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Minimap")
+
+    // 데미지 팝업 위젯 클래스
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "UI|Actor")
+    TSoftClassPtr<AEnemyDamagePopupActor> EnemyDamagePopupActorClass;
+
+    // 미니맵 머티리얼
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "UI|Minimap")
     TSoftObjectPtr<UMaterialInterface> MinimapBaseMaterial;
 
-    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Minimap")
+    // 미니맵 플레이어 아이콘
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "UI|Minimap")
     TSoftObjectPtr<UTexture2D> MinimapPlayerIcon;
+
+    // 미니맵 위젯 클래스
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "UI|Minimap")
+    TSoftClassPtr<UMinimapWidget> MinimapWidget;
 };

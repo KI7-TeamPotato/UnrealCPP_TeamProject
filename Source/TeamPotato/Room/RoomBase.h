@@ -32,20 +32,30 @@ public:
     UFUNCTION(BlueprintCallable)
     void OpenAllRoomDoors();
 
+    //모든 문을 동시에 닫는 함수
     UFUNCTION(BlueprintCallable)
     void CloseAllRoomDoors();
+
+    //플레이어가 방에 들어왔는지 검사하는 콜리전(OnEnterRoomCollision)을 관리하는 함수
     void ActivateBattleTrigger();
+    
+    //클리어 한 방인지 넘겨주는 getter
     bool GetRoomClear() { return bIsRoomClear; }
+    
+    //전투 시작 여부를 넘겨주는 getter
     bool GetStartBattle() { return bIsStartBattle; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+    //방 클리어시 호출되는 함수
     UFUNCTION()
     void HandleBattleEnd();
 
+    //전투 시작 여부
     bool bIsStartBattle = false;
 
+    //방 클리어 여부
     bool bIsRoomClear = false;
 
     // [추가] 플레이어가 방에 진입했는지 감지하는 오버랩 함수
@@ -57,10 +67,11 @@ protected:
         bool bFromSweep, 
         const FHitResult& SweepResult);
 public:	
-
+    //방에 있는 웨이브 시스템 컴포넌트
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UWaveComponent> WaveSystemComp;
 
+    //방 구성 요소들(콜리전, 메시, 폴더 등)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> DefaultScenRoot;
 
@@ -88,6 +99,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> SpawnPointsFolder;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<USceneComponent> DecorationFolder;
+
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UActorComponent> Torch;
@@ -106,6 +120,12 @@ protected:
 
     UPROPERTY(VisibleAnywhere, Category = "Components")
     TObjectPtr<UArrowComponent> SpawnPoint5;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint6;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UArrowComponent> SpawnPoint7;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> Wall1;
@@ -185,4 +205,15 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UBoxComponent> OnEnterRoomCollision;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> Deco1;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> Deco2;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> Deco3;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> Deco4;
 };

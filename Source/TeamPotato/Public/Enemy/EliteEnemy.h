@@ -27,6 +27,7 @@ protected:
 public:
     // 부모의 공격 함수를 오버라이드하여 특수 패턴 추가
     virtual void DefaultAttack() override;
+    virtual void OnDie() override;
 
     // 특수 공격 실행 함수
     UFUNCTION(BlueprintCallable, Category = "Combat")

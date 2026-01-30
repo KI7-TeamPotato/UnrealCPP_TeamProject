@@ -12,6 +12,9 @@
 // 델리게이트 선언: 선택된 캐릭터 타입이 변경되었을 때 알림
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectedCharacterChanged);
 
+// 이동 속도 변경 델리게이트
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWalkSpeedChanged, float, NewWalkSpeed);
+
 /**
  * 
  */
@@ -71,6 +74,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Character")
     void SetPlayerIllustration(UTexture2D* NewIllust) { PlayerSaveData.PlayerIllustration = NewIllust; }
 
+    // 이동 속도 설정
+    UFUNCTION(BlueprintCallable, Category = "Character")
+    void SetWalkSpeed(float NewWalkSpeed) { 
+        PlayerSaveData.WalkSpeed = NewWalkSpeed; 
+        OnWalkSpeedChanged.Broadcast(NewWalkSpeed);
+    }
+
     // =============================================================
     // Getters
     // =============================================================
@@ -105,6 +115,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Character Subsystem|Character")
 	FOnSelectedCharacterChanged OnSelectedCharacterChanged;
 
+    UPROPERTY(BlueprintAssignable, Category = "Character Subsystem|Character")
+    FOnWalkSpeedChanged OnWalkSpeedChanged;
+
 private:
 	// 데이터 테이블 로드
 	void LoadAndCacheCharacterData();
@@ -133,5 +146,5 @@ private:
     //=============================================================
 
 	// 이번 게임의 선택된 캐릭터 정보(로비로 이동하면 캐릭터 타입을 제외하고 전부 초기화, 이후 챕터 진행에서는 저장)
-    FPlayerSaveData PlayerSaveData;  
+    FPlayerSaveData PlayerSaveData; 
 };

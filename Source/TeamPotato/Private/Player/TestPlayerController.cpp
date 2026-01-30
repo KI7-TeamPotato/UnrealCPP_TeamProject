@@ -5,14 +5,22 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
 #include "InputMappingContext.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
 #include "Subsystem/MVVMSubsystem.h"
+#include "Subsystem/ViewModel/PerkViewModel.h"
+#include "Subsystem/ViewModel/MinimapViewModel.h"
+#include "Subsystem/CharacterSubsystem.h"
 #include "UI/InGameMenu/InGameMenuWidget.h"
 #include "UI/InGameMenu/PlayerStatWeaponWidget.h"
 #include "UI/Perk/PerkSelectionScreenWidget.h"
 #include "UI/InGameMenu/MenuPlayerStatWidget.h"
+#include "UI/InGameMenu/PlayerStatPanelWidget.h"
 #include "UI/Perk/InventoryPerkTileWidget.h"
+#include "UI/InGameMenu/PlayerKilledWidget.h"
+#include "UI/Minimap/MinimapWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystem/CharacterSubsystem.h"
+#include "Player/TestCharacter.h"
+#include "Common/MyGameSettings.h"
 
 void ATestPlayerController::OnPossess(APawn* InPawn)
 {
@@ -42,19 +50,41 @@ void ATestPlayerController::BeginPlay()
         InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
     }
 
+    // 미니맵 위젯 생성
+    if (!MinimapWidgetRef)
+    {
+        UMyGameSettings* GameSettings = UMyGameSettings::Get();
+        if (GameSettings && GameSettings->MinimapWidget)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Minimap"));
+            UClass* MinimapWidgetClass = GameSettings->MinimapWidget.LoadSynchronous();
+            if (MinimapWidgetClass)
+            {
+                MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, MinimapWidgetClass);
+            }
+            if (MinimapWidgetRef)
+            {
+                MinimapWidgetRef->AddToViewport(10);
+                MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+            }
+        }
+    }
 
+    if (MinimapWidgetRef)
+    {
+        MinimapWidgetRef->AddToViewport(10);
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+    }
+
+    // MVVM 서브시스템으로 위젯들에 뷰모델 주입
     if (UMVVMSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
     {
         // 퍽 선택 화면 위젯 바인딩 && 퍽 인벤토리 뷰모델 설정
         if (PerkSelectionScreenClass)
         {
             PerkSelectionScreen = CreateWidget<UPerkSelectionScreenWidget>(this, PerkSelectionScreenClass);
-
             PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
             PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
-
-            // 테스트용, 실제 게임에서는 다른 타이밍에 뷰포트 추가
-            //AddPerkSelectionScreenToViewport();
         }
 
         // 인게임 메뉴 처리
@@ -69,10 +99,45 @@ void ATestPlayerController::BeginPlay()
                 ->GetPlayerWeaponWidget()
                 ->SetViewModel(MVVMSubsystem->GetWeaponViewModel());
 
+            InGameMenuWidget->GetPlayingPlayerStatPanel()
+                ->GetPlayerStatPanelWidget()
+                ->SetViewModel(MVVMSubsystem->GetPlayerStatusViewModel(), MVVMSubsystem->GetWeaponViewModel());
+
             // 계속하기 버튼 처리
             InGameMenuWidget->OnInGameMenuClosed.AddDynamic(this, &ATestPlayerController::OnPauseInput);
         }
+
+        // 미니맵 위젯 처리
+        if (MinimapWidgetRef)
+        {
+            MinimapViewModel = MVVMSubsystem->GetMinimapViewModel();
+            MinimapWidgetRef->SetViewModel(MinimapViewModel);
+            MinimapViewModel->OnMinimapInitialized.AddDynamic(this, &ATestPlayerController::UpdateMinimapPlayerPosition);
+        }
     }
+
+    // 플레이어 사망 델리게이트 바인딩
+    ATestCharacter* TestCharacter = Cast<ATestCharacter>(GetPawn());
+    if (TestCharacter)
+    {
+        TestCharacter->OnPlayerKilled.AddDynamic(this, &ATestPlayerController::OnAddPlayerKilledWidget);
+    }
+
+    // 플레이어 위치 업데이트 타이머 - Minimap
+    GetWorldTimerManager().SetTimer(
+        MinimapUpdateTimer,
+        this,
+        &ATestPlayerController::IsMinimapUpdateThresholdReached,
+        0.1f,
+        true
+    );
+}
+
+void ATestPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    GetWorldTimerManager().ClearTimer(MinimapUpdateTimer);
+
+    Super::EndPlay(EndPlayReason);
 }
 
 void ATestPlayerController::SetupInputComponent()
@@ -84,6 +149,11 @@ void ATestPlayerController::SetupInputComponent()
         if (IA_Pause)
         {
             EnhancedInput->BindAction(IA_Pause, ETriggerEvent::Started, this, &ATestPlayerController::OnPauseInput);
+        }
+
+        if(IA_Minimap)
+        {
+            EnhancedInput->BindAction(IA_Minimap, ETriggerEvent::Started, this, &ATestPlayerController::OnMinimapInput);
         }
     }
 
@@ -119,13 +189,45 @@ void ATestPlayerController::OnPauseInput()
     }
 }
 
+void ATestPlayerController::OnMinimapInput()
+{
+    if(bIsMinimapOpen && MinimapWidgetRef)
+    {
+        //SetPause(false);
+        // 미니맵 닫기
+        SetGameOnlyInputMode();
+        bShowMouseCursor = false;
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+        bIsMinimapOpen = false;
+    }
+    else if(!bIsMinimapOpen && MinimapWidgetRef)
+    {
+        //SetPause(true);
+
+        // 미니맵 열기
+        SetGameAndUIInputMode();
+        bShowMouseCursor = false;
+        MinimapWidgetRef->SetVisibility(ESlateVisibility::Visible);
+        bIsMinimapOpen = true;
+    }
+}
+
+void ATestPlayerController::OnAddPlayerKilledWidget()
+{
+    //UE_LOG(LogTemp, Log, TEXT("Player Killed Widget Added to Viewport"));
+    if (PlayerKilledWidget)
+    {
+        SetGameAndUIInputMode();
+        PlayerKilledWidget->AddToViewport(100);
+    }
+}
+
 // 델리게이트로 스테이지 클리어 후 뷰포트에 추가 !!!!!!!!!
 void ATestPlayerController::AddPerkSelectionScreenToViewport()
 {
     if (PerkSelectionScreen)
     {
         SetGameAndUIInputMode();
-
         PerkSelectionScreen->AddToViewport(5);
     }
 }
@@ -135,7 +237,7 @@ void ATestPlayerController::RemovePerkSelectionScreenFromViewport()
     if (PerkSelectionScreen)
     {
         SetGameOnlyInputMode();
-        PerkSelectionScreen->RemoveFromViewport();
+        PerkSelectionScreen->RemoveFromParent();
     }
 }
 
@@ -147,15 +249,67 @@ void ATestPlayerController::SetGameOnlyInputMode()
     SetShowMouseCursor(false);
 }
 
-void ATestPlayerController::SetUIOnlyInputMode()
-{
-
-}
-
 void ATestPlayerController::SetGameAndUIInputMode()
 {
     FInputModeGameAndUI InputMode;
     InputMode.SetWidgetToFocus(InGameMenuWidget->TakeWidget());
     SetInputMode(InputMode);
     SetShowMouseCursor(true);
+}
+
+void ATestPlayerController::TryPerkSelectionScreen(int32 InStage, int32 InChapter)
+{
+    if (InChapter == 2 || InChapter == 4)
+    {
+        AddPerkSelectionScreenToViewport();
+    }
+    else
+        return;
+}
+
+// --- 플레이어 움직임이 미니맵 업데이트 임계값을 넘었는지 확인 ---
+void ATestPlayerController::IsMinimapUpdateThresholdReached()
+{
+    APawn* ControlledPawn = GetPawn();
+    if (!ControlledPawn) return;
+
+    CurrentPawnLocation = ControlledPawn->GetActorLocation();
+    CurrentPawnYaw = ControlledPawn->GetActorRotation().Yaw;
+
+    const float DistanceMoved = FVector::DistSquared(CurrentPawnLocation, LastPawnLocation);
+    const float YawDifference = FMath::Abs(CurrentPawnYaw - LastPawnYaw);
+
+    //UE_LOG(LogTemp, Warning, TEXT("DistanceMoved: %f, YawDifference: %f"), DistanceMoved, YawDifference);s
+
+    if (DistanceMoved < MinimapUpdateThreshold * MinimapUpdateThreshold &&
+        YawDifference < MinimapYawUpdateThreshold)
+    {
+        return; // 임계값 이하로 이동/회전했으면 업데이트하지 않음
+    }
+
+    UpdateMinimapPlayerPosition();
+}
+
+// --- 미니맵 플레이어 위치 업데이트 ---
+void ATestPlayerController::UpdateMinimapPlayerPosition()
+{
+    if (!MinimapViewModel)
+    {
+        if (UMVVMSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
+        {
+            MinimapViewModel = Subsystem->GetMinimapViewModel();
+        }
+    }
+
+    if (MinimapViewModel)
+    {
+        MinimapViewModel->UpdatePlayerPosition(CurrentPawnLocation, CurrentPawnYaw);
+        LastPawnLocation = CurrentPawnLocation;
+        LastPawnYaw = CurrentPawnYaw;
+    }
+}
+
+void ATestPlayerController::SetUIOnlyInputMode()
+{
+
 }

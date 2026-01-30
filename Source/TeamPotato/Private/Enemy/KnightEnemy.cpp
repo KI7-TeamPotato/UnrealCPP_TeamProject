@@ -12,7 +12,7 @@
 
 AKnightEnemy::AKnightEnemy()
 {
-    MaxHealth = 120;
+    MaxHealth = 50;
     CurrentHealth = MaxHealth;
 
     bUseControllerRotationYaw = false;

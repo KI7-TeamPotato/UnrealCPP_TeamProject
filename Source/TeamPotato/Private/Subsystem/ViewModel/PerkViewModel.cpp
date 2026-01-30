@@ -29,3 +29,11 @@ bool UPerkViewModel::RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex)
     return false;
 }
 
+void UPerkViewModel::RequestClearAllPerks()
+{
+    if (OnTryAllPerkClear.IsBound())
+    {
+        OnTryAllPerkClear.Broadcast();
+    }
+}
+

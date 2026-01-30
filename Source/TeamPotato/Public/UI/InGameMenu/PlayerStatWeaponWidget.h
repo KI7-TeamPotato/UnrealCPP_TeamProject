@@ -8,6 +8,7 @@
 
 class UWeaponViewModel;
 class UImage;
+class UTextBlock;
 class UWeaponDataAsset;
 /**
  * 
@@ -42,6 +43,11 @@ private:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UImage> SubWeaponIcon;
 
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> MainWeaponName;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> SubWeaponName;
     UPROPERTY()
     TObjectPtr<UWeaponViewModel> WeaponViewModel;
 

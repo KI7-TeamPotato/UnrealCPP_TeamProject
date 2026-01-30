@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PerkSelectionScreenWidget.generated.h"
 
+// --- 퍽이 선택되었음을 알리기 위한 델리게이트 ---
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPerkSelected);
 
 class UPerkCardWidget;
@@ -13,6 +14,7 @@ class UPerkViewModel;
 class UDataTable;
 class UPerkDataAsset;
 struct FPerkSelectDataTableRow;
+
 /**
  * 
  */
@@ -22,7 +24,7 @@ class TEAMPOTATO_API UPerkSelectionScreenWidget : public UUserWidget
 	GENERATED_BODY()
     
 public:
-    UFUNCTION(BlueprintCallable, Category = "MVVM")
+    //UFUNCTION(BlueprintCallable, Category = "MVVM")
     void SetViewModel(UPerkViewModel* InViewModel);
 
 protected:
@@ -37,11 +39,8 @@ private:
     UFUNCTION()
     void HandlePerkSelected(UPerkDataAsset* SelectedPerkData);
 
-    UFUNCTION()
-    void OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk);
-
-    void BindViewModel();
-    void UnbindViewModel();
+    //void BindViewModel();
+    //void UnbindViewModel();
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "Perk")

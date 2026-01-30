@@ -25,11 +25,12 @@ void UPerkComponent::BeginPlay()
 
 void UPerkComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    ClearAllEquippedPerks();
+
 	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
 	{
 		Subsystem->UnregisterPerkComp(this);
 	}
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -37,11 +38,11 @@ bool UPerkComponent::EquipPerk(UPerkDataAsset* PerkToEquip, int32 SlotIndex)
 {
 	if (!PerkToEquip) return false;
 
-    // 같은 퍽이 이미 장착되어 있는지 확인
-	if (IsPerkEquipped(PerkToEquip))
-	{
-		return false;
-	}
+ //   // 같은 퍽이 이미 장착되어 있는지 확인
+	//if (IsPerkEquipped(PerkToEquip))
+	//{
+	//	return false;
+	//}
 
     // 인덱스가 -1 이면 빈 슬롯에 알아서 장착
 	if (SlotIndex < 0)
@@ -114,6 +115,11 @@ void UPerkComponent::ClearAllEquippedPerks()
 	{
 		UnequipPerk(i);
 	}
+
+    if (OnPerkEquipmentCleared.IsBound())
+    {
+        OnPerkEquipmentCleared.Broadcast();
+    }
 }
 
 bool UPerkComponent::IsPerkEquipped(UPerkDataAsset* PerkToCheck) const

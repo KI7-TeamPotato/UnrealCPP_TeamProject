@@ -6,11 +6,16 @@
 #include "Kismet/GameplayStatics.h"
 ABossScarecrow::ABossScarecrow()
 {
+    MaxHealth = 300;
+
+
+    CurrentHealth = MaxHealth;
 }
 
 void ABossScarecrow::BeginPlay()
 {
     Super::BeginPlay();
+    CurrentHealth = MaxHealth;
 }
 
 void ABossScarecrow::OnDie()

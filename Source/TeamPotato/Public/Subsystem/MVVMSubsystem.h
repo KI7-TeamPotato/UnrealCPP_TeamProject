@@ -11,9 +11,11 @@ class UPerkViewModel;
 class UWeaponViewModel;
 class UItemViewModel;
 class UMinimapViewModel;
+class UEnemyViewModel;
 class UPlayerResource;
 class UPerkComponent;
 class UWeaponComponent;
+class ABossBase;
 /**
  * 
  */
@@ -23,7 +25,7 @@ class TEAMPOTATO_API UMVVMSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
-	// --- 뷰모델 반환 함수 ---
+	// --- 뷰모델 생성 함수 ---
 	UFUNCTION(BlueprintPure)
 	UPlayerStatusViewModel* GetPlayerStatusViewModel();
 	UFUNCTION(BlueprintPure)
@@ -34,6 +36,8 @@ public:
     UItemViewModel* GetItemViewModel();
     UFUNCTION(BlueprintPure)
     UMinimapViewModel* GetMinimapViewModel();
+    UFUNCTION(BlueprintPure)
+    UEnemyViewModel* GetEnemyViewModel();
 	// ==============================================================================
 	// 컴포넌트 등록 및 해제 함수들
 	// ==============================================================================
@@ -43,7 +47,6 @@ public:
 	void RegisterPlayerResourceComp(class UPlayerResource* NewComp);
 	UFUNCTION()
 	void UnregisterPlayerResourceComp(class UPlayerResource* ExitingComp);
-	
 
 	// --- 퍽 컴포넌트 등록 및 해제 함수 ---
 	UFUNCTION()
@@ -62,6 +65,12 @@ public:
     void RegisterDungeonGeneratorActor(class ADungeonGanarator* NewActor);
     UFUNCTION()
     void UnregisterDungeonGeneratorActor(class ADungeonGanarator* ExitingActor);
+
+    // --- 보스 액터 등록 및 해제 함수 ---
+    UFUNCTION()
+    void RegisterBossActor(class ABossBase* NewActor);
+    UFUNCTION()
+    void UnregisterBossActor(class ABossBase* ExitingActor);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -87,4 +96,7 @@ private:
     
     UPROPERTY()
     TObjectPtr<UMinimapViewModel> MinimapViewModel;
+
+    UPROPERTY()
+    TObjectPtr<UEnemyViewModel> EnemyViewModel;
 };

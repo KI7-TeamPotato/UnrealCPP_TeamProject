@@ -14,6 +14,8 @@ void UPlayerStatusViewModel::SetHealth(float CurrentHealth, float MaxHealth)
 	// --- 체력 텍스트 포함 버전 ---
 	FText HealthText = FText::FromString(FString::Printf(TEXT("%d / %d"), FMath::RoundToInt(CurrentHealth), FMath::RoundToInt(MaxHealth)));
 	OnPlayerHealthChangedWithText.Broadcast(HealthPercent, HealthText);
+
+    OnPlayerHealthChangedCurrentMaxHealth.Broadcast(CurrentHealth, MaxHealth);
 }
 
 void UPlayerStatusViewModel::SetPlayerIcon(UTexture2D* NewIcon)
@@ -23,4 +25,9 @@ void UPlayerStatusViewModel::SetPlayerIcon(UTexture2D* NewIcon)
 
 	PlayerIcon = NewIcon;
 	OnPlayerIconChanged.Broadcast(PlayerIcon);
+}
+
+void UPlayerStatusViewModel::UpdateWalkSpeed(float NewWalkSpeed)
+{
+    OnPlayerWalkSpeedChanged.Broadcast(NewWalkSpeed);
 }

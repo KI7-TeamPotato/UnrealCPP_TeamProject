@@ -8,7 +8,6 @@
 
 class UMainHUDWidget;
 class UMVVMSubsystem;
-
 /**
  * 
  */
@@ -16,6 +15,13 @@ UCLASS()
 class TEAMPOTATO_API AMainHUD : public AHUD
 {
 	GENERATED_BODY()
+
+public:
+    UFUNCTION()
+    void TryShowBossWidget();
+
+    UFUNCTION()
+    void TryHideBossWidget();
 
 protected:
     virtual void BeginPlay() override;

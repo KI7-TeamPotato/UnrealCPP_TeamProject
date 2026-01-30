@@ -32,6 +32,18 @@ void UWeaponComponent::BeginPlay()
 	Owner = Cast<ATestCharacter>(GetOwner());
 }
 
+void UWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    GetActivateWeapon()->Destroy();
+
+    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    {
+        Subsystem->UnregisterWeaponComp(this);
+    }
+
+    Super::EndPlay(EndPlayReason);
+}
+
 void UWeaponComponent::InitializeBaseWeapon(UWeaponDataAsset* InWeaponData)
 {
     if (InWeaponData && InWeaponData->WeaponClass)

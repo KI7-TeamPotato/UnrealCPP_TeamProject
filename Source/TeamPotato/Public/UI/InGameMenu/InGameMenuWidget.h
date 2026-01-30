@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InGameMenuWidget.generated.h"
 
+// 이 위젯을 닫기 요청하는 델리게이트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInGameMenuClosed);
 
 class UWidgetSwitcher;

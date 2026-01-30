@@ -88,7 +88,9 @@ void ATestCharacter::BeginPlay()
     }
 
     UGameStateSubsystem* GameStateSubsystem = GetGameInstance()->GetSubsystem<UGameStateSubsystem>();
-    UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+    CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+
+    InitializeCharacterStat();
 
     // 게임 상태가 로비일 때 캐릭터 초기화 작업 수행
     if (GameStateSubsystem && CharacterSubsystem)
@@ -107,9 +109,12 @@ void ATestCharacter::BeginPlay()
     // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
     if (CharacterSubsystem)
     {
+        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
         WeaponComponent->InitializeBaseWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
+
+
 
     UE_LOG(LogTemp, Warning, TEXT("ATestCharacter::BeginPlay - Character initialized with equipped weapons."));
 }
@@ -153,7 +158,7 @@ void ATestCharacter::InitializeCharacterStat()
 {
     if (ResourceManager)
     {
-        UCharacterSubsystem* CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
+        CharacterSubsystem = GetGameInstance()->GetSubsystem<UCharacterSubsystem>();
         if (CharacterSubsystem)
         {
             UE_LOG(LogTemp, Warning, TEXT("Initializing Character Stats"));
@@ -175,6 +180,10 @@ void ATestCharacter::SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon)
         CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
     else
         CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ATestCharacter::PlayerAttack()
+{
 }
 
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -228,6 +237,11 @@ void ATestCharacter::KillPlayer()
 
     //애니메이션 재생을 막기 위함
     bIsOnAction = true;
+    
+    if (OnPlayerKilled.IsBound())
+    {
+        OnPlayerKilled.Broadcast();
+    }
 }
 
 void ATestCharacter::InvincibleActivate()
@@ -249,7 +263,11 @@ void ATestCharacter::PlaySwordAttackMontage()
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
-    PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
+    if(UseEnergy(WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost))
+    {
+        PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
+        WeaponComponent->WeaponAttack();
+    }
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -410,7 +428,7 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
     float CurrentTime = GetWorld()->GetTimeSeconds();
 
     // 마우스 연타시에만 쿨타임 체크
-    if (!bIsAutoFiring)
+    if ((!bIsAutoFiring) && (ActivatedWeapon == EWeaponType::Gun))
     {
         if (CurrentTime - LastAttackTime < MinInterval)
         {
@@ -438,8 +456,7 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
         // 총일 때는 콤보 입력을 무시하도록 설정
         if (WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
         {
-            if (UseEnergy(Cost))
-                bIsOnComboInput = true;
+               bIsOnComboInput = true;
         }
     }
 }
@@ -518,7 +535,10 @@ void ATestCharacter::OnHitInvincible()
 
 void ATestCharacter::OnWeaponSwap()
 {
-    WeaponComponent->SwapWeapon();
+    if(IsActionAvailable())
+    {
+        WeaponComponent->SwapWeapon();
+    }
 }
 
 void ATestCharacter::RotatePlayer(EMovingDirection TurnDirection)
@@ -583,6 +603,11 @@ void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 void ATestCharacter::AddMoveSpeed(float InMoveSpeed)
 {
     MovementComponent->MaxWalkSpeed += InMoveSpeed;
+
+    if (CharacterSubsystem)
+    {
+        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
+    }
 }
 
 EMovingDirection ATestCharacter::GetPlayerDirection()
@@ -642,17 +667,11 @@ void ATestCharacter::SetOnAttacking(bool InAttacking)
 
 void ATestCharacter::OnRollInput()
 {
-    //KillPlayer();				//테스트용으로 사망 연출 실행해봄
-    if (IsActionAvailable())
+    if (!bIsOnAction && (ActivatedWeapon != EWeaponType::None))
     {
-        /*if (ResourceManager->UseStamina(RollStamina))
-        {
-            PlayerAnimation->PlayRollMontage();
-        }*/
         MovementComponent->bUseControllerDesiredRotation = false;
         MovementComponent->bOrientRotationToMovement = true;
         bUseControllerRotationYaw = false;
         PlayerAnimation->PlayRollMontage();
     }
 }
-

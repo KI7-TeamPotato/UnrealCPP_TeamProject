@@ -12,6 +12,8 @@
 class AWeaponPickupActor;
 class AWeaponBoxActor;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerKilled);
+
 UCLASS()
 class TEAMPOTATO_API ATestCharacter : public ACharacter
 {
@@ -140,6 +142,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetPlayerActivatedWeapon(EWeaponType InActivatedWeapon);
 
+    UFUNCTION()
+    void PlayerAttack();
+
 protected:
     // 앞뒤양옆으로 움직이는 함수
     UFUNCTION()
@@ -195,9 +200,11 @@ protected:
     void InitializeCharacterStat();
 
 private:
+    //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)
     UFUNCTION()
     bool IsActionAvailable();
 
+    //피격무적
     UFUNCTION()
     void OnHitInvincible();
 
@@ -213,6 +220,9 @@ public:
     //콤보공격 입력을 받을 수 있는지
     UPROPERTY()
     bool bIsComboInputAvailable = false;
+
+    UPROPERTY(BlueprintAssignable, Category = "Event")
+    FOnPlayerKilled OnPlayerKilled;
 
 protected:
 	//IA
@@ -378,4 +388,7 @@ private:
 
     //회피 애니메이션 중 움직이지 않는 애니메이션 재생시 캐릭터를 움직일 정도
     float LaunchPlayerPower = 1000.0f;
+
+    UPROPERTY()
+    TObjectPtr<class UCharacterSubsystem> CharacterSubsystem = nullptr;
 };

@@ -18,6 +18,7 @@ ARoomBase::ARoomBase()
 	WallFolder = CreateDefaultSubobject<USceneComponent>(TEXT("WallFolder"));
 	CeilingFolder = CreateDefaultSubobject<USceneComponent>(TEXT("CeilingFolder"));
 	FloorFolder = CreateDefaultSubobject<USceneComponent>(TEXT("FloorFolder"));
+    DecorationFolder = CreateDefaultSubobject<USceneComponent>(TEXT("DecorationFolder"));
 	OtherArchitecture = CreateDefaultSubobject<USceneComponent>(TEXT("OtherArchitecture"));
 
 	Wall1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Wall1"));
@@ -49,6 +50,12 @@ ARoomBase::ARoomBase()
     SpawnPoint3 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint3"));
     SpawnPoint4 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint4"));
     SpawnPoint5 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint5"));
+    SpawnPoint6 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint6"));
+    SpawnPoint7 = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint7"));
+    Deco1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deco1"));
+    Deco2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deco2"));
+    Deco3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deco3"));
+    Deco4 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deco4"));
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
     OnEnterRoomCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("OnEnterRoomCollision"));
 
@@ -60,6 +67,7 @@ ARoomBase::ARoomBase()
 	OverlapFolder->SetupAttachment(RootComponent);
 	ExitPointsFolder->SetupAttachment(RootComponent);
 	SpawnPointsFolder->SetupAttachment(RootComponent);
+    DecorationFolder->SetupAttachment(GeometryFolder);
 	WallFolder->SetupAttachment(GeometryFolder);
 	CeilingFolder->SetupAttachment(GeometryFolder);
 	FloorFolder->SetupAttachment(GeometryFolder);
@@ -89,11 +97,17 @@ ARoomBase::ARoomBase()
 	Piller2->SetupAttachment(OtherArchitecture);
 	Piller3->SetupAttachment(OtherArchitecture);
 	Piller4->SetupAttachment(OtherArchitecture);
+	Deco1->SetupAttachment(DecorationFolder);
+	Deco2->SetupAttachment(DecorationFolder);
+	Deco3->SetupAttachment(DecorationFolder);
+	Deco4->SetupAttachment(DecorationFolder);
     SpawnPoint1->SetupAttachment(SpawnPointsFolder);
     SpawnPoint2->SetupAttachment(SpawnPointsFolder);
     SpawnPoint3->SetupAttachment(SpawnPointsFolder);
     SpawnPoint4->SetupAttachment(SpawnPointsFolder);
     SpawnPoint5->SetupAttachment(SpawnPointsFolder);
+    SpawnPoint6->SetupAttachment(SpawnPointsFolder);
+    SpawnPoint7->SetupAttachment(SpawnPointsFolder);
 
 	BoxCollision->SetupAttachment(OverlapFolder);
     OnEnterRoomCollision->SetupAttachment(SpawnPointsFolder);
@@ -218,14 +232,16 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
         UE_LOG(LogTemp, Warning, TEXT("Battle Start"));
 
         SetGlobalDoorState(true);
-
+        //SpawnPoint 위치 배열로 WaveSystemComp에 전달
         TArray<UArrowComponent*> Points;
         Points.Add(SpawnPoint1);
         Points.Add(SpawnPoint2);
         Points.Add(SpawnPoint3);
         Points.Add(SpawnPoint4);
         Points.Add(SpawnPoint5);
-
+        Points.Add(SpawnPoint6);
+        Points.Add(SpawnPoint7);
+        //웨이브 시작
         WaveSystemComp->StartWaveSystem(Points);
 
         OnEnterRoomCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);

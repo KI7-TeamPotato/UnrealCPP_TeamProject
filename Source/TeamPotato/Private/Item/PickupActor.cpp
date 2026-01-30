@@ -6,7 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "NiagaraComponent.h"
-
+#include "Player/TestCharacter.h"
 // Sets default values
 APickupActor::APickupActor()
 {
@@ -18,7 +18,7 @@ APickupActor::APickupActor()
 	SphereCollision->InitSphereRadius(120.0f);
 	SphereCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	RootComponent = SphereCollision;
-
+     
 	// 아이템 메쉬 초기화
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
@@ -65,11 +65,21 @@ void APickupActor::BeginPlay()
     FTimerManager& timerManager = GetWorldTimerManager();
     timerManager.ClearTimer(PickupableTimer);
 
+    // this를 약참조로 변환
+    TWeakObjectPtr<APickupActor> WeakThis(this);
+
     timerManager.SetTimer(
         PickupableTimer,
-        [this]() {
-            if (bIsSell) return;
-            SphereCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+        [WeakThis]() {
+            // 실행 시점에 액터가 여전히 유효한지(Destroy되지 않았는지) 확인
+            if (WeakThis.IsValid())
+            {
+                if (WeakThis->bIsSell) return;
+                if (WeakThis->SphereCollision)
+                {
+                    WeakThis->SphereCollision->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+                }
+            }
         },
         PickupableTime, false);
 }
@@ -80,8 +90,10 @@ void APickupActor::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	if (!ItemInteraction())
 	{
 		// 무기가 아닐 경우 아이템 획득 함수 실행
-		if (OtherActor && OtherActor->IsA<ACharacter>())
+		if (OtherActor && OtherActor->IsA<ATestCharacter>())
 		{
+            UE_LOG(LogTemp, Log, TEXT("OnPickup"));
+
 			OnPickup(OtherActor);
 		}
 	}
@@ -143,5 +155,6 @@ void APickupActor::OnTimeLineUpdate(float Value)
 void APickupActor::OnTimelineFinished()
 {
     UseItem(PickupOwner.Get());
+    UE_LOG(LogTemp, Log, TEXT("OnTimelineFinished"));
     Destroy();
 }

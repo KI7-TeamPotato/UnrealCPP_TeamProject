@@ -29,12 +29,6 @@ void UPerkSelectionScreenWidget::NativeDestruct()
         PerkCard3->OnPerkCardSelected.RemoveDynamic(this, &UPerkSelectionScreenWidget::HandlePerkSelected);
     }
 
-    // ViewModel 바인딩 해제
-    if (PerkViewModel)
-    {
-        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
-    }
-
     Super::NativeDestruct();
 }
 
@@ -119,43 +113,26 @@ void UPerkSelectionScreenWidget::HandlePerkSelected(UPerkDataAsset* SelectedPerk
 {
     if (!SelectedPerkData || !PerkViewModel) return;
 
-    //UE_LOG(LogTemp, Warning, TEXT("UPerkSelectionScreenWidget::HandlePerkSelected called"));
+    UE_LOG(LogTemp, Warning, TEXT("UPerkSelectionScreenWidget::HandlePerkSelected called"));
 
     PerkViewModel->RequestEquipPerk(SelectedPerkData);
+    OnPerkSelected.Broadcast();
 }
 
-void UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel(UPerkDataAsset* EquippedPerk)
-{
-    if (OnPerkSelected.IsBound())
-    {
-        OnPerkSelected.Broadcast();
-    }
-}
 
 void UPerkSelectionScreenWidget::SetViewModel(UPerkViewModel* InViewModel)
 {
-    UnbindViewModel();
+    //UnbindViewModel();
     PerkViewModel = InViewModel;
-    BindViewModel();
+    //BindViewModel();
 }
 
-void UPerkSelectionScreenWidget::BindViewModel()
-{
-    if (PerkViewModel && !bIsViewModelBound)
-    {
-        PerkViewModel->OnPerkEquipped.AddDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
+//void UPerkSelectionScreenWidget::BindViewModel()
+//{
 
-        bIsViewModelBound = true;
-    }
-}
+//}
+//
+//void UPerkSelectionScreenWidget::UnbindViewModel()
+//{
 
-void UPerkSelectionScreenWidget::UnbindViewModel()
-{
-    if (PerkViewModel && bIsViewModelBound)
-    {
-        PerkViewModel->OnPerkEquipped.RemoveDynamic(this, &UPerkSelectionScreenWidget::OnPerkEquippedFromViewModel);
-
-        bIsViewModelBound = false;
-    }
-
-}
+//}

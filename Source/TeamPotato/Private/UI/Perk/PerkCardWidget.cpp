@@ -34,6 +34,8 @@ void UPerkCardWidget::NativeDestruct()
     if (SelectButton)
     {
         SelectButton->OnClicked.RemoveDynamic(this, &UPerkCardWidget::OnPerkSelectButtonClicked);
+        SelectButton->OnHovered.RemoveDynamic(this, &UPerkCardWidget::OnPerkButtonHovered);
+        SelectButton->OnUnhovered.RemoveDynamic(this, &UPerkCardWidget::OnPerkButtonUnhovered);
     }
 
     Super::NativeDestruct();

@@ -21,7 +21,7 @@ void AArcherEnemy::InitBulletPool()
 {
     if (!BulletClass) return;
 
-    for (int32 i = 0; i < PoolSize; i++)
+    for (int32 i = 0; i < PoolSize; i++) 
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this;
@@ -60,7 +60,7 @@ void AArcherEnemy::Shoot()
         FVector StartLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f);
         FVector Direction = (PlayerChar->GetActorLocation() - StartLocation).GetSafeNormal();
 
-        BulletToFire->Launch(StartLocation, Direction);
+        BulletToFire->Launch(StartLocation, Direction, this->BulletSpeed);
     }
 }
 

@@ -7,7 +7,11 @@
 #include "Data/PerkDataAsset.h"
 #include "PerkComponent.generated.h"
 
+// --- 퍽 장착을 알리기 위한 델리게이트 ---
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPerkStateChanged, UPerkDataAsset*, InData);
+
+// --- 모든 퍽이 해제되었음을 알리기 위한 델리게이트 ---
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPerkEquipmentCleared);
 
 class UPerkDataAsset;
 
@@ -22,6 +26,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:	
 	// --- 1.Equipment ---
 
@@ -58,6 +63,9 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnPerkStateChanged OnEquipmentUpdated;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnPerkEquipmentCleared OnPerkEquipmentCleared;
 
 protected:
 	// --- Equipment Slot Array ---

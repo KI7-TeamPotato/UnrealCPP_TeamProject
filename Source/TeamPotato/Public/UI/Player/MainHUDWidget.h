@@ -11,6 +11,7 @@ class UPlayerStatWidget;
 class UInventoryPerkTileWidget;
 class UPlayerWeaponWidget;
 class UPlayerGoldWidget;
+class UBossWidget;
 
 /**
  * 
@@ -23,6 +24,12 @@ class TEAMPOTATO_API UMainHUDWidget : public UUserWidget
 public:
     UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
     void InitializeViewModels(UMVVMSubsystem* Subsystem);
+
+    UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
+    void ShowBossWidget(UMVVMSubsystem* Subsystem);
+
+    UFUNCTION(BlueprintCallable, Category = "UI|MainHud")
+    void HideBossWidget(UMVVMSubsystem* Subsystem);
 
 protected:
 	// --- 플레이어 스탯 위젯 ---
@@ -40,4 +47,8 @@ protected:
     // --- 플레이어 골드 위젯 ---
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UPlayerGoldWidget> PlayerGoldPanel;
+
+    // --- 보스 위젯 ---
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UBossWidget> BossWidget;
 };

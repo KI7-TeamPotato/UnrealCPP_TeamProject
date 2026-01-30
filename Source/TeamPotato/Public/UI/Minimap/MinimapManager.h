@@ -28,13 +28,37 @@ public:
     UFUNCTION(BlueprintPure)
     UMaterialInstanceDynamic* GetMinimapMaterial() const { return MinimapMaterial; }
 
+    // --- 포그 오브 워 업데이트 ---
+    void RevealArea(FVector2D UV, float Radius);
+
+    void UpdateFogTexture();
+
 private:
     // 미니맵 머티리얼 인스턴스
+    UPROPERTY()
     TObjectPtr<UMaterialInstanceDynamic> MinimapMaterial = nullptr;
 
     // 찍고 있는 월드 좌표 범위
+    UPROPERTY()
     FVector2D WorldMinPoint = FVector2D::ZeroVector;
 
     // 오쏘의 한변 길이
+    UPROPERTY()
     float OrthoWidth = 0.f;
+
+    // 포그 오브 워 관련
+    UPROPERTY()
+    TObjectPtr<UTexture2D> FogTexture = nullptr;
+
+    // 플레이어가 밝혀낸 영역 데이터
+    UPROPERTY()
+    TArray<FColor> FogData;
+
+    // 포그 텍스처 해상도
+    UPROPERTY()
+    int32 FogResolution = 128;
+
+    // 포그 데이터가 변경되었는지 여부
+    UPROPERTY()
+    bool bFogDirty = false;
 };

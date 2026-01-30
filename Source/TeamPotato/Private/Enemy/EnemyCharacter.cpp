@@ -11,6 +11,11 @@
 #include "BrainComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Enemy/EnemyHealthBarWidget.h"
+#include "Subsystem/PoolingSubsystem.h"
+#include "Item/PickupActor.h"
+#include "Item/PickupHealthActor.h"
+#include "Item/PickupStaminaActor.h"
+#include "Item/PickupGoldActor.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -20,6 +25,19 @@ AEnemyCharacter::AEnemyCharacter()
 
     HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
     HealthBarWidgetComponent->SetupAttachment(GetMesh());
+
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+    DamagePopupSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("DamagePopupSpawnPoint"));
+    DamagePopupSpawnPoint->SetupAttachment(RootComponent);
+}
+
+void AEnemyCharacter::SetDropItemClasses(TSubclassOf<class APickupHealthActor> InHealthClass, TSubclassOf<class APickupStaminaActor> InStaminaClass, TSubclassOf<class APickupGoldActor> InGoldClass)
+{
+    HealthPickupClass = InHealthClass;
+    StaminaPickupClass = InStaminaClass;
+    GoldPickupClass = InGoldClass;
 }
 
 // Called when the game starts or when spawned
@@ -37,41 +55,62 @@ void AEnemyCharacter::BeginPlay()
         }
     }
 
+    // 풀링 서브시스템 참조 가져오기
+    //PoolingSubsystem = GetGameInstance()->GetSubsystem<UPoolingSubsystem>();
+    PoolingSubsystem = GetWorld()->GetSubsystem<UPoolingSubsystem>();
+
     // 주기적으로 체력바를 플레이어 쪽으로 회전시키는 타이머 설정
     FTimerHandle RotateTimerHandle;
     GetWorld()->GetTimerManager().SetTimer
     (
         RotateTimerHandle,
         this,
-        &AEnemyCharacter::RotateHealthBarToPlayer,
-        0.1f,
+        &AEnemyCharacter::RotateHealthBarToViewport,
+        0.01f,
         true
     );
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    //부모 클래스의 기본 로직 실행
+    if (bIsInvincible)
+    {
+        return 0.0f;
+    }
+
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-    // 데미지가 0 이하거나 이미 죽었다면 무시
     if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
     {
         return 0.0f;
     }
 
-    //체력 감소
     CurrentHealth -= ActualDamage;
 
     UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
 
-    // 위젯 업데이트
+    // 체력바 위젯 업데이트
     SetupHealthBarWidget();
 
-    // 3. 사망 체크
+    // PoolinmgSubsystem을 통해 PopupWidget 재생
+    FVector PopupLocation = DamagePopupSpawnPoint->GetComponentLocation();
+    PoolingSubsystem->GetPooledDamagePopupActor(ActualDamage, PopupLocation);
+
     if (CurrentHealth <= 0.0f)
     {
         OnDie();
+    }
+    else
+    {
+        bIsInvincible = true;
+
+        GetWorld()->GetTimerManager().SetTimer(
+            InvincibilityTimerHandle,
+            this,
+            &AEnemyCharacter::ResetInvincibility,
+            InvincibilityDuration,
+            false 
+        );
     }
 
     return ActualDamage;
@@ -100,7 +139,7 @@ void AEnemyCharacter::WieldWeapon()
 void AEnemyCharacter::DefaultAttack()
 {
     ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    
+    //공격 전 위치랑 회전 설정
     if (Player)
     {
         FVector MyLoc = GetActorLocation();
@@ -118,6 +157,7 @@ void AEnemyCharacter::DefaultAttack()
             GetController()->SetControlRotation(LookAtRot);
         }
     }
+    //적은 몽타주만 재생하고 데미지는 무기가 넣음
     if (AttackMontage)
     {
         PlayAnimMontage(AttackMontage);
@@ -210,6 +250,8 @@ void AEnemyCharacter::OnDie()
     }
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCharacterMovement()->DisableMovement();
+
+    EnemyItemDrop();
 }
 
 void AEnemyCharacter::SetupHealthBarWidget()
@@ -220,16 +262,56 @@ void AEnemyCharacter::SetupHealthBarWidget()
     }
 }
 
-void AEnemyCharacter::RotateHealthBarToPlayer()
+void AEnemyCharacter::RotateHealthBarToViewport()
 {
-    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    if (Player && HealthBarWidget)
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+    FRotator ViewportRotation = PlayerController->GetControlRotation();
+    FRotator WidgetRotationForLookAtViewport = FRotator(0.0f, ViewportRotation.Yaw + 180.0f, 0.0f);
+
+    if (PlayerController && HealthBarWidget)
     {
-        // 위젯을 플레이어를 바라보게 회전
-        FVector PlayerLocation = Player->GetActorLocation();
-        FVector WidgetLocation = HealthBarWidgetComponent->GetComponentLocation();
-        FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(WidgetLocation, PlayerLocation);
-        LookAtRotation.Pitch = 0.0f; // 수직 회전은 제거
-        HealthBarWidgetComponent->SetWorldRotation(LookAtRotation);
+        // 위젯을 카메라를 바라보게 회전
+        HealthBarWidgetComponent->SetWorldRotation(WidgetRotationForLookAtViewport);
     }
+}
+
+void AEnemyCharacter::EnemyItemDrop()
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    float RandomChance = FMath::FRand();
+
+    DropCount = FMath::RandRange(1, 4) * Elitemultiple * Bossmultiple;
+    for (int32 i = 0; i < DropCount; i++)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        UE_LOG(LogTemp, Log, TEXT("DropItem"))
+        World->SpawnActor<APickupActor>(GoldPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
+    }
+
+    if (RandomChance <= 0.5f)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        DropCount = FMath::RandRange(1, 2);
+        for (int32 i = 0; i < DropCount; i++)
+        {
+            World->SpawnActor<APickupActor>(StaminaPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
+        }
+    }
+
+    if (RandomChance <= 0.1f)
+    {
+        FVector RandomOffset = FMath::VRand() * 50.0f;
+        RandomOffset.Z = 50.0f;
+        World->SpawnActor<APickupActor>(HealthPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
+    }
+}
+
+void AEnemyCharacter::ResetInvincibility()
+{
+    bIsInvincible = false;
 }

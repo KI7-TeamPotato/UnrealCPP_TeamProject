@@ -49,6 +49,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
     // 현재 무기 장착
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void EquipCurrentWeapon(AWeaponBase* InWeapon);
