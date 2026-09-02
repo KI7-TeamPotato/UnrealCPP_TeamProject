@@ -72,6 +72,13 @@ void ADungeonGanarator::Tick(float DeltaTime)
 
 void ADungeonGanarator::SpawnStarterRooms()
 {
+
+    if (StartRoom.IsEmpty() || !IsValid(StartRoom[0]))
+    {
+        UE_LOG(LogTemp, Error, TEXT("StartRoom 배열이 비어있거나 유효한 클래스가 없습니다!"));
+        return;
+    }
+
     //시작 방 생성
     ARoomBase* SpawnStartRoom = this->GetWorld()->SpawnActor<ARoomBase>(StartRoom[0]);
 	if (SpawnStartRoom)

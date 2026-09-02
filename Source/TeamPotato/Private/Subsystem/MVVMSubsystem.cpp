@@ -201,21 +201,37 @@ void UMVVMSubsystem::UnregisterWeaponComp(UWeaponComponent* ExitingComp)
 
 void UMVVMSubsystem::RegisterDungeonGeneratorActor(ADungeonGanarator* NewActor)
 {
-    if (!NewActor) return;
+    if (!IsValid(NewActor))
+    {
+        return;
+    }
 
     UnregisterDungeonGeneratorActor(NewActor);
 
-    // 뷰모델 가져오기
     UMinimapViewModel* VM = GetMinimapViewModel();
 
-    // DungeonGenerator -> ViewModel -> 던전 생성 완료 알림 뿌림
-    NewActor->OnDungeonGenerationCompleted.AddDynamic(VM, &UMinimapViewModel::RequestMinimapCapture);
+    NewActor->OnDungeonGenerationCompleted.AddDynamic(
+        VM,
+        &UMinimapViewModel::RequestMinimapCapture
+    );
 
-    // 플레이어 컨트롤러 가져오기 
-    //APlayerController* PC = GetWorld()->GetFirstPlayerController();
-    ATestPlayerController* PC = Cast<ATestPlayerController>(GetWorld()->GetFirstPlayerController());
+    APlayerController* BasePC = GetWorld()->GetFirstPlayerController();
+    ATestPlayerController* PC = Cast<ATestPlayerController>(BasePC);
 
-    NewActor->OnStageAndChapterChanged.AddDynamic(PC, &ATestPlayerController::TryPerkSelectionScreen);
+    if (!IsValid(PC))
+    {
+        UE_LOG(
+            LogTemp,
+            Error,
+            TEXT("RegisterDungeonGeneratorActor: ATestPlayerController is NULL")
+        );
+        return;
+    }
+
+    NewActor->OnStageAndChapterChanged.AddDynamic(
+        PC,
+        &ATestPlayerController::TryPerkSelectionScreen
+    );
 }
 
 void UMVVMSubsystem::UnregisterDungeonGeneratorActor(ADungeonGanarator* ExitingActor)
