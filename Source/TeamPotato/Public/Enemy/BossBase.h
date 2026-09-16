@@ -25,7 +25,7 @@ protected:
     virtual void BeginPlay() override;
 
     //데미지와 사망 처리
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+    virtual void HandleCombatHealthChanged(float NewHealth, float NewMaxHealth) override;
 
     virtual void OnDie() override;
 

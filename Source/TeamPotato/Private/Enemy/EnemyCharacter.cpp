@@ -16,12 +16,14 @@
 #include "Item/PickupHealthActor.h"
 #include "Item/PickupStaminaActor.h"
 #include "Item/PickupGoldActor.h"
+#include "Combat/CombatAbilitySystemComponent.h"
+#include "Combat/CombatFunctionLibrary.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
 {
-    CurrentHealth = MaxHealth;
-    UE_LOG(LogTemp, Warning, TEXT("Enemy Spawned! HP: %f / %f"), CurrentHealth, MaxHealth);
+    CombatAbilitySystem = CreateDefaultSubobject<UCombatAbilitySystemComponent>(TEXT("CombatAbilitySystem"));
 
     HealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
     HealthBarWidgetComponent->SetupAttachment(GetMesh());
@@ -31,6 +33,69 @@ AEnemyCharacter::AEnemyCharacter()
 
     DamagePopupSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("DamagePopupSpawnPoint"));
     DamagePopupSpawnPoint->SetupAttachment(RootComponent);
+}
+
+UAbilitySystemComponent* AEnemyCharacter::GetAbilitySystemComponent() const
+{
+    return CombatAbilitySystem;
+}
+
+void AEnemyCharacter::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    CombatAbilitySystem->OnCombatHealthChanged.AddUObject(this, &AEnemyCharacter::HandleCombatHealthChanged);
+    CombatAbilitySystem->OnCombatDamageReceived.AddUObject(this, &AEnemyCharacter::HandleCombatDamage);
+    CombatAbilitySystem->OnCombatDeath.AddUObject(this, &AEnemyCharacter::OnDie);
+    CombatAbilitySystem->InitializeCombat(MaxHealth, InvincibilityDuration);
+}
+
+void AEnemyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    GetWorldTimerManager().ClearAllTimersForObject(this);
+    CombatAbilitySystem->OnCombatHealthChanged.RemoveAll(this);
+    CombatAbilitySystem->OnCombatDamageReceived.RemoveAll(this);
+    CombatAbilitySystem->OnCombatDeath.RemoveAll(this);
+    Super::EndPlay(EndPlayReason);
+}
+
+float AEnemyCharacter::GetCombatHealth() const
+{
+    return CombatAbilitySystem->IsCombatInitialized() ? CombatAbilitySystem->GetHealth() : MaxHealth;
+}
+
+float AEnemyCharacter::GetCombatMaxHealth() const
+{
+    return CombatAbilitySystem->IsCombatInitialized() ? CombatAbilitySystem->GetMaxHealth() : MaxHealth;
+}
+
+void AEnemyCharacter::SetCombatMaxHealth(float NewMaxHealth)
+{
+    if (!HasAuthority() || !FMath::IsFinite(NewMaxHealth)) return;
+    if (CombatAbilitySystem->IsCombatInitialized())
+    {
+        CombatAbilitySystem->AddMaxHealth(FMath::Max(1.0f, NewMaxHealth) - GetCombatMaxHealth());
+    }
+    else
+    {
+        MaxHealth = FMath::Max(1.0f, NewMaxHealth);
+    }
+}
+
+void AEnemyCharacter::HandleCombatHealthChanged(float NewHealth, float NewMaxHealth)
+{
+    CurrentHealth = NewHealth;
+    MaxHealth = NewMaxHealth;
+    SetupHealthBarWidget();
+}
+
+void AEnemyCharacter::HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context)
+{
+    const APawn* DamageInstigator = Cast<APawn>(Context.GetOriginalInstigator());
+    AActor::TakeDamage(ActualDamage, FDamageEvent(), DamageInstigator ? DamageInstigator->GetController() : nullptr, Context.GetEffectCauser());
+    if (PoolingSubsystem && DamagePopupSpawnPoint)
+    {
+        PoolingSubsystem->GetPooledDamagePopupActor(ActualDamage, DamagePopupSpawnPoint->GetComponentLocation());
+    }
 }
 
 void AEnemyCharacter::SetDropItemClasses(TSubclassOf<class APickupHealthActor> InHealthClass, TSubclassOf<class APickupStaminaActor> InStaminaClass, TSubclassOf<class APickupGoldActor> InGoldClass)
@@ -73,47 +138,7 @@ void AEnemyCharacter::BeginPlay()
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    if (bIsInvincible)
-    {
-        return 0.0f;
-    }
-
-    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-    if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
-    {
-        return 0.0f;
-    }
-
-    CurrentHealth -= ActualDamage;
-
-    UE_LOG(LogTemp, Warning, TEXT("[%s] Took Damage: %f, HP: %f"), *GetName(), ActualDamage, CurrentHealth);
-
-    // 체력바 위젯 업데이트
-    SetupHealthBarWidget();
-
-    // PoolinmgSubsystem을 통해 PopupWidget 재생
-    FVector PopupLocation = DamagePopupSpawnPoint->GetComponentLocation();
-    PoolingSubsystem->GetPooledDamagePopupActor(ActualDamage, PopupLocation);
-
-    if (CurrentHealth <= 0.0f)
-    {
-        OnDie();
-    }
-    else
-    {
-        bIsInvincible = true;
-
-        GetWorld()->GetTimerManager().SetTimer(
-            InvincibilityTimerHandle,
-            this,
-            &AEnemyCharacter::ResetInvincibility,
-            InvincibilityDuration,
-            false 
-        );
-    }
-
-    return ActualDamage;
+    return UCombatFunctionLibrary::ApplyCombatDamage(this, DamageAmount, DamageCauser, EventInstigator);
 }
 
 void AEnemyCharacter::WieldWeapon()
@@ -184,8 +209,6 @@ void AEnemyCharacter::UpdateMovementSpeed(float NewSpeed)
 {
     GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
-
-
 float AEnemyCharacter::SetMovementSpeed_Implementation(EEnemySpeed State)
 {
     float TargetSpeed = 0.0f;
@@ -219,6 +242,9 @@ float AEnemyCharacter::SetMovementSpeed_Implementation(EEnemySpeed State)
 
 void AEnemyCharacter::OnDie()
 {
+    if (bDeathHandled || !HasAuthority()) return;
+    bDeathHandled = true;
+    CombatAbilitySystem->MarkDead();
     // 죽으면 바로 위젯 컴포넌트 숨기기
     if (HealthBarWidget)
     {
@@ -258,7 +284,7 @@ void AEnemyCharacter::SetupHealthBarWidget()
 {
     if (HealthBarWidget)
     {
-        HealthBarWidget->SetHealthPercent(CurrentHealth / MaxHealth);
+        HealthBarWidget->SetHealthPercent(GetCombatHealth() / FMath::Max(1.0f, GetCombatMaxHealth()));
     }
 }
 
@@ -266,6 +292,7 @@ void AEnemyCharacter::RotateHealthBarToViewport()
 {
     APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
+    if (!PlayerController || !HealthBarWidget) return;
     FRotator ViewportRotation = PlayerController->GetControlRotation();
     FRotator WidgetRotationForLookAtViewport = FRotator(0.0f, ViewportRotation.Yaw + 180.0f, 0.0f);
 
@@ -309,9 +336,4 @@ void AEnemyCharacter::EnemyItemDrop()
         RandomOffset.Z = 50.0f;
         World->SpawnActor<APickupActor>(HealthPickupClass, GetActorLocation() + RandomOffset, FRotator::ZeroRotator);
     }
-}
-
-void AEnemyCharacter::ResetInvincibility()
-{
-    bIsInvincible = false;
 }

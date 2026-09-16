@@ -25,6 +25,7 @@ public:
     virtual void EndAttack() override;
 	
 protected:
+    TSet<TWeakObjectPtr<AActor>> HitActors;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

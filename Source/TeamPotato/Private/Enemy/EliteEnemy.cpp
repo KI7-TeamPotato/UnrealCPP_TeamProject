@@ -15,7 +15,6 @@
 AEliteEnemy::AEliteEnemy()
 {
     MaxHealth = 200;
-    CurrentHealth = MaxHealth;
     Elitemultiple = 2.0f;
 }
 
@@ -71,6 +70,7 @@ void AEliteEnemy::DefaultAttack()
 
 void AEliteEnemy::OnDie()
 {
+    if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
 }
 

@@ -7,23 +7,29 @@
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
+#include "AbilitySystemInterface.h"
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
 class AWeaponBoxActor;
+class UCombatAbilitySystemComponent;
+struct FGameplayEffectContextHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerKilled);
 
 UCLASS()
-class TEAMPOTATO_API ATestCharacter : public ACharacter
+class TEAMPOTATO_API ATestCharacter : public ACharacter, public IAbilitySystemInterface
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this character's properties
     ATestCharacter();
+    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
+    virtual void PostInitializeComponents() override;
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
@@ -197,6 +203,7 @@ protected:
     void InitializeCharacterStat();
 
 private:
+    void HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
     //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)
     UFUNCTION()
     bool IsActionAvailable();
@@ -343,7 +350,10 @@ private:
     //피격무적 시간
     float OnHitInvincibleTime = 1.0f;
 
-    bool bIsCanTakeDamage = true;
+    bool bDeathHandled = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UCombatAbilitySystemComponent> CombatAbilitySystem;
 
     // 공격 속도(애니메이션 조절 및 마우스 클릭 연사 방지용)
     float AttackSpeed = 1.0f;

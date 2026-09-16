@@ -7,6 +7,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 // Sets default values
 ABulletActor::ABulletActor()
@@ -74,7 +75,7 @@ void ABulletActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	UE_LOG(LogTemp, Display, TEXT("On hit bullet"));
 
-	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+	if (OtherActor != this && OtherComponent && OtherComponent->IsSimulatingPhysics())
 	{
 		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
 	}
@@ -90,11 +91,7 @@ void ABulletActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 		);
 	}
 
-	float finalDamage = BulletDamage;
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
-
-	UGameplayStatics::ApplyDamage(OtherActor, finalDamage, instigator, this, DamageType);
+    UCombatFunctionLibrary::ApplyCombatDamageWithHit(OtherActor, BulletDamage, this, GetInstigatorController(), &Hit, DamageType);
 
 	// Destroy the projectile
 	Destroy();

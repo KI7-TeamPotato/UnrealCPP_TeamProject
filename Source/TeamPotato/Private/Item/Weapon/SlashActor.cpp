@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "NiagaraComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 // Sets default values
 ASlashActor::ASlashActor()
@@ -55,11 +56,7 @@ void ASlashActor::BeginPlay()
 
 void ASlashActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-    float finalDamage = SlashDamage;
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
-
-    UGameplayStatics::ApplyDamage(OtherActor, finalDamage, instigator, this, DamageType);
+    UCombatFunctionLibrary::ApplyCombatDamageWithHit(OtherActor, SlashDamage, this, GetInstigatorController(), &Hit, DamageType);
 
     // Destroy the projectile
     Destroy();

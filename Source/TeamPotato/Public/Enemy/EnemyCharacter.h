@@ -8,21 +8,31 @@
 #include "GameFramework/Character.h"
 #include "Data/EnumBase.h"
 #include "Intetface/EnemyInterface.h"
+#include "AbilitySystemInterface.h"
 #include "EnemyCharacter.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDying);
 
 class UWidgetComponent;
 class UEnemyHealthBarWidget;
 class UPoolingSubsystem;
+class UCombatAbilitySystemComponent;
+struct FGameplayEffectContextHandle;
 
 UCLASS()
-class TEAMPOTATO_API AEnemyCharacter : public ACharacter, public IEnemyInterface
+class TEAMPOTATO_API AEnemyCharacter : public ACharacter, public IEnemyInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AEnemyCharacter();
+    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    UFUNCTION(BlueprintGetter, Category = "Combat")
+    float GetCombatHealth() const;
+    UFUNCTION(BlueprintGetter, Category = "Combat")
+    float GetCombatMaxHealth() const;
+    UFUNCTION(BlueprintSetter, Category = "Combat")
+    void SetCombatMaxHealth(float NewMaxHealth);
 
     //몬스터 사망 시 실행되는 함수
     UFUNCTION(BlueprintCallable)
@@ -56,6 +66,11 @@ public:
         TSubclassOf<class APickupGoldActor> InGoldClass
     );
 protected:
+    virtual void PostInitializeComponents() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void HandleCombatHealthChanged(float NewHealth, float NewMaxHealth);
+    void HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
+    bool bDeathHandled = false;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -133,26 +148,21 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USceneComponent> DamagePopupSpawnPoint;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+    UPROPERTY(EditAnywhere, BlueprintGetter = GetCombatMaxHealth, BlueprintSetter = SetCombatMaxHealth, Category = "Stats")
     float MaxHealth = 35.0f;
 
     //현재 체력
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+    // Kept for existing Blueprint pins; getter reads GAS and the field is a display mirror only.
+    UPROPERTY(VisibleAnywhere, BlueprintGetter = GetCombatHealth, Category = "Stats")
     float CurrentHealth = 0.0f;
 protected:
-    //무적 관련 함수 변수들
-    //지금 무적인지
-    bool bIsInvincible = false;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+    TObjectPtr<UCombatAbilitySystemComponent> CombatAbilitySystem;
 
-    //무적시간 컨트롤할 타이머
-    FTimerHandle InvincibilityTimerHandle;
-    
     //몬스터 무적 시간
     UPROPERTY(EditAnywhere, Category = "Combat")
     float InvincibilityDuration = 0.3f;
 
-    //무적시간 긑나면 다시 bIsInvincible를 false로 초기화 하는 함수
-    void ResetInvincibility();
 private:
 
     UPROPERTY()

@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraComponent.h"
 #include "Player/TestCharacter.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 ASwordWeaponActor::ASwordWeaponActor()
 {
@@ -28,6 +29,7 @@ ASwordWeaponActor::ASwordWeaponActor()
 
 void ASwordWeaponActor::BeginAttack()
 {
+    HitActors.Reset();
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
     if (TrailEffect)
@@ -69,12 +71,7 @@ void ASwordWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* Ot
 
 void ASwordWeaponActor::DamageToTarget(AActor* InTarget)
 {
-	//UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"),*OtherActor->GetName());
-	float finalDamage = AttackDamage;
-	//AController* instigator = nullptr;
-
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    AController* instigator = Cast<APlayerController>(OwnerCharacter->GetController());
-
-	UGameplayStatics::ApplyDamage(InTarget, finalDamage, instigator, this, DamageType);
+    if (!IsValid(InTarget) || InTarget == GetOwner() || HitActors.Contains(InTarget)) return;
+    HitActors.Add(InTarget);
+    UCombatFunctionLibrary::ApplyCombatDamage(InTarget, AttackDamage, this, GetInstigatorController(), DamageType);
 }

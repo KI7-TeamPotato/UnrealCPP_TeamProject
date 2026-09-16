@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "PlayerResource.generated.h"
 
+class UCombatAbilitySystemComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentHealth, float, InMaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoldChanged, int32, InCurrentGold);
@@ -26,13 +28,13 @@ protected:
 
 public:
     //getter
-    inline float GetHealthAmount() { return Health; }
+    float GetHealthAmount();
     inline float GetEnergyAmount() { return Energy; }
     inline int GetCurrentGold() { return CurrentGold; }
 
     //Setter
-    inline void SetMaxHealth(float InMaxHealth);
-    inline void SetMaxEnergy(float InMaxEnergy);
+    void SetMaxHealth(float InMaxHealth);
+    void SetMaxEnergy(float InMaxEnergy);
 
     //inline float GetStaminaAmount() { return Stamina; }
 
@@ -58,6 +60,7 @@ private:
 	inline bool IsEnergyRemain(float InUseEnergyAmount) { return (Energy > (InUseEnergyAmount - EnergyEpsilon)); }
 
     void BroadcastHealthChanged();
+    void HandleCombatHealthChanged(float NewHealth, float NewMaxHealth);
     void BroadcastEnergyChanged();
     void BroadcastGoldChanged();
 
@@ -71,14 +74,9 @@ public:
     FOnGoldChanged OnGoldChanged;
 
 private:
-    //체력
-    float Health = 100.0f;
-    //최대 체력
-    float MaxHealth = 100.0f;
-    //최대 체력의 최솟값. 최대체력 감소 효과 적용시 이 이하로 내려가지 않음
-    const float MinHealth = 1.0f;
-    //사망 확인 기준점. 체력이 이보다 작을 시 사망처리함
-    const float HealthEpsilon = 0.0001;
+    // Health lives only in the GAS AttributeSet. This component adapts the existing UI/API.
+    UPROPERTY()
+    TObjectPtr<UCombatAbilitySystemComponent> CombatAbilitySystem;
 
 	//스태미나
 	float Energy = 100.0f;

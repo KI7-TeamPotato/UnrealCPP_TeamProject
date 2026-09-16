@@ -13,7 +13,6 @@
 AAssassinEnemy::AAssassinEnemy()
 {
     MaxHealth = 70;
-    CurrentHealth = MaxHealth;
 }
 
 float AAssassinEnemy::SetMovementSpeed_Implementation(EEnemySpeed State)

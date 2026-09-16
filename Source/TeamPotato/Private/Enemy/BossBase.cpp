@@ -11,7 +11,6 @@ ABossBase::ABossBase()
 {
     BulletPatternComp = CreateDefaultSubobject<UBulletHellComponent>(TEXT("BulletPatternComp"));
     MaxHealth = 300;
-    CurrentHealth = MaxHealth;
     Bossmultiple = 5.0;
 }
 
@@ -36,30 +35,23 @@ void ABossBase::BeginPlay()
         OnBossSpawn.Broadcast();
     }
 
-    OnBossHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+    OnBossHealthChanged.Broadcast(GetCombatHealth(), GetCombatMaxHealth());
 }
 
-float ABossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ABossBase::HandleCombatHealthChanged(float NewHealth, float NewMaxHealth)
 {
-    const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-    if (ActualDamage <= 0.0f || CurrentHealth <= 0.0f)
-    {
-        return 0.0f;
-    }
-
-    OnBossHealthChanged.Broadcast(CurrentHealth, MaxHealth);
-
-    if (CurrentPhase == 1 && CurrentHealth <= MaxHealth * 0.5f)
+    Super::HandleCombatHealthChanged(NewHealth, NewMaxHealth);
+    OnBossHealthChanged.Broadcast(NewHealth, NewMaxHealth);
+    if (CurrentPhase == 1 && NewHealth > 0.0f && NewHealth <= NewMaxHealth * 0.5f)
     {
         CurrentPhase = 2;
     }
-    return ActualDamage;
 
 }
 
 void ABossBase::OnDie()
 {
+    if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
     UE_LOG(LogTemp, Log, TEXT("BossIsDie"));
 

@@ -3,6 +3,10 @@
 #include "TeamPotato/Public/Enemy/EnemyAxe.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Combat/CombatFunctionLibrary.h"
+#include "Combat/CombatTags.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h" // 무브먼트 제어용
 
@@ -114,7 +118,11 @@ void AEnemyAxe::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
     if (HitCharacter)
     {
         // 데미지 주기
-        UGameplayStatics::ApplyDamage(HitCharacter, 20.0f, GetInstigatorController(), this, UDamageType::StaticClass());
+        const float AppliedDamage = UCombatFunctionLibrary::ApplyCombatDamageWithHit(
+            HitCharacter, 20.0f, this, GetInstigatorController(), &SweepResult);
+        // A dodged/invulnerable or lethally hit target must not be grabbed.
+        const UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitCharacter);
+        if (AppliedDamage <= 0.0f || (TargetASC && TargetASC->HasMatchingGameplayTag(CombatTags::State_Dead))) return;
 
         // **[핵심] 플레이어를 잡음!**
         CaughtPlayer = HitCharacter;

@@ -5,6 +5,8 @@
 #include "Player/TestCharacter.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Combat/CombatAbilitySystemComponent.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 // Sets default values for this component's properties
 UPlayerResource::UPlayerResource()
@@ -22,6 +24,12 @@ void UPlayerResource::BeginPlay()
 {
     Super::BeginPlay();
 
+    CombatAbilitySystem = GetOwner()->FindComponentByClass<UCombatAbilitySystemComponent>();
+    if (CombatAbilitySystem)
+    {
+        CombatAbilitySystem->OnCombatHealthChanged.AddUObject(this, &ThisClass::HandleCombatHealthChanged);
+    }
+
     // ...
 
     if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
@@ -29,7 +37,6 @@ void UPlayerResource::BeginPlay()
         Subsystem->RegisterPlayerResourceComp(this);
     }
 
-    Health = MaxHealth;
 	Energy = MaxEnergy;
     CurrentGold = 0;
 
@@ -41,6 +48,7 @@ void UPlayerResource::BeginPlay()
 
 void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    if (CombatAbilitySystem) CombatAbilitySystem->OnCombatHealthChanged.RemoveAll(this);
     if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
     {
         Subsystem->UnregisterPlayerResourceComp(this);
@@ -48,14 +56,17 @@ void UPlayerResource::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-inline void UPlayerResource::SetMaxHealth(float InMaxHealth)
+float UPlayerResource::GetHealthAmount()
 {
-    MaxHealth = InMaxHealth;
-    Health = MaxHealth;
-    BroadcastHealthChanged();
+    return CombatAbilitySystem ? CombatAbilitySystem->GetHealth() : 0.0f;
 }
 
-inline void UPlayerResource::SetMaxEnergy(float InMaxEnergy)
+void UPlayerResource::SetMaxHealth(float InMaxHealth)
+{
+    if (CombatAbilitySystem) CombatAbilitySystem->SetMaxHealthAndFill(InMaxHealth);
+}
+
+void UPlayerResource::SetMaxEnergy(float InMaxEnergy)
 {
     MaxEnergy = InMaxEnergy;
     Energy = MaxEnergy;
@@ -64,28 +75,12 @@ inline void UPlayerResource::SetMaxEnergy(float InMaxEnergy)
 
 void UPlayerResource::PlayerTakeDamage(float InDamage)
 {
-    Health -= InDamage;
-
-    // 체력 변경 브로드캐스트 시도
-    BroadcastHealthChanged();
-
-    UE_LOG(LogTemp, Log, TEXT("Left Health: %f"), Health);
-    if (Health <= HealthEpsilon)
-    {
-        AActor* OwnerCharacter = GetOwner();
-        Cast<ATestCharacter>(OwnerCharacter)->KillPlayer();
-    }
+    UCombatFunctionLibrary::ApplyCombatDamage(GetOwner(), InDamage, nullptr);
 }
 
 void UPlayerResource::Heal(float InHeal)
 {
-    Health += InHeal;
-    if (Health >= MaxHealth)
-    {
-        Health = MaxHealth;
-    }
-    // 체력 변경 브로드캐스트 시도
-    BroadcastHealthChanged();
+    if (CombatAbilitySystem) CombatAbilitySystem->Heal(InHeal);
 }
 
 bool UPlayerResource::UseEnergy(float InUseStaminaAmount)
@@ -135,9 +130,7 @@ void UPlayerResource::AddPower(float InPower)
 
 void UPlayerResource::AddMaxHealth(float InMaxHealth)
 {
-    MaxHealth += InMaxHealth;
-    Heal(InMaxHealth);
-    BroadcastHealthChanged();
+    if (CombatAbilitySystem) CombatAbilitySystem->AddMaxHealth(InMaxHealth);
 }
 
 void UPlayerResource::AddMaxEnergy(float InMaxStamina)
@@ -150,10 +143,15 @@ void UPlayerResource::AddMaxEnergy(float InMaxStamina)
 // 최대 체력이나 현재 체력이 바뀌었을 때 뒤에 넣어서 브로드캐스트 해주는 함수
 void UPlayerResource::BroadcastHealthChanged()
 {
-    if (OnHealthChanged.IsBound())
+    if (CombatAbilitySystem)
     {
-        OnHealthChanged.Broadcast(Health, MaxHealth);
+        OnHealthChanged.Broadcast(CombatAbilitySystem->GetHealth(), CombatAbilitySystem->GetMaxHealth());
     }
+}
+
+void UPlayerResource::HandleCombatHealthChanged(float NewHealth, float NewMaxHealth)
+{
+    OnHealthChanged.Broadcast(NewHealth, NewMaxHealth);
 }
 
 void UPlayerResource::BroadcastEnergyChanged()

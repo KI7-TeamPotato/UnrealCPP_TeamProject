@@ -9,17 +9,16 @@ ABossScarecrow::ABossScarecrow()
     MaxHealth = 300;
 
 
-    CurrentHealth = MaxHealth;
 }
 
 void ABossScarecrow::BeginPlay()
 {
     Super::BeginPlay();
-    CurrentHealth = MaxHealth;
 }
 
 void ABossScarecrow::OnDie()
 {
+    if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
 
     AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ADungeonRoom9::StaticClass());

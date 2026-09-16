@@ -7,7 +7,6 @@
 ALastBoss::ALastBoss()
 {
     MaxHealth = 1200;
-    CurrentHealth = MaxHealth;
 }
 
 void ALastBoss::BeginPlay()
@@ -17,6 +16,7 @@ void ALastBoss::BeginPlay()
 
 void ALastBoss::OnDie()
 {
+    if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
 
     GetWorldTimerManager().SetTimer(VictoryWidgetTimerHandle, this, &ALastBoss::ShowVictoryWidget, 14.0f, false);

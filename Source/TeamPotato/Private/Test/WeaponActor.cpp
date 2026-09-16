@@ -4,6 +4,7 @@
 #include "Test/WeaponActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -44,7 +45,7 @@ void AWeaponActor::DamageToTarget(AActor* InTarget)
 	float finalDamage = Damage;
 	AController* instigator = nullptr;
 
-	UGameplayStatics::ApplyDamage(InTarget, finalDamage, instigator, this, DamageType);
+    if (InTarget != GetOwner()) UCombatFunctionLibrary::ApplyCombatDamage(InTarget, finalDamage, this, instigator, DamageType);
 }
 
 

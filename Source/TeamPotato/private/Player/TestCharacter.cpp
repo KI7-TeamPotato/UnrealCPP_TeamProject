@@ -18,6 +18,9 @@
 #include "Component/PerkComponent.h"
 #include "Subsystem/CharacterSubsystem.h"
 #include "Subsystem/GameStateSubsystem.h"
+#include "Combat/CombatAbilitySystemComponent.h"
+#include "Combat/CombatFunctionLibrary.h"
+#include "Engine/DamageEvents.h"
 
 
 // Sets default values
@@ -54,8 +57,34 @@ ATestCharacter::ATestCharacter()
 
     PerkComponent = CreateDefaultSubobject<UPerkComponent>(TEXT("PerkComponent"));
 
-    //데미지 받는 함수 바인딩
-    OnTakeAnyDamage.AddDynamic(this, &ATestCharacter::TakeAnyDamage);
+    CombatAbilitySystem = CreateDefaultSubobject<UCombatAbilitySystemComponent>(TEXT("CombatAbilitySystem"));
+}
+
+UAbilitySystemComponent* ATestCharacter::GetAbilitySystemComponent() const
+{
+    return CombatAbilitySystem;
+}
+
+void ATestCharacter::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    // Remove the old serialized binding: legacy ApplyDamage is bridged by TakeDamage below.
+    OnTakeAnyDamage.RemoveDynamic(this, &ATestCharacter::TakeAnyDamage);
+    CombatAbilitySystem->OnCombatDeath.AddUObject(this, &ATestCharacter::KillPlayer);
+    CombatAbilitySystem->OnCombatDamageReceived.AddUObject(this, &ATestCharacter::HandleCombatDamage);
+    CombatAbilitySystem->InitializeCombat(100.0f, OnHitInvincibleTime);
+}
+
+float ATestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    return UCombatFunctionLibrary::ApplyCombatDamage(this, DamageAmount, DamageCauser, EventInstigator);
+}
+
+void ATestCharacter::HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context)
+{
+    // Notification only: the legacy native health-mutating delegate has been removed.
+    const APawn* DamageInstigator = Cast<APawn>(Context.GetOriginalInstigator());
+    AActor::TakeDamage(ActualDamage, FDamageEvent(), DamageInstigator ? DamageInstigator->GetController() : nullptr, Context.GetEffectCauser());
 }
 
 // Called when the game starts or when spawned
@@ -199,16 +228,17 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 
 void ATestCharacter::TakeAnyDamage(AActor* DamagedActor, float InDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-    if (bIsCanTakeDamage)
-    {
-        ResourceManager->PlayerTakeDamage(InDamage);
-        OnHitInvincible();
-    }
+    // Retained for existing Blueprint calls, with no separate health subtraction.
+    UCombatFunctionLibrary::ApplyCombatDamage(this, InDamage, DamageCauser, InstigatedBy);
 }
 
 
 void ATestCharacter::KillPlayer()
 {
+    if (bDeathHandled || !HasAuthority()) return;
+    bDeathHandled = true;
+    CombatAbilitySystem->MarkDead();
+    OnAttackCompleted();
     //캐릭터 이동 중지
     GetCharacterMovement()->DisableMovement();
     GetCharacterMovement()->StopMovementImmediately();
@@ -237,14 +267,12 @@ void ATestCharacter::KillPlayer()
 
 void ATestCharacter::InvincibleActivate()
 {
-    //콜리전 끔
-    GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+    CombatAbilitySystem->BeginDodgeInvincibility();
 }
 
 void ATestCharacter::InvincibleDeactivate()
 {
-    //콜리전 켬
-    GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    CombatAbilitySystem->EndDodgeInvincibility();
 }
 
 void ATestCharacter::PlaySwordAttackMontage()
@@ -542,20 +570,7 @@ bool ATestCharacter::IsActionAvailable()
 
 void ATestCharacter::OnHitInvincible()
 {
-    InvincibleActivate();
-    bIsCanTakeDamage = false;
-
-    FTimerHandle timerHandle;
-    GetWorldTimerManager().SetTimer(
-        timerHandle,
-        FTimerDelegate::CreateLambda([this]()
-            {
-                bIsCanTakeDamage = true;
-                InvincibleDeactivate();
-            }),
-        OnHitInvincibleTime,
-        false
-    );
+    CombatAbilitySystem->ApplyHitInvincibility();
 }
 
 void ATestCharacter::OnWeaponSwap()

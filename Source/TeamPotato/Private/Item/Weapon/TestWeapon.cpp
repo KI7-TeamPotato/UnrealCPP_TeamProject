@@ -4,6 +4,7 @@
 #include "Item/Weapon/TestWeapon.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 
 ATestWeapon::ATestWeapon()
@@ -40,5 +41,5 @@ void ATestWeapon::DamageToTarget(AActor* InTarget)
 	float finalDamage = AttackDamage;
 	AController* instigator = nullptr;
 
-	UGameplayStatics::ApplyDamage(InTarget, finalDamage, instigator, this, DamageType);
+    if (InTarget != GetOwner()) UCombatFunctionLibrary::ApplyCombatDamage(InTarget, finalDamage, this, instigator, DamageType);
 }
