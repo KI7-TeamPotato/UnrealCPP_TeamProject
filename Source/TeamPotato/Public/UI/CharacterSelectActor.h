@@ -37,10 +37,6 @@ protected:
 
     void SelectCharacter(AActor* InPlayer);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 protected:
     // 매쉬
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

@@ -7,7 +7,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Item/Weapon/WeaponManagerActor.h"
 #include "Item/Weapon/WeaponPickupActor.h"
 #include "Data/WeaponDataAsset.h"
 #include "Item/Weapon/WeaponBoxActor.h"
@@ -25,7 +24,7 @@
 ATestCharacter::ATestCharacter()
 {
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 
     //컨트롤러 방향으로 회전
     MovementComponent = GetCharacterMovement();
@@ -44,8 +43,6 @@ ATestCharacter::ATestCharacter()
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(SpringArm);
     CameraComponent->SetRelativeRotation(CameraRotation);
-
-    WeaponManager = CreateDefaultSubobject<AWeaponManagerActor>(TEXT("WeaponManager"));
 
     PlayerAnimation = CreateDefaultSubobject<UPlayerAnimation>(TEXT("PlayerAnimation"));
 
@@ -122,12 +119,6 @@ void ATestCharacter::BeginPlay()
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     Super::EndPlay(EndPlayReason);
-}
-
-// Called every frame
-void ATestCharacter::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -263,7 +254,14 @@ void ATestCharacter::PlaySwordAttackMontage()
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
-    if(UseEnergy(WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost))
+    if (!IsValid(WeaponComponent))
+	{
+		return;
+	}
+
+	AWeaponBase* ActiveWeapon = WeaponComponent->GetActivateWeapon();
+	UWeaponDataAsset* WeaponData = IsValid(ActiveWeapon) ? ActiveWeapon->GetWeaponData() : nullptr;
+	if (WeaponData && UseEnergy(WeaponData->AttackCost))
     {
         PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
         WeaponComponent->WeaponAttack();
@@ -420,8 +418,20 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttack(bool bIsAutoFiring)
 {
-    float Cost = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackCost;
-    AttackSpeed = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackSpeed;
+	if (!IsValid(WeaponComponent) || !GetWorld())
+	{
+		return;
+	}
+
+	AWeaponBase* ActiveWeapon = WeaponComponent->GetActivateWeapon();
+	UWeaponDataAsset* WeaponData = IsValid(ActiveWeapon) ? ActiveWeapon->GetWeaponData() : nullptr;
+	if (!WeaponData)
+	{
+		return;
+	}
+
+    const float Cost = WeaponData->AttackCost;
+    AttackSpeed = WeaponData->AttackSpeed;
     
     // 공격 속도에 따른 최소 시간 계산
     float MinInterval = (AttackSpeed > 0) ? (1.0f / AttackSpeed) : 1.0f;
@@ -441,7 +451,10 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
         if (UseEnergy(Cost))
         {
             LastAttackTime = CurrentTime;
-            PlayerAnimation->PlayAttackAnimation();
+			if (IsValid(PlayerAnimation))
+			{
+				PlayerAnimation->PlayAttackAnimation();
+			}
             WeaponComponent->WeaponAttack();
         }
         else
@@ -470,7 +483,19 @@ void ATestCharacter::OnAttackStarted()
     OnAttack(false);
 
     // 무기 데이터에서 공격 속도 가져옴
-    float FireRate = WeaponComponent->GetActivateWeapon()->GetWeaponData()->AttackSpeed;
+	if (!IsValid(WeaponComponent))
+	{
+		return;
+	}
+
+	AWeaponBase* ActiveWeapon = WeaponComponent->GetActivateWeapon();
+	UWeaponDataAsset* WeaponData = IsValid(ActiveWeapon) ? ActiveWeapon->GetWeaponData() : nullptr;
+	if (!WeaponData)
+	{
+		return;
+	}
+
+    const float FireRate = WeaponData->AttackSpeed;
     if (FireRate > 0)
     {
         float interval = 1.0f / FireRate;

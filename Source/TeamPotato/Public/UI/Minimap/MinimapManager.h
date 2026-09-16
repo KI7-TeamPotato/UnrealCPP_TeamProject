@@ -6,6 +6,10 @@
 #include "UObject/NoExportTypes.h"
 #include "MinimapManager.generated.h"
 
+class UMaterialInterface;
+class UTexture;
+class UTextureRenderTarget2D;
+
 /**
  * 
  */
@@ -16,7 +20,8 @@ class TEAMPOTATO_API UMinimapManager : public UObject
 	
 public:
     void InitializeMinimapManager(UTextureRenderTarget2D* InRenderTarget,
-        FVector2D InMinPoint, float InOrthoWidth);
+        FVector2D InMinPoint, float InOrthoWidth,
+        UMaterialInterface* InBaseMaterial, UTexture* InPlayerIconTexture);
     
     // --- 월드 좌표를 미니맵 UV 좌표로 변환 ---
     FVector2D WorldToMinimapUV(const FVector2D& InWorldLocation2D) const;

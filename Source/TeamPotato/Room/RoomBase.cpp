@@ -5,6 +5,8 @@
 #include "GameFramework/Character.h"
 #include "Player/TestCharacter.h"
 
+TArray<TWeakObjectPtr<ARoomBase>> ARoomBase::ActiveRooms;
+
 // Sets default values
 ARoomBase::ARoomBase()
 {
@@ -121,6 +123,8 @@ void ARoomBase::BeginPlay()
 {
     Super::BeginPlay();
 
+    ActiveRooms.AddUnique(TWeakObjectPtr<ARoomBase>(this));
+
     if (WaveSystemComp)
     {
         WaveSystemComp->OnAllWavesCleared.AddDynamic(this, &ARoomBase::HandleBattleEnd);
@@ -130,6 +134,16 @@ void ARoomBase::BeginPlay()
     {
         OnEnterRoomCollision->OnComponentBeginOverlap.AddDynamic(this, &ARoomBase::OnRoomTriggerBeginOverlap);
     }
+}
+
+void ARoomBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    ActiveRooms.RemoveAll([this](const TWeakObjectPtr<ARoomBase>& Room)
+    {
+        return !Room.IsValid() || Room.Get() == this;
+    });
+
+    Super::EndPlay(EndPlayReason);
 }
 
 void ARoomBase::RegisterDoor(ADoor* NewDoor)
@@ -144,25 +158,35 @@ void ARoomBase::RegisterDoor(ADoor* NewDoor)
 
 void ARoomBase::SetGlobalDoorState(bool bShouldClose)
 {
-    // 월드의 모든 ARoomBase 액터를 찾습니다.
-    TArray<AActor*> AllRooms;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARoomBase::StaticClass(), AllRooms);
-
-    for (AActor* RoomActor : AllRooms)
+    UWorld* World = GetWorld();
+    if (!World)
     {
-        ARoomBase* Room = Cast<ARoomBase>(RoomActor);
-        if (Room)
+        return;
+    }
+
+    for (int32 Index = ActiveRooms.Num() - 1; Index >= 0; --Index)
+    {
+        ARoomBase* Room = ActiveRooms[Index].Get();
+        if (!IsValid(Room))
         {
-            if (bShouldClose)
-            {
-                // 모든 방 닫기 (클리어 여부 상관없이 전투 중이면 봉쇄)
-                Room->CloseAllRoomDoors();
-            }
-            else
-            {
-                // 모든 방 열기
-                Room->OpenAllRoomDoors();
-            }
+            ActiveRooms.RemoveAtSwap(Index, 1, EAllowShrinking::No);
+            continue;
+        }
+
+        if (Room->GetWorld() != World)
+        {
+            continue;
+        }
+
+        if (bShouldClose)
+        {
+            // 모든 방 닫기 (클리어 여부 상관없이 전투 중이면 봉쇄)
+            Room->CloseAllRoomDoors();
+        }
+        else
+        {
+            // 모든 방 열기
+            Room->OpenAllRoomDoors();
         }
     }
 }

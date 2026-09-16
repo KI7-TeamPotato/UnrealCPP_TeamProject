@@ -21,6 +21,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/TestCharacter.h"
 #include "Common/MyGameSettings.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 
 void ATestPlayerController::OnPossess(APawn* InPawn)
 {
@@ -35,7 +37,7 @@ void ATestPlayerController::BeginPlay()
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem =	ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 
-	if (Subsystem)
+	if (Subsystem && DefaultMappingContext)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Player Controller Subsystem Available"));
 		Subsystem->AddMappingContext(DefaultMappingContext, priority);
@@ -46,35 +48,14 @@ void ATestPlayerController::BeginPlay()
     {
        InGameMenuWidget =
             CreateWidget<UInGameMenuWidget>(this, InGameMenuWidgetClass);
-        InGameMenuWidget->AddToViewport(10);
-        InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+		if (InGameMenuWidget)
+		{
+			InGameMenuWidget->AddToViewport(10);
+			InGameMenuWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
     }
 
-    // 미니맵 위젯 생성
-    if (!MinimapWidgetRef)
-    {
-        UMyGameSettings* GameSettings = UMyGameSettings::Get();
-        if (GameSettings && GameSettings->MinimapWidget)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Minimap"));
-            UClass* MinimapWidgetClass = GameSettings->MinimapWidget.LoadSynchronous();
-            if (MinimapWidgetClass)
-            {
-                MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, MinimapWidgetClass);
-            }
-            if (MinimapWidgetRef)
-            {
-                MinimapWidgetRef->AddToViewport(10);
-                MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
-            }
-        }
-    }
-
-    if (MinimapWidgetRef)
-    {
-        MinimapWidgetRef->AddToViewport(10);
-        MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
-    }
+    InitializeMinimapWidget();
 
     // MVVM 서브시스템으로 위젯들에 뷰모델 주입
     if (UMVVMSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
@@ -83,37 +64,36 @@ void ATestPlayerController::BeginPlay()
         if (PerkSelectionScreenClass)
         {
             PerkSelectionScreen = CreateWidget<UPerkSelectionScreenWidget>(this, PerkSelectionScreenClass);
-            PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
-            PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
+			if (PerkSelectionScreen)
+			{
+				PerkSelectionScreen->SetViewModel(MVVMSubsystem->GetPerkViewModel());
+				PerkSelectionScreen->OnPerkSelected.AddDynamic(this, &ATestPlayerController::RemovePerkSelectionScreenFromViewport);
+			}
         }
 
         // 인게임 메뉴 처리
         if (InGameMenuWidget)
         {
-            // 인게임 메뉴의 플레이어 정보 패널 델리게이트
-            InGameMenuWidget->GetPlayingPlayerStatPanel()
-                ->GetInventoryPerkTileWidget()
-                ->SetViewModel(MVVMSubsystem->GetPerkViewModel());
-
-            InGameMenuWidget->GetPlayingPlayerStatPanel()
-                ->GetPlayerWeaponWidget()
-                ->SetViewModel(MVVMSubsystem->GetWeaponViewModel());
-
-            InGameMenuWidget->GetPlayingPlayerStatPanel()
-                ->GetPlayerStatPanelWidget()
-                ->SetViewModel(MVVMSubsystem->GetPlayerStatusViewModel(), MVVMSubsystem->GetWeaponViewModel());
+			if (UMenuPlayerStatWidget* PlayerStatMenu = InGameMenuWidget->GetPlayingPlayerStatPanel())
+			{
+				if (UInventoryPerkTileWidget* PerkWidget = PlayerStatMenu->GetInventoryPerkTileWidget())
+				{
+					PerkWidget->SetViewModel(MVVMSubsystem->GetPerkViewModel());
+				}
+				if (UPlayerStatWeaponWidget* WeaponWidget = PlayerStatMenu->GetPlayerWeaponWidget())
+				{
+					WeaponWidget->SetViewModel(MVVMSubsystem->GetWeaponViewModel());
+				}
+				if (UPlayerStatPanelWidget* StatWidget = PlayerStatMenu->GetPlayerStatPanelWidget())
+				{
+					StatWidget->SetViewModel(MVVMSubsystem->GetPlayerStatusViewModel(), MVVMSubsystem->GetWeaponViewModel());
+				}
+			}
 
             // 계속하기 버튼 처리
             InGameMenuWidget->OnInGameMenuClosed.AddDynamic(this, &ATestPlayerController::OnPauseInput);
         }
 
-        // 미니맵 위젯 처리
-        if (MinimapWidgetRef)
-        {
-            MinimapViewModel = MVVMSubsystem->GetMinimapViewModel();
-            MinimapWidgetRef->SetViewModel(MinimapViewModel);
-            MinimapViewModel->OnMinimapInitialized.AddDynamic(this, &ATestPlayerController::UpdateMinimapPlayerPosition);
-        }
     }
 
     // 플레이어 사망 델리게이트 바인딩
@@ -137,7 +117,86 @@ void ATestPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     GetWorldTimerManager().ClearTimer(MinimapUpdateTimer);
 
+    if (MinimapWidgetLoadHandle.IsValid())
+    {
+        MinimapWidgetLoadHandle->CancelHandle();
+        MinimapWidgetLoadHandle.Reset();
+    }
+
+    if (MinimapViewModel)
+    {
+        MinimapViewModel->OnMinimapInitialized.RemoveDynamic(this, &ATestPlayerController::UpdateMinimapPlayerPosition);
+    }
+
     Super::EndPlay(EndPlayReason);
+}
+
+void ATestPlayerController::InitializeMinimapWidget()
+{
+    if (MinimapWidgetRef)
+    {
+        ConfigureMinimapWidget();
+        return;
+    }
+
+    const UMyGameSettings* GameSettings = UMyGameSettings::Get();
+    if (!GameSettings || GameSettings->MinimapWidget.IsNull())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Minimap widget class is not configured."));
+        return;
+    }
+
+    if (UClass* MinimapWidgetClass = GameSettings->MinimapWidget.Get())
+    {
+        MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, MinimapWidgetClass);
+        ConfigureMinimapWidget();
+        return;
+    }
+
+    MinimapWidgetLoadHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(
+        GameSettings->MinimapWidget.ToSoftObjectPath(),
+        FStreamableDelegate::CreateUObject(this, &ATestPlayerController::HandleMinimapWidgetLoaded));
+}
+
+void ATestPlayerController::HandleMinimapWidgetLoaded()
+{
+    const UMyGameSettings* GameSettings = UMyGameSettings::Get();
+    UClass* MinimapWidgetClass = GameSettings ? GameSettings->MinimapWidget.Get() : nullptr;
+
+    if (MinimapWidgetClass && !MinimapWidgetRef)
+    {
+        MinimapWidgetRef = CreateWidget<UMinimapWidget>(this, MinimapWidgetClass);
+    }
+
+    ConfigureMinimapWidget();
+    MinimapWidgetLoadHandle.Reset();
+}
+
+void ATestPlayerController::ConfigureMinimapWidget()
+{
+    if (!MinimapWidgetRef)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create the minimap widget."));
+        return;
+    }
+
+    if (!MinimapWidgetRef->IsInViewport())
+    {
+        MinimapWidgetRef->AddToViewport(10);
+    }
+    MinimapWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+
+    if (UMVVMSubsystem* MVVMSubsystem = GetGameInstance()->GetSubsystem<UMVVMSubsystem>())
+    {
+        MinimapViewModel = MVVMSubsystem->GetMinimapViewModel();
+        MinimapWidgetRef->SetViewModel(MinimapViewModel);
+
+        if (MinimapViewModel)
+        {
+            MinimapViewModel->OnMinimapInitialized.AddUniqueDynamic(
+                this, &ATestPlayerController::UpdateMinimapPlayerPosition);
+        }
+    }
 }
 
 void ATestPlayerController::SetupInputComponent()
@@ -161,6 +220,12 @@ void ATestPlayerController::SetupInputComponent()
 
 void ATestPlayerController::OnPauseInput()
 {
+	if (!IsValid(InGameMenuWidget))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot toggle pause menu because the widget is invalid."));
+		return;
+	}
+
     if (bIsMenuOpen && InGameMenuWidget)
     {
         // 메뉴 닫기
@@ -252,7 +317,10 @@ void ATestPlayerController::SetGameOnlyInputMode()
 void ATestPlayerController::SetGameAndUIInputMode()
 {
     FInputModeGameAndUI InputMode;
-    InputMode.SetWidgetToFocus(InGameMenuWidget->TakeWidget());
+    if (IsValid(InGameMenuWidget))
+    {
+        InputMode.SetWidgetToFocus(InGameMenuWidget->TakeWidget());
+    }
     SetInputMode(InputMode);
     SetShowMouseCursor(true);
 }

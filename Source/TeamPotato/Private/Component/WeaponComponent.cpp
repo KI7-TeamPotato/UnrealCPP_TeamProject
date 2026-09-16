@@ -34,7 +34,18 @@ void UWeaponComponent::BeginPlay()
 
 void UWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    GetActivateWeapon()->Destroy();
+	TArray<AWeaponBase*> WeaponsToDestroy = { BaseWeapon, CurrentWeapon, SubWeapon, ActivatedWeapon };
+	for (AWeaponBase* Weapon : WeaponsToDestroy)
+    {
+		if (IsValid(Weapon))
+		{
+			Weapon->Destroy();
+		}
+    }
+	BaseWeapon = nullptr;
+	CurrentWeapon = nullptr;
+	SubWeapon = nullptr;
+	ActivatedWeapon = nullptr;
 
     if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
     {
@@ -46,7 +57,7 @@ void UWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UWeaponComponent::InitializeBaseWeapon(UWeaponDataAsset* InWeaponData)
 {
-    if (InWeaponData && InWeaponData->WeaponClass)
+    if (IsValid(Owner) && GetWorld() && InWeaponData && InWeaponData->WeaponClass)
     {
         BaseWeapon = GetWorld()->SpawnActor<AWeaponBase>(InWeaponData->WeaponClass);
         if (BaseWeapon)
@@ -85,13 +96,13 @@ void UWeaponComponent::InitializeBaseWeapon(UWeaponDataAsset* InWeaponData)
 
 void UWeaponComponent::WeaponAttack()
 {
-	if (!CurrentWeapon && !BaseWeapon) return;
+	if (!IsValid(Owner) || (!IsValid(CurrentWeapon) && !IsValid(BaseWeapon))) return;
 
-	if (CurrentWeapon && !bIsUsingBaseWeapon)
+	if (IsValid(CurrentWeapon) && !bIsUsingBaseWeapon)
 	{
 		CurrentWeapon->Attack(Owner);
 	}
-    else
+    else if (IsValid(BaseWeapon))
     {
         BaseWeapon->Attack(Owner);
     }
@@ -101,10 +112,13 @@ void UWeaponComponent::EquipCurrentWeapon(AWeaponBase* InWeapon)
 {
     UE_LOG(LogTemp, Log, TEXT("EquipCurrentWeapon called"));
 
-    BaseWeapon->SetActorHiddenInGame(true);
-    BaseWeapon->SetActorEnableCollision(false);
+    if (!IsValid(InWeapon) || !IsValid(Owner)) return;
 
-    if (!InWeapon || !Owner) return;
+	if (IsValid(BaseWeapon))
+	{
+		BaseWeapon->SetActorHiddenInGame(true);
+		BaseWeapon->SetActorEnableCollision(false);
+	}
 
     CurrentWeapon = InWeapon;
 
@@ -151,7 +165,7 @@ void UWeaponComponent::EquipSubWeapon(AWeaponBase* InWeapon)
 
 void UWeaponComponent::PickupWeapon(UWeaponDataAsset* WeaponData)
 {
-    if (!Owner || !WeaponData || !WeaponData->WeaponClass) return;
+    if (!IsValid(Owner) || !GetWorld() || !WeaponData || !WeaponData->WeaponClass) return;
 
     AWeaponBase* NewWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponData->WeaponClass);
     if (!NewWeapon) return;
@@ -204,7 +218,7 @@ void UWeaponComponent::SwapWeapon()
 
 void UWeaponComponent::SpawnPickupWeapon(UWeaponDataAsset* WeaponData)
 {
-    if (!WeaponData || !WeaponData->PickupWeaponClass || !Owner) return;
+    if (!GetWorld() || !WeaponData || !WeaponData->PickupWeaponClass || !IsValid(Owner)) return;
 
     FVector SpawnLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 100.f;
     FRotator SpawnRotation = FRotator::ZeroRotator;
@@ -223,7 +237,7 @@ void UWeaponComponent::SpawnPickupWeapon(UWeaponDataAsset* WeaponData)
 
 void UWeaponComponent::SwitchToBaseWeapon()
 {
-    if (!BaseWeapon || bIsUsingBaseWeapon) return;
+    if (!IsValid(BaseWeapon) || !IsValid(Owner) || bIsUsingBaseWeapon) return;
 
     // 기존 무기(CurrentWeapon)가 있다면 숨기기만 함
     if (CurrentWeapon && CurrentWeapon != BaseWeapon)
@@ -250,7 +264,7 @@ EWeaponType UWeaponComponent::GetCurrentWeaponType() const
 
 void UWeaponComponent::BroadcastMainWeaponChanged()
 {
-    if (OnMainWeaponChanged.IsBound())
+    if (OnMainWeaponChanged.IsBound() && IsValid(ActivatedWeapon))
     {
         OnMainWeaponChanged.Broadcast(ActivatedWeapon->GetWeaponData());
     }
@@ -258,7 +272,7 @@ void UWeaponComponent::BroadcastMainWeaponChanged()
 
 void UWeaponComponent::BroadcastSubWeaponChanged()
 {
-    if (OnSubWeaponChanged.IsBound())
+    if (OnSubWeaponChanged.IsBound() && IsValid(SubWeapon))
     {
         OnSubWeaponChanged.Broadcast(SubWeapon->GetWeaponData());
     }

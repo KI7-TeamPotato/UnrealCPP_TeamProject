@@ -7,6 +7,7 @@
 ADoor::ADoor()
 {
     PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bStartWithTickEnabled = false;
 
     DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
     RootComponent = DefaultSceneRoot;
@@ -38,6 +39,7 @@ void ADoor::Tick(float DeltaTime)
         {
             bCanMove = false;
             Door->SetRelativeLocation(EndLocation);
+            SetActorTickEnabled(false);
         }
     }
 }
@@ -54,6 +56,7 @@ void ADoor::MoveDoor(bool bOpen)
         EndLocation = StartLocation;
     }
     bCanMove = true;
+    SetActorTickEnabled(true);
 }
 
 void ADoor::OpenDoor()

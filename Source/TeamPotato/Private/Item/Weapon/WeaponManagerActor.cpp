@@ -8,9 +8,36 @@
 
 AWeaponManagerActor::AWeaponManagerActor()
 {
-	TestWeapon = CreateDefaultSubobject<ATestWeapon>(TEXT("TestWeapon"));
-	TestWeapon->bIsActivated = true;		//무기 선택시 활성화할 함수. 임시로 일단 활성화하게 해둠
-	
+	TestWeaponClass = ATestWeapon::StaticClass();
+}
+
+void AWeaponManagerActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!TestWeaponClass || !GetWorld())
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+	TestWeapon = GetWorld()->SpawnActor<ATestWeapon>(TestWeaponClass, GetActorTransform(), SpawnParameters);
+	if (TestWeapon)
+	{
+		TestWeapon->bIsActivated = true;
+	}
+}
+
+void AWeaponManagerActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (IsValid(TestWeapon))
+	{
+		TestWeapon->Destroy();
+		TestWeapon = nullptr;
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AWeaponManagerActor::ActivateWeapon()
@@ -22,6 +49,8 @@ void AWeaponManagerActor::WeaponAttack(ATestCharacter* Player)
 	/*if (TestWeapon->bIsActivated)
 	{
 	}*/
-
+	if (IsValid(TestWeapon) && IsValid(Player) && TestWeapon->bIsActivated)
+	{
 		TestWeapon->Attack(Player);
+	}
 }

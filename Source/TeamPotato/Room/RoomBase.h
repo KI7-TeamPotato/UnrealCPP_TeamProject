@@ -9,7 +9,6 @@
 #include "Components/ArrowComponent.h"
 #include "Component/WaveComponent.h"
 #include "TeamPotato/Logic/Door.h"
-#include "Kismet/GameplayStatics.h"
 #include "RoomBase.generated.h"
 
 UCLASS()
@@ -47,6 +46,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     //방 클리어시 호출되는 함수
     UFUNCTION()
@@ -57,6 +57,9 @@ protected:
 
     //방 클리어 여부
     bool bIsRoomClear = false;
+
+    // 월드 전체 검색 없이 현재 활성화된 방만 순회하기 위한 레지스트리
+    static TArray<TWeakObjectPtr<ARoomBase>> ActiveRooms;
 
     // [추가] 플레이어가 방에 진입했는지 감지하는 오버랩 함수
     UFUNCTION()

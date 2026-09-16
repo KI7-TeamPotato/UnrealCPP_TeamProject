@@ -13,12 +13,13 @@
 #include "Item/Weapon/WeaponBoxActor.h"
 #include "Subsystem/MVVMSubsystem.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Engine/GameInstance.h"
 
 // Sets default values
 ADungeonGanarator::ADungeonGanarator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -28,85 +29,113 @@ void ADungeonGanarator::BeginPlay()
 	Super::BeginPlay();
 
     // MVVM 서브시스템에 자신을 등록
-    if(UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this))
     {
-        Subsystem->RegisterDungeonGeneratorActor(this);
+		if (UMVVMSubsystem* Subsystem = GameInstance->GetSubsystem<UMVVMSubsystem>())
+		{
+			Subsystem->RegisterDungeonGeneratorActor(this);
+		}
     }
-
-    InitialRoomAmount = RoomAmount;
-    FTimerHandle UnusedHandle;
 
     //시드 정하기
     SetSeed();
 
     StageConfigSetting();
 
-    //시작 방 생성
-    SpawnStarterRooms();
+    if (!ValidateGenerationConfig() || !SpawnStarterRooms())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Dungeon generation aborted because required configuration is invalid."));
+        return;
+    }
 
-    //다음 방 생성
-	SpawnNextRoom();
-    //구조가 한정적이라 생성할 방이 없어져서 계속 찾기만 하는 무한루프 빠지는 버그가 있음 N초 지나면 강제 리셋하는 타이머
+    bIsFinalizingDungeon = false;
+    bIsDungeonGenerationCompleted = false;
+
+    // 생성이 끝나지 못하는 경우에만 재시도하는 안전장치
     GetWorld()->GetTimerManager().SetTimer(GenerationTimeoutHandle, this, &ADungeonGanarator::OnGenerationTimeout, 4.0f, false);
 
-    //방이 모두 생성되면 1초(임의로 정할 수 있음)후 실행(보스방 만들기, 벽 막기 등등)
-    GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
+    //시작 방 생성
+	SpawnNextRoom();
 }
 
 void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    Super::EndPlay(EndPlayReason);
-    if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+    if (GetWorld())
     {
-        Subsystem->UnregisterDungeonGeneratorActor(this);
+        GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
     }
+
+    if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this))
+    {
+		if (UMVVMSubsystem* Subsystem = GameInstance->GetSubsystem<UMVVMSubsystem>())
+		{
+			Subsystem->UnregisterDungeonGeneratorActor(this);
+		}
+    }
+
+    Super::EndPlay(EndPlayReason);
 }
 
-// Called every frame
-void ADungeonGanarator::Tick(float DeltaTime)
+bool ADungeonGanarator::SpawnStarterRooms()
 {
-	Super::Tick(DeltaTime);
+    Exits.Empty();
 
-}
-
-
-void ADungeonGanarator::SpawnStarterRooms()
-{
-
-    if (StartRoom.IsEmpty() || !IsValid(StartRoom[0]))
+    if (!GetWorld() || StartRoom.IsEmpty() || !StartRoom[0])
     {
         UE_LOG(LogTemp, Error, TEXT("StartRoom 배열이 비어있거나 유효한 클래스가 없습니다!"));
-        return;
+        return false;
     }
 
     //시작 방 생성
     ARoomBase* SpawnStartRoom = this->GetWorld()->SpawnActor<ARoomBase>(StartRoom[0]);
-	if (SpawnStartRoom)
+	if (IsValid(SpawnStartRoom) && IsValid(SpawnStartRoom->ExitPointsFolder))
 	{
 		SpawnStartRoom->SetActorLocation(this->GetActorLocation());
 
 		SpawnStartRoom->ExitPointsFolder->GetChildrenComponents(false, Exits);
+		Exits.RemoveAll([](const USceneComponent* Exit) { return !IsValid(Exit); });
+
+		if (Exits.IsEmpty())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Spawned start room has no valid exit points."));
+			SpawnStartRoom->Destroy();
+			return false;
+		}
 
         //리셋을 위해 따로 저장
         GeneratedActors.Add(SpawnStartRoom);
+		LastestSpawnRoom = SpawnStartRoom;
+		return true;
 	}
-	else
+
+	if (IsValid(SpawnStartRoom))
 	{
-		UE_LOG(LogTemp, Error, TEXT("notfoundstartroom"));
+		SpawnStartRoom->Destroy();
 	}
+	UE_LOG(LogTemp, Error, TEXT("Failed to spawn a valid start room."));
+	return false;
 }
 
 void ADungeonGanarator::SpawnNextRoom()
 {
-    //RoomAmount가 0이거나 저장된 CorridorRooms의 요소가 없으면 리턴
-    if (RoomAmount <= 0 || CorridorRooms.Num() == 0)
+    if (bIsFinalizingDungeon || bIsDungeonGenerationCompleted)
     {
-        //if (RoomAmount <=0)
-        //{
-        //    AfterEndedSpawnNomalRooms();
-        //}
         return;
-    };
+    }
+
+    if (RoomAmount <= 0)
+    {
+        AfterEndedSpawnNomalRooms();
+        return;
+    }
+
+    if (!GetWorld() || CorridorRooms.IsEmpty() || RoomsToBeSpawned.IsEmpty() || Exits.IsEmpty())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Cannot continue dungeon generation: required rooms or exits are missing."));
+        ResetDungeon();
+        return;
+    }
+
     bCanSpawn = true;
 
     //시작 방을 기준으로 시작 방의 출구(Exits)에 복도를 생성, 복도 생성에 성공하면 방을 생성
@@ -117,9 +146,21 @@ void ADungeonGanarator::SpawnNextRoom()
     //복도 생성
     int32 ExitIndex = RandomStream.RandRange(0, Exits.Num() - 1);
     USceneComponent* SelectedExitPoint = Exits[ExitIndex];
+	if (!IsValid(SelectedExitPoint))
+	{
+		Exits.RemoveAt(ExitIndex);
+		ScheduleNextRoomSpawn();
+		return;
+	}
 
     int32 RandomCorridorIndex = RandomStream.RandRange(0, CorridorRooms.Num() - 1);
     TSubclassOf<ARoomBase> SelectedCorridorClass = CorridorRooms[RandomCorridorIndex];
+	if (!SelectedCorridorClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Selected corridor class is invalid."));
+		ScheduleNextRoomSpawn();
+		return;
+	}
 
     ARoomBase* SpawnedCorridor = this->GetWorld()->SpawnActor<ARoomBase>(SelectedCorridorClass);
 
@@ -130,6 +171,8 @@ void ADungeonGanarator::SpawnNextRoom()
     }
     else
     {
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn corridor. Retrying dungeon room generation."));
+		ScheduleNextRoomSpawn();
         return;
     }
 
@@ -139,23 +182,32 @@ void ADungeonGanarator::SpawnNextRoom()
 
     // 복도 오버랩 검사
     LastestSpawnRoom = SpawnedCorridor;
-    RemoveOverlappingRooms();//오버랩 있으면 제거
+    const bool bCorridorPlacementValid = RemoveOverlappingRooms();//오버랩 있으면 제거
+	if (!bCorridorPlacementValid && IsValid(SpawnedCorridor))
+	{
+		SpawnedCorridor->Destroy();
+	}
 
     // 복도가 겹쳐서 파괴되었다면 리턴
     if (!IsValid(SpawnedCorridor))
     {
-        FTimerHandle TimerHandle;
-        // 0.01초 뒤에 SpawnNextRoom을 다시 호출 (즉시 호출 아님 -> 스택 초기화됨)
-        GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ADungeonGanarator::SpawnNextRoom, 0.01f, false);
+		GeneratedActors.Remove(SpawnedCorridor);
+		ScheduleNextRoomSpawn();
         return;//0.01초 사이에 아래 있는 방 생성 코드가 호출됨 그래서 retrun으로 빠르게 컷 해야함
     }
 
     TArray<USceneComponent*> CorridorExits;
-    SpawnedCorridor->ExitPointsFolder->GetChildrenComponents(false, CorridorExits);
+	if (IsValid(SpawnedCorridor->ExitPointsFolder))
+	{
+		SpawnedCorridor->ExitPointsFolder->GetChildrenComponents(false, CorridorExits);
+	}
+	CorridorExits.RemoveAll([](const USceneComponent* Exit) { return !IsValid(Exit); });
 
-    if (CorridorExits.Num() == 0)
+    if (CorridorExits.IsEmpty())
     {
+		GeneratedActors.Remove(SpawnedCorridor);
         SpawnedCorridor->Destroy();
+		ScheduleNextRoomSpawn();
         return;
     }
 
@@ -182,12 +234,24 @@ void ADungeonGanarator::SpawnNextRoom()
         RoomClassToSpawn = RoomsToBeSpawned[RoomIndex];
     }
 
+	if (!RoomClassToSpawn)
+	{
+		GeneratedActors.Remove(SpawnedCorridor);
+		SpawnedCorridor->Destroy();
+		UE_LOG(LogTemp, Error, TEXT("Selected room class is invalid."));
+		ScheduleNextRoomSpawn();
+		return;
+	}
+
     ARoomBase* SpawnedRoom = this->GetWorld()->SpawnActor<ARoomBase>(RoomClassToSpawn);
 
-    if (SpawnedRoom)
+    if (!IsValid(SpawnedRoom))
     {
-        // [추가] 방도 생성 목록에 등록
-        GeneratedActors.Add(SpawnedRoom);
+		GeneratedActors.Remove(SpawnedCorridor);
+		SpawnedCorridor->Destroy();
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn room. Retrying dungeon room generation."));
+		ScheduleNextRoomSpawn();
+		return;
     }
 
     SpawnedRoom->SetActorLocation(CorridorExitPoint->GetComponentLocation());
@@ -196,17 +260,18 @@ void ADungeonGanarator::SpawnNextRoom()
     // 방 오버랩 검사
     LastestSpawnRoom = SpawnedRoom;
 
-    DoorList.Add(SelectedExitPoint);
+    const bool bRoomPlacementValid = RemoveOverlappingRooms();
+	if (!bRoomPlacementValid && IsValid(SpawnedRoom))
+	{
+		SpawnedRoom->Destroy();
+	}
 
-    if (IsValid(CorridorExitPoint))
+    if (bRoomPlacementValid && IsValid(SpawnedRoom))
     {
-        DoorList.Add(CorridorExitPoint); // 2. 복도 -> 다음 방 사이의 문
-    }
+		GeneratedActors.Add(SpawnedRoom);
+		DoorList.Add(SelectedExitPoint);
+		DoorList.Add(CorridorExitPoint); // 2. 복도 -> 다음 방 사이의 문
 
-    RemoveOverlappingRooms();
-
-    if (IsValid(SpawnedRoom))
-    {
         // 성공: 기존 출구 제거 및 새 방 출구 추가
         Exits.Remove(SelectedExitPoint);
         if (IsSpawnSpecialRoom)
@@ -215,7 +280,11 @@ void ADungeonGanarator::SpawnNextRoom()
         }
         RoomAmount--;
         TArray<USceneComponent*> NewRoomExits;
-        SpawnedRoom->ExitPointsFolder->GetChildrenComponents(false, NewRoomExits);
+		if (IsValid(SpawnedRoom->ExitPointsFolder))
+		{
+			SpawnedRoom->ExitPointsFolder->GetChildrenComponents(false, NewRoomExits);
+		}
+		NewRoomExits.RemoveAll([](const USceneComponent* Exit) { return !IsValid(Exit); });
         Exits.Append(NewRoomExits);
     }
     else
@@ -223,25 +292,29 @@ void ADungeonGanarator::SpawnNextRoom()
         // 실패: 방이 겹치면 연결된 복도도 같이 파괴
         if (IsValid(SpawnedCorridor))
         {
+		   GeneratedActors.Remove(SpawnedCorridor);
            SpawnedCorridor->Destroy();
         }
     }
 
-    //재귀호출로 다음 방 생성
     if (RoomAmount > 0)
     {
-        FTimerHandle TimerHandle;
-        // 0.01초 뒤에 SpawnNextRoom을 다시 호출 (즉시 호출 아님 -> 스택 초기화됨)
-        GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ADungeonGanarator::SpawnNextRoom, 0.01f, false);
-        // 그냥 SpawnNextRoom() 바로 불러도 상관 없는데 방 많아지면 좀 불안정해짐
+		ScheduleNextRoomSpawn();
     }
-
-
-    
+	else
+	{
+		AfterEndedSpawnNomalRooms();
+	}
 }
 
-void ADungeonGanarator::RemoveOverlappingRooms()
+bool ADungeonGanarator::RemoveOverlappingRooms()
 {
+    if (!IsValid(LastestSpawnRoom) || !IsValid(LastestSpawnRoom->OverlapFolder))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot test room overlap because the room or overlap folder is invalid."));
+		return false;
+	}
+
     //오버랩 된 방 제거
 	TArray<USceneComponent*> OverlappedRooms;
 	LastestSpawnRoom->OverlapFolder->GetChildrenComponents(false, OverlappedRooms);
@@ -250,7 +323,10 @@ void ADungeonGanarator::RemoveOverlappingRooms()
 
 	for (USceneComponent* Element : OverlappedRooms)
 	{
-		Cast<UBoxComponent>(Element)->GetOverlappingComponents(OverlapingCompoenets);
+		if (UBoxComponent* OverlapBox = Cast<UBoxComponent>(Element))
+		{
+			OverlapBox->GetOverlappingComponents(OverlapingCompoenets);
+		}
 	}
 
 	for (USceneComponent* Element : OverlapingCompoenets)
@@ -258,18 +334,54 @@ void ADungeonGanarator::RemoveOverlappingRooms()
 		bCanSpawn = false;
 		//RoomAmount++;
 		LastestSpawnRoom->Destroy();
+		return false;
+	}
+
+	return true;
+}
+
+void ADungeonGanarator::ScheduleNextRoomSpawn()
+{
+	if (!GetWorld() || bIsFinalizingDungeon || bIsDungeonGenerationCompleted)
+	{
 		return;
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(RoomSpawnTimerHandle, this, &ADungeonGanarator::SpawnNextRoom, 0.01f, false);
+}
+
+bool ADungeonGanarator::ValidateGenerationConfig() const
+{
+	const TArray<TSubclassOf<ARoomBase>>& LastRoomClasses = chapter == MaxAmout ? BossRoomClass : PotalRoomClass;
+	return GetWorld()
+		&& !StartRoom.IsEmpty() && StartRoom[0]
+		&& !RoomsToBeSpawned.IsEmpty()
+		&& !CorridorRooms.IsEmpty()
+		&& !ClosingWall.IsEmpty() && ClosingWall[0]
+		&& !LastRoomClasses.IsEmpty() && LastRoomClasses[0]
+		&& RoomAmount > 0;
 }
 
 //모든 방 생성이 끝나고 실행되는 함수, 보스방 스폰과 닫힌 벽을 막고 방을 들어갔는지 확인하는 콜리전 활성화함
 void ADungeonGanarator::AfterEndedSpawnNomalRooms()
 {
+    if (!GetWorld() || bIsFinalizingDungeon || bIsDungeonGenerationCompleted || RoomAmount > 0)
+    {
+        return;
+    }
+
+    bIsFinalizingDungeon = true;
+    GetWorld()->GetTimerManager().ClearTimer(RoomSpawnTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(GenerationTimeoutHandle);
+
     //보물방 같은 특수방 지정하는 함수, 단순히 현재 생성된 방들 중 고를거라 보스방 생성 전 돌려야함 아마 사용 안할듯
     //SelectedSpecialRoom();
     //보스방 생성
     if (!SpawnLastRoom())
     {
+        bIsFinalizingDungeon = false;
+        UE_LOG(LogTemp, Warning, TEXT("Failed to spawn the final room. Regenerating dungeon."));
+        ResetDungeon();
         return;
         //통로 닫기 전 보스방 생성 성공여부 검사, 생성 실패하면 스테이지 다시 만드는 구조라 ClosingUnuusedWall 호출되지 않게 리턴
     }
@@ -291,6 +403,9 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
     /// 보스방 생성 성공시에 처리(Minimap)
     CalculateDungeonMinMaxPoint();
 
+    bIsDungeonGenerationCompleted = true;
+    bIsFinalizingDungeon = false;
+
     if (EndedCreate.IsBound())
     {
         EndedCreate.Broadcast();
@@ -304,11 +419,28 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
 //닫힌 벽 막는 함수
 void ADungeonGanarator::ClosingUnuusedWall()
 {
+    if (!GetWorld() || ClosingWall.IsEmpty() || !ClosingWall[0])
+    {
+        UE_LOG(LogTemp, Error, TEXT("Cannot close unused exits: closing wall class is invalid."));
+        return;
+    }
+
     //모든 출구에 대해 검사
     for (USceneComponent* Element : Exits)
     {
+		if (!IsValid(Element))
+		{
+			continue;
+		}
+
         //막을 벽 설정
         AClosingWall* LastestClosingWallSpawned = GetWorld()->SpawnActor<AClosingWall>(ClosingWall[0]);
+		if (!IsValid(LastestClosingWallSpawned))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to spawn a closing wall."));
+			continue;
+		}
+
         FVector RelativeOffset(LastestClosingWallSpawned->GetLoc());//여기 나중에 수정해야 함(하드코딩)
         FVector WorldOffset = Element->GetComponentRotation().RotateVector(RelativeOffset);
 
@@ -323,7 +455,7 @@ void ADungeonGanarator::ClosingUnuusedWall()
 bool ADungeonGanarator::SpawnLastRoom()
 {
     //보스방 생성
-    TArray<TSubclassOf<ARoomBase>>* TargetRoomArray;
+    const TArray<TSubclassOf<ARoomBase>>* TargetRoomArray = nullptr;
 
     if (chapter == MaxAmout)
     {
@@ -336,59 +468,55 @@ bool ADungeonGanarator::SpawnLastRoom()
         UE_LOG(LogTemp, Warning, TEXT("createportal"));
     }
 
-    if (TargetRoomArray->Num() > 0 && IsValid(LastestSpawnRoom))//안전검사
+    if (!GetWorld() || !TargetRoomArray || TargetRoomArray->IsEmpty() || !(*TargetRoomArray)[0] || !IsValid(LastestSpawnRoom))
     {
-        USceneComponent* LastExit = nullptr;
-        for (USceneComponent* Exit : Exits)
+        UE_LOG(LogTemp, Error, TEXT("Cannot spawn final room: class or latest room is invalid."));
+        return false;
+    }
+
+    USceneComponent* LastExit = nullptr;
+    for (USceneComponent* Exit : Exits)
+    {
+        if (IsValid(Exit) && Exit->GetOwner() == LastestSpawnRoom)
         {
-            if (Exit->GetOwner() == LastestSpawnRoom)
-            {
-                LastExit = Exit;
-                break;
-            }
-        }
-
-        if (LastExit)
-        {
-            ARoomBase* LastRoom = GetWorld()->SpawnActor<ARoomBase>((*TargetRoomArray)[0]);
-            if (LastRoom)
-            {
-                LastRoom->SetActorLocation(LastExit->GetComponentLocation());
-                LastRoom->SetActorRotation(LastExit->GetComponentRotation());
-
-                ARoomBase* TempLast = LastestSpawnRoom;
-                LastestSpawnRoom = LastRoom;
-                RemoveOverlappingRooms();
-
-                if (!IsValid(LastRoom)) // 겹쳐서 파괴됨 -> 리셋 시도
-                {
-                    LastestSpawnRoom = TempLast; // 복구
-
-                    if (CurrentResetCount < MaxResetLimit)
-                    {
-                        //만약 보스방이 다른 방과 겹쳐서 생성에 문제가 생기면 그냥 맵 리셋 처음부터 다시 생성
-                        ResetDungeon();
-                        return false;
-                    }
-                    else
-                    {
-                        UE_LOG(LogTemp, Error, TEXT("한도초과"));
-                    }
-                }
-                else
-                {
-                    // 성공
-                    DoorList.Add(LastExit);
-                    GeneratedActors.Add(LastRoom);
-                    Exits.Remove(LastExit);
-                    UE_LOG(LogTemp, Warning, TEXT("BossRoomSpawn"));
-                    CurrentResetCount = 0;
-                    GetWorld()->GetTimerManager().ClearTimer(GenerationTimeoutHandle);
-                }
-            }
+			LastExit = Exit;
+			break;
         }
     }
 
+    if (!IsValid(LastExit))
+    {
+		UE_LOG(LogTemp, Error, TEXT("Cannot spawn final room: latest room has no available exit."));
+		return false;
+	}
+
+    ARoomBase* LastRoom = GetWorld()->SpawnActor<ARoomBase>((*TargetRoomArray)[0]);
+    if (!IsValid(LastRoom))
+    {
+		UE_LOG(LogTemp, Error, TEXT("Failed to spawn final room actor."));
+		return false;
+	}
+
+    LastRoom->SetActorLocation(LastExit->GetComponentLocation());
+    LastRoom->SetActorRotation(LastExit->GetComponentRotation());
+
+    ARoomBase* PreviousLastRoom = LastestSpawnRoom;
+    LastestSpawnRoom = LastRoom;
+    if (!RemoveOverlappingRooms() || !IsValid(LastRoom))
+    {
+		LastestSpawnRoom = PreviousLastRoom;
+		if (IsValid(LastRoom))
+		{
+			LastRoom->Destroy();
+		}
+		return false;
+	}
+
+    DoorList.Add(LastExit);
+    GeneratedActors.Add(LastRoom);
+    Exits.Remove(LastExit);
+    UE_LOG(LogTemp, Warning, TEXT("Final room spawned successfully."));
+    CurrentResetCount = 0;
     return true;
 }
 
@@ -400,6 +528,17 @@ void ADungeonGanarator::SelectedSpecialRoom()
 
 void ADungeonGanarator::ResetDungeon()
 {
+    if (!GetWorld())
+    {
+        return;
+    }
+
+    if (CurrentResetCount >= MaxResetLimit)
+    {
+        GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+        UE_LOG(LogTemp, Error, TEXT("Dungeon generation failed after %d reset attempts."), MaxResetLimit);
+        return;
+    }
 
     //현재 진행 중인 타이머 모두 중지
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
@@ -438,28 +577,33 @@ void ADungeonGanarator::ResetDungeon()
     GeneratedActors.Empty(); // 목록 비우기
     Exits.Empty();           // 출구 목록 비우기
     DoorList.Empty();
+	LastestSpawnRoom = nullptr;
     //변수 초기화
     CurrentSpecialRoomIndex = 0;
     SpecialRoomIndex = 0;
     RoomAmount = InitialRoomAmount; // 방 개수 복구
     bCanSpawn = false;
+	bIsFinalizingDungeon = false;
+	bIsDungeonGenerationCompleted = false;
     CurrentResetCount++;
-    SpawnStarterRooms();
-    SpawnNextRoom();
+
+	if (!ValidateGenerationConfig() || !SpawnStarterRooms())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Dungeon regeneration aborted because required configuration is invalid."));
+		return;
+	}
+
     GetWorld()->GetTimerManager().SetTimer(GenerationTimeoutHandle, this, &ADungeonGanarator::OnGenerationTimeout, 4.0f, false);
-
-    //종료 타이머 다시 설정
-    FTimerHandle UnusedHandle;
-    GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ADungeonGanarator::AfterEndedSpawnNomalRooms, 1.0f, false);
-
-    FTimerHandle DoorHandle;
-    GetWorld()->GetTimerManager().SetTimer(DoorHandle, this, &ADungeonGanarator::SpawnDoors, 1.0f, false);
+    SpawnNextRoom();
 }
 
 void ADungeonGanarator::OnGenerationTimeout()
 {
-    //안전장치 타이머 끝나면 걍 강제 리셋
-    ResetDungeon();
+    if (!bIsDungeonGenerationCompleted && !bIsFinalizingDungeon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dungeon generation timed out. Regenerating dungeon."));
+		ResetDungeon();
+	}
 }
 
 void ADungeonGanarator::SetSeed()//게임에 사용할 시드 정하는 함수
@@ -474,12 +618,15 @@ void ADungeonGanarator::SetSeed()//게임에 사용할 시드 정하는 함수
         Results = Seed;
     }
     RandomStream.Initialize(Results);
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), Results));//디버그용 시드 출력
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), Results));//디버그용 시드 출력
+	}
 }
 
 void ADungeonGanarator::SpawnDoors()
 {
-    if (!Doors)
+    if (!GetWorld() || !Doors)
     {
         UE_LOG(LogTemp, Error, TEXT("Door is Null"));
         return;
@@ -544,6 +691,10 @@ void ADungeonGanarator::StageConfigSetting()
             BossRoomClass = SelectedConfig.BossRooms;
             PotalRoomClass = SelectedConfig.PotalRooms;
             ClosingWall = SelectedConfig.ClosingWalls;
+			if (!SelectedConfig.Doors.IsEmpty())
+			{
+				Doors = SelectedConfig.Doors[0];
+			}
             InitialRoomAmount = RoomAmount;
         }
         else
@@ -578,6 +729,7 @@ void ADungeonGanarator::CalculateDungeonMinMaxPoint()
 {
     FVector2D MinPoint(FLT_MAX, FLT_MAX);
     FVector2D MaxPoint(-FLT_MAX, -FLT_MAX);
+	bool bFoundValidBounds = false;
 
     for (AActor* actor : GeneratedActors)
     {
@@ -590,6 +742,7 @@ void ADungeonGanarator::CalculateDungeonMinMaxPoint()
 
         FVector Origin, Extend;
         actor->GetActorBounds(true, Origin, Extend);
+		bFoundValidBounds = true;
 
         actorMin.X = Origin.X - Extend.X;
         actorMin.Y = Origin.Y - Extend.Y;
@@ -602,6 +755,12 @@ void ADungeonGanarator::CalculateDungeonMinMaxPoint()
         MaxPoint.X = FMath::Max(MaxPoint.X, actorMax.X);
         MaxPoint.Y = FMath::Max(MaxPoint.Y, actorMax.Y);
     }
+
+    if (!bFoundValidBounds)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot calculate dungeon bounds because no generated actors are valid."));
+		return;
+	}
 
     // 로딩창 종료
     if (OnDungeonGenerationCompleted.IsBound())

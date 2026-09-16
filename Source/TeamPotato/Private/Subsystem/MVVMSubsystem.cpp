@@ -122,21 +122,34 @@ void UMVVMSubsystem::RegisterPlayerResourceComp(UPlayerResource* NewComp)
 	UnregisterPlayerResourceComp(NewComp);
 
 	// 뷰모델 가져오기
-	UPlayerStatusViewModel* VM = GetPlayerStatusViewModel();
+	UPlayerStatusViewModel* StatusVM = GetPlayerStatusViewModel();
+	UWeaponViewModel* ResourceVM = GetWeaponViewModel();
+	UItemViewModel* GoldVM = GetItemViewModel();
 
 	// 델리게이트 바인딩(컴포넌트의 체력이 바뀌면 -> 뷰모델의 SetHealth도 실행 등등)
-	NewComp->OnHealthChanged.AddDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
-    NewComp->OnEnergyChanged.AddDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);
-    NewComp->OnGoldChanged.AddDynamic(ItemViewModel, &UItemViewModel::SetCurrentGold);
+	NewComp->OnHealthChanged.AddDynamic(StatusVM, &UPlayerStatusViewModel::SetHealth);
+    NewComp->OnEnergyChanged.AddDynamic(ResourceVM, &UWeaponViewModel::SetResource);
+    NewComp->OnGoldChanged.AddDynamic(GoldVM, &UItemViewModel::SetCurrentGold);
 }
 
 void UMVVMSubsystem::UnregisterPlayerResourceComp(UPlayerResource* ExitingComp)
 {
-	if (ExitingComp && PlayerStatusViewModel)
+	if (!ExitingComp)
 	{
-		// 델리게이트 언바인딩
+		return;
+	}
+
+	if (PlayerStatusViewModel)
+	{
 		ExitingComp->OnHealthChanged.RemoveDynamic(PlayerStatusViewModel, &UPlayerStatusViewModel::SetHealth);
+    }
+	if (WeaponViewModel)
+	{
         ExitingComp->OnEnergyChanged.RemoveDynamic(WeaponViewModel, &UWeaponViewModel::SetResource);	
+	}
+	if (ItemViewModel)
+	{
+		ExitingComp->OnGoldChanged.RemoveDynamic(ItemViewModel, &UItemViewModel::SetCurrentGold);
 	}
 }
 

@@ -158,13 +158,19 @@ protected:
 	bool IsSpawnSpecialRoom = false;
 protected:
 	//시작방 생성하는 함수
-	void SpawnStarterRooms();
+	bool SpawnStarterRooms();
 
 	//다음 방 생성하는 함수 RoomAmount남아있으면 재귀호출로 계속 생성함
 	void SpawnNextRoom();
 
 	//방이나 복도 겹치면 지워버리고 다시 SpawnNextRoom호출해서 새로운 방 만드는 함수
-	void RemoveOverlappingRooms();
+	bool RemoveOverlappingRooms();
+
+	// 다음 방 생성을 한 프레임 뒤에 안전하게 예약
+	void ScheduleNextRoomSpawn();
+
+	// 던전 생성에 필요한 필수 설정 검사
+	bool ValidateGenerationConfig() const;
 
 	//모든 일반 방이 끝나고 나머지 작업 시작할댸 호출하는 함수
 	void AfterEndedSpawnNomalRooms();
@@ -218,14 +224,16 @@ private:
 	//방지 타이머;
 	FTimerHandle GenerationTimeoutHandle;
 
+	// 방 생성 재귀 호출 타이머
+	FTimerHandle RoomSpawnTimerHandle;
+
+	bool bIsFinalizingDungeon = false;
+	bool bIsDungeonGenerationCompleted = false;
+
     const int32 MaxAmout = 3;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };

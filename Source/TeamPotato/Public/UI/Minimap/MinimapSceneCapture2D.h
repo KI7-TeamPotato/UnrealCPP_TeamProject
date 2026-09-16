@@ -10,6 +10,9 @@
 
 class UMinimapViewModel;
 class UMinimapManager;
+class UMaterialInterface;
+class UTexture;
+struct FStreamableHandle;
 
 /**
  * 
@@ -23,6 +26,7 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     
     UFUNCTION()
     void OnMinimapCapture(FVector2D InMinPoint, FVector2D InMaxPoint);
@@ -33,6 +37,13 @@ private:
 
     // --- 렌더 타깃 초기화 함수(크기) ---
     void InitializeRenderTarget();
+
+    // --- 미니맵 에셋을 게임 플레이를 막지 않고 미리 로드 ---
+    void RequestMinimapAssets();
+    void HandleMinimapAssetsLoaded();
+
+    // --- 에셋이 준비된 뒤 실제 캡처 및 매니저 초기화 ---
+    void CaptureMinimap(FVector2D InMinPoint, FVector2D InMaxPoint);
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -50,6 +61,12 @@ protected:
     UPROPERTY()
     TObjectPtr<UMinimapManager> MinimapManager = nullptr;
 
+    UPROPERTY()
+    TObjectPtr<UMaterialInterface> MinimapBaseMaterial = nullptr;
+
+    UPROPERTY()
+    TObjectPtr<UTexture> MinimapPlayerIcon = nullptr;
+
 private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     float BorderRatio = 1.1f;
@@ -57,4 +74,9 @@ private:
     float CaptureOrthoWidth = 0;
     FVector2D WorldMinPoint = FVector2D::ZeroVector;
     FVector2D WorldMaxPoint = FVector2D::ZeroVector;
+
+    TSharedPtr<FStreamableHandle> MinimapAssetLoadHandle;
+    bool bHasPendingCapture = false;
+    FVector2D PendingMinPoint = FVector2D::ZeroVector;
+    FVector2D PendingMaxPoint = FVector2D::ZeroVector;
 };

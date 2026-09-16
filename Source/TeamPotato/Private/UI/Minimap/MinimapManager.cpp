@@ -2,32 +2,30 @@
 
 
 #include "UI/Minimap/MinimapManager.h"
-#include "Common/MyGameSettings.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-void UMinimapManager::InitializeMinimapManager(UTextureRenderTarget2D* InRenderTarget, FVector2D InMinPoint, float InOrthoWidth)
+void UMinimapManager::InitializeMinimapManager(
+    UTextureRenderTarget2D* InRenderTarget,
+    FVector2D InMinPoint,
+    float InOrthoWidth,
+    UMaterialInterface* InBaseMaterial,
+    UTexture* InPlayerIconTexture)
 {
-    if (!InRenderTarget) return;
-
-    // 게임 설정에서 베이스 머티리얼 로드
-    UMaterialInterface* BaseMaterial = 
-        UMyGameSettings::Get()->MinimapBaseMaterial.LoadSynchronous();
-
-    UTexture* PlayerIconTexture = 
-        UMyGameSettings::Get()->MinimapPlayerIcon.LoadSynchronous();
-
-    if (!BaseMaterial) return;
+    if (!InRenderTarget || !InBaseMaterial || !InPlayerIconTexture)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Cannot initialize minimap manager because a required asset is missing."));
+        return;
+    }
     
     // Material 생성
-    MinimapMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+    MinimapMaterial = UMaterialInstanceDynamic::Create(InBaseMaterial, this);
 
     // RenderTarget을 텍스처 파라미터로 설정
     MinimapMaterial->SetTextureParameterValue(TEXT("MinimapTexture"), InRenderTarget);
 
-    if (!PlayerIconTexture) return;
     // 플레이어 아이콘 텍스처 설정
-    MinimapMaterial->SetTextureParameterValue(TEXT("PlayerIconTexture"), PlayerIconTexture);
+    MinimapMaterial->SetTextureParameterValue(TEXT("PlayerIconTexture"), InPlayerIconTexture);
 
     MinimapMaterial->SetScalarParameterValue(TEXT("PlayerIconSize"), 0.05f);
 
@@ -99,8 +97,12 @@ void UMinimapManager::RevealArea(FVector2D UV, float Radius)
                 int32 PX = FMath::Clamp(CenterX + X, 0, FogResolution - 1);
                 int32 PY = FMath::Clamp(CenterY + Y, 0, FogResolution - 1);
 
-                FogData[PY * FogResolution + PX] = FColor::White;
-                bFogDirty = true;
+                FColor& FogPixel = FogData[PY * FogResolution + PX];
+                if (FogPixel != FColor::White)
+                {
+                    FogPixel = FColor::White;
+                    bFogDirty = true;
+                }
             }
         }
     }

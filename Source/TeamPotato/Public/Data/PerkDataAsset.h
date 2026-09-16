@@ -39,6 +39,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Perk")
     FText GetFormattedDescription() const
     {
+        if (!PerkEffect)
+        {
+            return Description;
+        }
+
         FFormatNamedArguments Args;
 
         // 퍽의 효과 수치를 포맷팅 인수로 추가

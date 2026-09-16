@@ -14,6 +14,7 @@ class UMinimapWidget;
 class UInGameMenuWidget;
 class UPerkDataAsset;
 class UMinimapViewModel;
+struct FStreamableHandle;
 /**
  * 
  */
@@ -77,6 +78,10 @@ private:
     UFUNCTION()
     void OnAddPlayerKilledWidget();
 
+    void InitializeMinimapWidget();
+    void HandleMinimapWidgetLoaded();
+    void ConfigureMinimapWidget();
+
 protected:
     //IA
     // 일시 정지 입력
@@ -125,6 +130,8 @@ private:
     TObjectPtr<UMinimapWidget> MinimapWidgetRef = nullptr;
 
     TObjectPtr<UMinimapViewModel> MinimapViewModel = nullptr;
+
+    TSharedPtr<FStreamableHandle> MinimapWidgetLoadHandle;
 
     FVector CurrentPawnLocation = FVector::ZeroVector;
     float CurrentPawnYaw = 0.f;

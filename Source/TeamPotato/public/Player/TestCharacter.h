@@ -30,9 +30,6 @@ protected:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
-
     // 입력과 이벤트 바인딩
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -303,10 +300,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Gun = nullptr;
 
-
-    //무기 매니저
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-    TObjectPtr<class AWeaponManagerActor> WeaponManager = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<class UWeaponComponent> WeaponComponent = nullptr;
