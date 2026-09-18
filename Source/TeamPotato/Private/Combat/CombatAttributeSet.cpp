@@ -8,6 +8,7 @@ UCombatAttributeSet::UCombatAttributeSet()
     InitHealth(100.0f);
     InitMaxHealth(100.0f);
     InitIncomingDamage(0.0f);
+    InitMoveSpeedMultiplier(1.0f);
 }
 
 void UCombatAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, float& NewValue) const
@@ -16,6 +17,7 @@ void UCombatAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
     if (Attribute == GetMaxHealthAttribute()) NewValue = FMath::Max(1.0f, NewValue);
     if (Attribute == GetHealthAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
     if (Attribute == GetIncomingDamageAttribute()) NewValue = FMath::Max(0.0f, NewValue);
+    if (Attribute == GetMoveSpeedMultiplierAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, 10.0f);
 }
 
 void UCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -38,7 +40,11 @@ bool UCombatAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
     if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
     {
         // Also guards periodic executions and custom GEs using the damage meta attribute.
-        return Data.EvaluatedData.Magnitude > 0.0f && !ASC->HasMatchingGameplayTag(CombatTags::State_Invincible);
+        FGameplayTagContainer Tags;
+        Data.EffectSpec.GetAllAssetTags(Tags);
+        if (Tags.HasTagExact(CombatTags::Damage_Periodic) && !ASC->CanReceiveStatuses()) return false;
+        return Data.EvaluatedData.Magnitude > 0.0f &&
+            (Tags.HasTagExact(CombatTags::Damage_Periodic) || !ASC->HasMatchingGameplayTag(CombatTags::State_Invincible));
     }
     return true;
 }
@@ -55,7 +61,9 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
         SetIncomingDamage(0.0f);
         const float PreviousHealth = GetHealth();
         SetHealth(FMath::Clamp(PreviousHealth - Damage, 0.0f, GetMaxHealth()));
-        ASC->ResolveDamage(PreviousHealth - GetHealth(), Data.EffectSpec.GetContext());
+        FGameplayTagContainer Tags;
+        Data.EffectSpec.GetAllAssetTags(Tags);
+        ASC->ResolveDamage(PreviousHealth - GetHealth(), Data.EffectSpec.GetContext(), Tags.HasTagExact(CombatTags::Damage_Periodic));
     }
     else if (Data.EvaluatedData.Attribute == GetHealthAttribute() || Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
     {

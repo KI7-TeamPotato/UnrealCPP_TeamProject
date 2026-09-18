@@ -5,6 +5,7 @@
 #include "Component/WeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/TestCharacter.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 ALaserGunWeaponActor::ALaserGunWeaponActor()
 {
@@ -16,6 +17,7 @@ ALaserGunWeaponActor::ALaserGunWeaponActor()
 
 void ALaserGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
     Super::Attack(OwningPlayer);
 
     // 오류 검사

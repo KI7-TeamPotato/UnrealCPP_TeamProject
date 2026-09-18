@@ -81,3 +81,30 @@ UCombatDeadEffect::UCombatDeadEffect()
     DurationPolicy = EGameplayEffectDurationType::Infinite;
     GrantCombatTag(CombatTags::State_Dead);
 }
+
+UCombatPeriodicDamageEffect::UCombatPeriodicDamageEffect()
+{
+    TargetRequirements->ApplicationTagRequirements.RequireTags.AddTag(CombatTags::Actor_Player);
+    DurationPolicy = EGameplayEffectDurationType::HasDuration;
+    DurationMagnitude = FScalableFloat(5.0f);
+    Period = FScalableFloat(1.0f);
+    bExecutePeriodicEffectOnApplication = false;
+    StackingType = EGameplayEffectStackingType::AggregateByTarget;
+    StackLimitCount = 1;
+    StackDurationRefreshPolicy = EGameplayEffectStackingDurationPolicy::RefreshOnSuccessfulApplication;
+    StackPeriodResetPolicy = EGameplayEffectStackingPeriodPolicy::NeverReset;
+    StackExpirationPolicy = EGameplayEffectStackingExpirationPolicy::ClearEntireStack;
+    AddSetByCallerModifier(*this, UCombatAttributeSet::GetIncomingDamageAttribute(), CombatTags::Data_Damage);
+    BlockDeadTargets();
+}
+
+UCombatPoisonSlowEffect::UCombatPoisonSlowEffect()
+{
+    TargetRequirements->ApplicationTagRequirements.RequireTags.AddTag(CombatTags::Actor_Player);
+    DurationPolicy = EGameplayEffectDurationType::Infinite;
+    FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+    Modifier.Attribute = UCombatAttributeSet::GetMoveSpeedMultiplierAttribute();
+    Modifier.ModifierOp = EGameplayModOp::Multiplicitive;
+    Modifier.ModifierMagnitude = FScalableFloat(0.7f);
+    BlockDeadTargets();
+}

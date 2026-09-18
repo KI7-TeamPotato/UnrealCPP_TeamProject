@@ -42,6 +42,7 @@ void AWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherAc
 
 void AWeaponActor::DamageToTarget(AActor* InTarget)
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
 	float finalDamage = Damage;
 	AController* instigator = nullptr;
 

@@ -7,6 +7,7 @@
 #include "Item/Weapon/GunWeaponActor.h"
 #include "Data/WeaponDataAsset.h"
 #include "Subsystem/MVVMSubsystem.h"
+#include "Combat/CombatFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -96,6 +97,7 @@ void UWeaponComponent::InitializeBaseWeapon(UWeaponDataAsset* InWeaponData)
 
 void UWeaponComponent::WeaponAttack()
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(GetOwner())) return;
 	if (!IsValid(Owner) || (!IsValid(CurrentWeapon) && !IsValid(BaseWeapon))) return;
 
 	if (IsValid(CurrentWeapon) && !bIsUsingBaseWeapon)

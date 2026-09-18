@@ -23,9 +23,11 @@ public:
 
     virtual void BeginAttack() override;
     virtual void EndAttack() override;
+    virtual void CancelAttack() override { ASwordWeaponActor::EndAttack(); }
 	
 protected:
     TSet<TWeakObjectPtr<AActor>> HitActors;
+    bool bAttackWindowOpen = false;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

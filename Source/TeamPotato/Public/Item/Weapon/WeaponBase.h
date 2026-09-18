@@ -34,6 +34,7 @@ public:
     // 애니메이션 노티파이에서 호출
     virtual void BeginAttack() {}
     virtual void EndAttack() {}
+    virtual void CancelAttack() { EndAttack(); }
 
 	inline void SetOwnerComponent(UWeaponComponent* InWeaponComponent) { OwnerWeaponComponent = InWeaponComponent; }
 

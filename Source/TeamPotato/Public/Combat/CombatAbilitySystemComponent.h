@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "Combat/CombatStatusDefinition.h"
 #include "CombatAbilitySystemComponent.generated.h"
 
 class UCombatAttributeSet;
@@ -9,6 +10,16 @@ class UCombatAttributeSet;
 DECLARE_MULTICAST_DELEGATE_TwoParams(FCombatHealthChanged, float, float);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FCombatDamageReceived, float, const FGameplayEffectContextHandle&);
 DECLARE_MULTICAST_DELEGATE(FCombatDeath);
+DECLARE_MULTICAST_DELEGATE(FCombatAttackBlocked);
+
+USTRUCT()
+struct FActiveCombatStatus
+{
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<UCombatStatusDefinition> Definition;
+    FActiveGameplayEffectHandle DamageHandle;
+    FActiveGameplayEffectHandle SlowHandle;
+};
 
 UCLASS(ClassGroup = (Combat), meta = (BlueprintSpawnableComponent))
 class TEAMPOTATO_API UCombatAbilitySystemComponent : public UAbilitySystemComponent
@@ -59,13 +70,40 @@ public:
     void EndDodgeInvincibility();
     void ApplyHitInvincibility();
     void MarkDead();
-    void ResolveDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
+    void ResolveDamage(float ActualDamage, const FGameplayEffectContextHandle& Context, bool bPeriodic = false);
+
+    UFUNCTION(BlueprintPure, Category = "Combat")
+    bool CanAttack() const;
+
+    // Only TestCharacter and its player Blueprint subclasses receive elemental statuses.
+    UFUNCTION(BlueprintPure, Category = "Combat|Status")
+    bool CanReceiveStatuses() const;
+
+    UFUNCTION(BlueprintCallable, Category = "Combat|Movement")
+    void SetBaseMoveSpeed(float Speed);
+    UFUNCTION(BlueprintPure, Category = "Combat|Movement")
+    float GetBaseMoveSpeed() const { return BaseMoveSpeed; }
+
+    bool ApplyStatus(UCombatStatusDefinition* Definition, const FGameplayEffectContextHandle& Context);
+    UFUNCTION(BlueprintCallable, Category = "Combat|Status")
+    void RemoveStatus(ECombatStatus Status);
+    UFUNCTION(BlueprintCallable, Category = "Combat|Status")
+    void RemoveAllStatuses();
+    UFUNCTION(BlueprintPure, Category = "Combat|Status")
+    bool HasStatus(ECombatStatus Status) const;
 
     FCombatHealthChanged OnCombatHealthChanged;
     FCombatDamageReceived OnCombatDamageReceived;
     FCombatDeath OnCombatDeath;
+    FCombatAttackBlocked OnCombatAttackBlocked;
+    FCombatDamageReceived OnCombatPeriodicDamageReceived;
 
 private:
+    void UpdateMoveSpeed(const FOnAttributeChangeData& Data);
+    void HandleAttackBlockedTag(FGameplayTag Tag, int32 Count);
+    void HandleStatusRemoved(const FActiveGameplayEffect& Effect);
+    UPROPERTY() TMap<ECombatStatus, FActiveCombatStatus> ActiveStatuses;
+    float BaseMoveSpeed = 0.0f;
     FGameplayEffectSpecHandle MakeCombatSpec(TSubclassOf<UGameplayEffect> EffectClass) const;
     void HandleAttributeChanged(const FOnAttributeChangeData& Data);
     void ApplyMagnitudeEffect(TSubclassOf<UGameplayEffect> EffectClass, FGameplayTag Tag, float Amount);

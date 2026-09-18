@@ -29,6 +29,8 @@ ASwordWeaponActor::ASwordWeaponActor()
 
 void ASwordWeaponActor::BeginAttack()
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
+    bAttackWindowOpen = true;
     HitActors.Reset();
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -43,6 +45,7 @@ void ASwordWeaponActor::BeginAttack()
 
 void ASwordWeaponActor::EndAttack()
 {
+    bAttackWindowOpen = false;
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     if (TrailEffect)
@@ -71,6 +74,7 @@ void ASwordWeaponActor::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* Ot
 
 void ASwordWeaponActor::DamageToTarget(AActor* InTarget)
 {
+    if (!bAttackWindowOpen || !UCombatFunctionLibrary::CanActorAttack(this)) return;
     if (!IsValid(InTarget) || InTarget == GetOwner() || HitActors.Contains(InTarget)) return;
     HitActors.Add(InTarget);
     UCombatFunctionLibrary::ApplyCombatDamage(InTarget, AttackDamage, this, GetInstigatorController(), DamageType);

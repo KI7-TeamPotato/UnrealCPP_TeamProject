@@ -5,10 +5,12 @@
 #include "Item/Weapon/SlashActor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Player/TestCharacter.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 void ARangeSwordWeaponActor::EndAttack()
 {
     Super::EndAttack();
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
 
     if (!SlashActorClass)
         return;

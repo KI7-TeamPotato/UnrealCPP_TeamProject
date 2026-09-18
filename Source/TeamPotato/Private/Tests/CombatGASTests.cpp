@@ -14,10 +14,26 @@
 #include "TimerManager.h"
 #include "Item/Weapon/SwordWeaponActor.h"
 #include "Data/WeaponDataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include <limits>
 
 namespace
 {
+    UCombatStatusDefinition* MakeStatus(ECombatStatus Type, float Damage = 5.0f)
+    {
+        auto* Definition = NewObject<UCombatStatusDefinition>();
+        Definition->Status = Type;
+        Definition->DamagePerTick = Damage;
+        if (Type == ECombatStatus::Poison)
+        {
+            Definition->DamageEffect = UCombatPoisonEffect::StaticClass();
+            Definition->PoisonSlowEffect = UCombatPoisonSlowEffect::StaticClass();
+        }
+        else if (Type == ECombatStatus::Fire) Definition->DamageEffect = UCombatFireEffect::StaticClass();
+        else Definition->DamageEffect = UCombatElectricEffect::StaticClass();
+        return Definition;
+    }
+
     struct FCombatTestWorld
     {
         UWorld* World;
@@ -45,6 +61,14 @@ namespace
             Actor->AddInstanceComponent(ASC);
             ASC->RegisterComponent();
             ASC->InitializeCombat(Health, Invincibility);
+            return ASC;
+        }
+
+        UCombatAbilitySystemComponent* SpawnPlayerCombatant(float Health = 100.0f)
+        {
+            ATestCharacter* Player = World->SpawnActor<ATestCharacter>();
+            auto* ASC = CastChecked<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
+            ASC->SetMaxHealthAndFill(Health);
             return ASC;
         }
 
@@ -280,6 +304,190 @@ bool FCombatEffectDurationTest::RunTest(const FString& Parameters)
     Target->ApplyHitInvincibility();
     Fixture.Advance(0.3f);
     TestFalse(TEXT("Character duration override remains supported"), Target->HasMatchingGameplayTag(CombatTags::State_Invincible));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatElementsTest, "TeamPotato.Combat.GAS.Status.CoexistenceAndInvincibility",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatElementsTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* Source = Fixture.SpawnCombatant();
+    auto* Target = Fixture.SpawnPlayerCombatant(1000.0f);
+    int32 NormalHits = 0;
+    int32 Ticks = 0;
+    Target->OnCombatDamageReceived.AddLambda([&](float, const FGameplayEffectContextHandle&) { ++NormalHits; });
+    Target->OnCombatPeriodicDamageReceived.AddLambda([&](float, const FGameplayEffectContextHandle& Context)
+    {
+        ++Ticks;
+        TestTrue(TEXT("DOT retains attacker"), Context.GetOriginalInstigator() == Source->GetOwner());
+    });
+    for (ECombatStatus Type : {ECombatStatus::Poison, ECombatStatus::Fire, ECombatStatus::Electric})
+        TestTrue(TEXT("Status applies"), UCombatFunctionLibrary::ApplyCombatStatus(Target->GetOwner(), MakeStatus(Type), Source->GetOwner()));
+    TestEqual(TEXT("No immediate tick"), Target->GetHealth(), 1000.0f);
+    TestFalse(TEXT("Electric blocks attacks"), Target->CanAttack());
+    Target->BeginDodgeInvincibility();
+    Fixture.Advance(1.2f);
+    TestEqual(TEXT("All three tick during dodge"), Target->GetHealth(), 985.0f);
+    TestEqual(TEXT("No normal hit reactions from DOT"), NormalHits, 0);
+    TestEqual(TEXT("One tick per element"), Ticks, 3);
+    Target->EndDodgeInvincibility();
+    TestFalse(TEXT("DOT does not grant hit invincibility"), Target->HasMatchingGameplayTag(CombatTags::State_Invincible));
+    Target->RemoveAllStatuses();
+    TestTrue(TEXT("Cleansing restores attack"), Target->CanAttack());
+    TestFalse(TEXT("Cleansing removes poison"), Target->HasMatchingGameplayTag(CombatTags::State_Poison));
+    Fixture.Advance(1.2f);
+    TestEqual(TEXT("No damage after cleanse"), Target->GetHealth(), 985.0f);
+    Target->BeginDodgeInvincibility();
+    TestFalse(TEXT("Dodge blocks new standalone status"), UCombatFunctionLibrary::ApplyCombatStatus(Target->GetOwner(), MakeStatus(ECombatStatus::Fire), Source->GetOwner()));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatStatusRefreshTest, "TeamPotato.Combat.GAS.Status.RefreshAndExpiry",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatStatusRefreshTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* Source = Fixture.SpawnCombatant();
+    auto* OtherSource = Fixture.SpawnCombatant();
+    auto* Target = Fixture.SpawnPlayerCombatant(1000.0f);
+    AActor* LastSource = nullptr;
+    Target->OnCombatPeriodicDamageReceived.AddLambda([&](float, const FGameplayEffectContextHandle& Context) { LastSource = Context.GetOriginalInstigator(); });
+    UCombatFunctionLibrary::ApplyCombatStatus(Target->GetOwner(), MakeStatus(ECombatStatus::Poison), Source->GetOwner());
+    Fixture.Advance(0.7f);
+    TestTrue(TEXT("Same type refresh succeeds"), UCombatFunctionLibrary::ApplyCombatStatus(Target->GetOwner(), MakeStatus(ECombatStatus::Poison, 9.0f), OtherSource->GetOwner()));
+    Fixture.Advance(0.45f);
+    TestEqual(TEXT("Refresh preserves next tick, replaces magnitude, does not stack"), Target->GetHealth(), 991.0f);
+    TestTrue(TEXT("Latest source owns refreshed DOT"), LastSource == OtherSource->GetOwner());
+    TestEqual(TEXT("Slow is not multiplied twice"), Target->GetNumericAttribute(UCombatAttributeSet::GetMoveSpeedMultiplierAttribute()), 0.7f);
+    Fixture.Advance(4.1f);
+    TestTrue(TEXT("Refresh extends lifetime beyond original duration"), Target->HasStatus(ECombatStatus::Poison));
+    Fixture.Advance(0.8f);
+    TestFalse(TEXT("DOT expires"), Target->HasStatus(ECombatStatus::Poison));
+    TestEqual(TEXT("Poison expiry removes linked slow"), Target->GetNumericAttribute(UCombatAttributeSet::GetMoveSpeedMultiplierAttribute()), 1.0f);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatStatusMovementTest, "TeamPotato.Combat.GAS.Status.MovementAndAttackGate",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatStatusMovementTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* Player = Fixture.World->SpawnActor<ATestCharacter>();
+    auto* ASC = CastChecked<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
+    auto* Target = Fixture.SpawnCombatant();
+    ASC->SetBaseMoveSpeed(600.0f);
+    UCombatFunctionLibrary::ApplyCombatStatus(Player, MakeStatus(ECombatStatus::Poison), Target->GetOwner());
+    TestEqual(TEXT("Poison affects actual movement"), Player->GetCharacterMovement()->MaxWalkSpeed, 420.0f);
+    Player->AddMoveSpeed(200.0f);
+    TestEqual(TEXT("Base speed upgrades survive poison"), Player->GetCharacterMovement()->MaxWalkSpeed, 560.0f);
+    ASC->RemoveStatus(ECombatStatus::Poison);
+    TestEqual(TEXT("Cleanse restores upgraded speed"), Player->GetCharacterMovement()->MaxWalkSpeed, 800.0f);
+
+    auto* Sword = Fixture.World->SpawnActor<ASwordWeaponActor>();
+    Sword->SetOwner(Player);
+    auto* WeaponData = NewObject<UWeaponDataAsset>();
+    WeaponData->AttackDamage = 10.0f;
+    Sword->InitializeFromData(WeaponData);
+    Sword->BeginAttack();
+    UCombatFunctionLibrary::ApplyCombatStatus(Player, MakeStatus(ECombatStatus::Electric), Target->GetOwner());
+    TestFalse(TEXT("Public attack gate rejects shocked player"), UCombatFunctionLibrary::CanActorAttack(Player));
+    TestEqual(TEXT("Character-source damage cannot bypass shock"), UCombatFunctionLibrary::ApplyCombatDamage(Target->GetOwner(), 10.0f, Player), 0.0f);
+    Sword->AttachToActor(Player, FAttachmentTransformRules::KeepWorldTransform);
+    TestEqual(TEXT("Attached weapon damage cannot bypass shock"), UCombatFunctionLibrary::ApplyCombatDamage(Target->GetOwner(), 10.0f, Sword), 0.0f);
+    Sword->DamageToTarget(Target->GetOwner());
+    TestEqual(TEXT("An already-open melee window cannot damage during shock"), Target->GetHealth(), 100.0f);
+    TestEqual(TEXT("Electric does not slow movement"), Player->GetCharacterMovement()->MaxWalkSpeed, 800.0f);
+    auto* Projectile = Fixture.World->SpawnActor<AActor>();
+    Projectile->SetOwner(Player);
+    TestEqual(TEXT("Already-fired projectile still hits while owner is shocked"), UCombatFunctionLibrary::ApplyCombatDamage(Target->GetOwner(), 7.0f, Projectile), 7.0f);
+    ASC->RemoveStatus(ECombatStatus::Electric);
+    Sword->BeginAttack();
+    Sword->DamageToTarget(Target->GetOwner());
+    TestEqual(TEXT("Attacks resume after shock cleanse"), Target->GetHealth(), 83.0f);
+
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatStatusDeathTest, "TeamPotato.Combat.GAS.Status.OnHitDeathAndValidation",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatStatusDeathTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* Source = Fixture.SpawnCombatant();
+    auto* Target = Fixture.SpawnPlayerCombatant(20.0f);
+    TArray<UCombatStatusDefinition*> Statuses = {MakeStatus(ECombatStatus::Poison, 15.0f), MakeStatus(ECombatStatus::Electric, 15.0f)};
+    int32 DeathCount = 0;
+    Target->OnCombatDeath.AddLambda([&]() { ++DeathCount; });
+    TestEqual(TEXT("Combined hit damages"), UCombatFunctionLibrary::ApplyCombatDamageWithStatuses(Target->GetOwner(), 5.0f, Source->GetOwner(), Statuses), 5.0f);
+    TestTrue(TEXT("On-hit status not blocked by invincibility caused by its own hit"), Target->HasStatus(ECombatStatus::Poison));
+    Target->BeginDodgeInvincibility();
+    Fixture.Advance(1.2f);
+    TestTrue(TEXT("DOT can kill through existing hit invincibility"), Target->IsDead());
+    TestEqual(TEXT("Death once"), DeathCount, 1);
+    TestFalse(TEXT("Death removes statuses"), Target->HasStatus(ECombatStatus::Poison));
+    TestFalse(TEXT("Death removes attack block tag"), Target->HasMatchingGameplayTag(CombatTags::State_AttackBlocked));
+    TestEqual(TEXT("Death removes slow"), Target->GetNumericAttribute(UCombatAttributeSet::GetMoveSpeedMultiplierAttribute()), 1.0f);
+    TestFalse(TEXT("Death still blocks attacks"), Target->CanAttack());
+    Fixture.Advance(1.2f);
+    TestEqual(TEXT("No repeated deaths"), DeathCount, 1);
+
+    auto* Invalid = MakeStatus(ECombatStatus::Fire);
+    Invalid->DamageEffect = UCombatDamageEffect::StaticClass();
+    auto* LivingPlayer = Fixture.SpawnPlayerCombatant();
+    AddExpectedError(TEXT("Invalid status DOT configuration"), EAutomationExpectedErrorFlags::Contains, 1);
+    TestFalse(TEXT("Invalid instant status GE rejected"), UCombatFunctionLibrary::ApplyCombatStatus(LivingPlayer->GetOwner(), Invalid, nullptr));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatPlayerOnlyStatusTest, "TeamPotato.Combat.GAS.Status.PlayerOnlyTargets",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatPlayerOnlyStatusTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* PlayerASC = Fixture.SpawnPlayerCombatant(1000.0f);
+    auto* Enemy = Fixture.World->SpawnActor<AEnemyCharacter>();
+    auto* Boss = Fixture.World->SpawnActor<ABossBase>();
+    auto* GenericASC = Fixture.SpawnCombatant();
+    auto* EnemyASC = CastChecked<UCombatAbilitySystemComponent>(Enemy->GetAbilitySystemComponent());
+    auto* BossASC = CastChecked<UCombatAbilitySystemComponent>(Boss->GetAbilitySystemComponent());
+    Enemy->UpdateMovementSpeed(400.0f);
+    Boss->UpdateMovementSpeed(500.0f);
+    const float EnemyHealth = EnemyASC->GetHealth();
+    const float BossHealth = BossASC->GetHealth();
+    TestTrue(TEXT("Unpossessed player class is eligible"), PlayerASC->CanReceiveStatuses());
+    for (ECombatStatus Type : {ECombatStatus::Poison, ECombatStatus::Fire, ECombatStatus::Electric})
+    {
+        auto* Definition = MakeStatus(Type);
+        TestTrue(TEXT("Enemy can inflict status on player"), UCombatFunctionLibrary::ApplyCombatStatus(PlayerASC->GetOwner(), Definition, Enemy));
+        for (auto* ASC : {EnemyASC, BossASC, GenericASC})
+        {
+            TestFalse(TEXT("Non-player is not eligible"), ASC->CanReceiveStatuses());
+            TestFalse(TEXT("Public node rejects non-player"), UCombatFunctionLibrary::ApplyCombatStatus(ASC->GetOwner(), Definition, PlayerASC->GetOwner()));
+            TestFalse(TEXT("Direct ASC call also rejects non-player"), ASC->ApplyStatus(Definition, PlayerASC->MakeEffectContext()));
+            auto Spec = PlayerASC->MakeOutgoingSpec(Definition->DamageEffect, 1.0f, PlayerASC->MakeEffectContext());
+            Spec.Data->SetSetByCallerMagnitude(CombatTags::Data_Damage, 10.0f);
+            TestFalse(TEXT("Native GE template also requires player tag"), ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get()).IsValid());
+        }
+    }
+    Fixture.Advance(1.2f);
+    TestEqual(TEXT("Player receives all three DOTs"), PlayerASC->GetHealth(), 985.0f);
+    TestEqual(TEXT("Enemy takes no status damage"), EnemyASC->GetHealth(), EnemyHealth);
+    TestEqual(TEXT("Boss takes no status damage"), BossASC->GetHealth(), BossHealth);
+    TestEqual(TEXT("Enemy speed untouched"), Enemy->GetCharacterMovement()->MaxWalkSpeed, 400.0f);
+    TestEqual(TEXT("Boss speed untouched"), Boss->GetCharacterMovement()->MaxWalkSpeed, 500.0f);
+    TestTrue(TEXT("Enemy attack unaffected"), EnemyASC->CanAttack());
+    TestTrue(TEXT("Boss attack unaffected"), BossASC->CanAttack());
+    PlayerASC->RemoveAllStatuses();
+    const TArray<UCombatStatusDefinition*> Statuses = {MakeStatus(ECombatStatus::Poison)};
+    TestEqual(TEXT("Combined hit retains ordinary damage to enemy"), UCombatFunctionLibrary::ApplyCombatDamageWithStatuses(Enemy, 5.0f, PlayerASC->GetOwner(), Statuses), 5.0f);
+    TestFalse(TEXT("Combined hit does not inflict poison on enemy"), EnemyASC->HasStatus(ECombatStatus::Poison));
+    TestEqual(TEXT("Legacy boss damage unchanged"), UGameplayStatics::ApplyDamage(Boss, 5.0f, nullptr, PlayerASC->GetOwner(), nullptr), 5.0f);
     return true;
 }
 

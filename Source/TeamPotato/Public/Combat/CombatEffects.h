@@ -71,3 +71,27 @@ class TEAMPOTATO_API UCombatDeadEffect : public UCombatGameplayEffect
 public:
     UCombatDeadEffect();
 };
+
+// Editor templates: derive GE_PoisonDOT/GE_BurnDOT/GE_ShockDOT from these.
+UCLASS(Abstract)
+class TEAMPOTATO_API UCombatPeriodicDamageEffect : public UCombatGameplayEffect
+{
+    GENERATED_BODY()
+public:
+    UCombatPeriodicDamageEffect();
+};
+
+UCLASS()
+class TEAMPOTATO_API UCombatPoisonEffect : public UCombatPeriodicDamageEffect { GENERATED_BODY() };
+UCLASS()
+class TEAMPOTATO_API UCombatFireEffect : public UCombatPeriodicDamageEffect { GENERATED_BODY() };
+UCLASS()
+class TEAMPOTATO_API UCombatElectricEffect : public UCombatPeriodicDamageEffect { GENERATED_BODY() };
+
+UCLASS()
+class TEAMPOTATO_API UCombatPoisonSlowEffect : public UCombatGameplayEffect
+{
+    GENERATED_BODY()
+public:
+    UCombatPoisonSlowEffect();
+};

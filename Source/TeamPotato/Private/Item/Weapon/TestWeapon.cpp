@@ -37,6 +37,7 @@ void ATestWeapon::OnWeaponBeginOverlap(AActor* OverlappedActor, AActor* OtherAct
 
 void ATestWeapon::DamageToTarget(AActor* InTarget)
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
 	//UE_LOG(LogTemp, Log, TEXT("오버랩 : %s"),*OtherActor->GetName());
 	float finalDamage = AttackDamage;
 	AController* instigator = nullptr;

@@ -73,6 +73,7 @@ void ATestCharacter::PostInitializeComponents()
     CombatAbilitySystem->OnCombatDeath.AddUObject(this, &ATestCharacter::KillPlayer);
     CombatAbilitySystem->OnCombatDamageReceived.AddUObject(this, &ATestCharacter::HandleCombatDamage);
     CombatAbilitySystem->InitializeCombat(100.0f, OnHitInvincibleTime);
+    CombatAbilitySystem->OnCombatAttackBlocked.AddUObject(this, &ThisClass::HandleAttackBlocked);
 }
 
 float ATestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -135,7 +136,7 @@ void ATestCharacter::BeginPlay()
     // 캐릭터 서브시스템에서 무기 정보를 가져와서 무기 컴포넌트에 설정
     if (CharacterSubsystem)
     {
-        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
+        CharacterSubsystem->SetWalkSpeed(CombatAbilitySystem->GetBaseMoveSpeed());
         WeaponComponent->InitializeBaseWeapon(CharacterSubsystem->GetEquippedMainWeapon());
         WeaponComponent->PickupWeapon(CharacterSubsystem->GetEquippedSubWeapon());
     }
@@ -185,7 +186,7 @@ void ATestCharacter::InitializeCharacterStat()
             FPlayerSaveData CurrentPlayerData = CharacterSubsystem->GetCurrentPlayerData();
             ResourceManager->SetMaxHealth(CurrentPlayerData.MaxHealth);
             ResourceManager->SetMaxEnergy(CurrentPlayerData.MaxEnergy);
-            MovementComponent->MaxWalkSpeed = CurrentPlayerData.WalkSpeed;
+            CombatAbilitySystem->SetBaseMoveSpeed(CurrentPlayerData.WalkSpeed);
         }
     }
 }
@@ -277,11 +278,13 @@ void ATestCharacter::InvincibleDeactivate()
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
+    if (!CombatAbilitySystem->CanAttack()) return;
     PlayAnimMontage(AttackMontage_Sword_Combo1, AttackSpeed);
 }
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
+    if (!CombatAbilitySystem->CanAttack()) return;
     if (!IsValid(WeaponComponent))
 	{
 		return;
@@ -298,6 +301,7 @@ void ATestCharacter::PlaySwordAttackMontage_Combo()
 
 void ATestCharacter::PlayGunShootingMontage()
 {
+    if (!CombatAbilitySystem->CanAttack()) return;
     PlayAnimMontage(AttackMontage_Gun);
 }
 
@@ -446,6 +450,7 @@ void ATestCharacter::OnVerticalSightInput(const FInputActionValue& InValue)
 
 void ATestCharacter::OnAttack(bool bIsAutoFiring)
 {
+    if (!CombatAbilitySystem->CanAttack()) { OnAttackCompleted(); return; }
 	if (!IsValid(WeaponComponent) || !GetWorld())
 	{
 		return;
@@ -504,6 +509,7 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
 
 void ATestCharacter::OnAttackStarted()
 {
+    if (!CombatAbilitySystem->CanAttack()) return;
     // 이미 공격 타이머가 작동 중이라면 중복 실행 방지
     if (GetWorldTimerManager().IsTimerActive(AttackTimerHandle)) return;
 
@@ -541,6 +547,19 @@ void ATestCharacter::OnAttackStarted()
 void ATestCharacter::OnAttackCompleted()
 {
     GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+}
+
+void ATestCharacter::HandleAttackBlocked()
+{
+    OnAttackCompleted();
+    bIsOnComboInput = false;
+    bIsComboInputAvailable = false;
+    bIsOnAttacking = false;
+    if (WeaponComponent)
+        if (AWeaponBase* Weapon = WeaponComponent->GetActivateWeapon()) Weapon->CancelAttack();
+    if (AttackMontage_Sword_Combo1) StopAnimMontage(AttackMontage_Sword_Combo1);
+    if (AttackMontage_Sword_Combo2) StopAnimMontage(AttackMontage_Sword_Combo2);
+    if (AttackMontage_Gun) StopAnimMontage(AttackMontage_Gun);
 }
 
 void ATestCharacter::OnSkillInput()
@@ -642,11 +661,11 @@ void ATestCharacter::AddMaxEnergy(float InMaxEnergy)
 
 void ATestCharacter::AddMoveSpeed(float InMoveSpeed)
 {
-    MovementComponent->MaxWalkSpeed += InMoveSpeed;
+    CombatAbilitySystem->SetBaseMoveSpeed(CombatAbilitySystem->GetBaseMoveSpeed() + InMoveSpeed);
 
     if (CharacterSubsystem)
     {
-        CharacterSubsystem->SetWalkSpeed(MovementComponent->MaxWalkSpeed);
+        CharacterSubsystem->SetWalkSpeed(CombatAbilitySystem->GetBaseMoveSpeed());
     }
 }
 

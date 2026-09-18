@@ -27,6 +27,10 @@ public:
     FGameplayAttributeData MaxHealth;
     COMBAT_ATTRIBUTE_ACCESSORS(MaxHealth)
 
+    UPROPERTY(BlueprintReadOnly, Category = "Combat")
+    FGameplayAttributeData MoveSpeedMultiplier;
+    COMBAT_ATTRIBUTE_ACCESSORS(MoveSpeedMultiplier)
+
     // A transient, positive damage amount. Consumed and reset for every execution.
     UPROPERTY()
     FGameplayAttributeData IncomingDamage;

@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/TestCharacter.h"
 #include "NiagaraComponent.h"
+#include "Combat/CombatFunctionLibrary.h"
 
 // Sets default values
 AGunWeaponActor::AGunWeaponActor()
@@ -27,6 +28,7 @@ AGunWeaponActor::AGunWeaponActor()
 
 void AGunWeaponActor::Attack(ATestCharacter* OwningPlayer)
 {
+    if (!UCombatFunctionLibrary::CanActorAttack(this)) return;
     Super::Attack(OwningPlayer);
 
 	// 오류 검사

@@ -204,6 +204,7 @@ protected:
 
 private:
     void HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
+    void HandleAttackBlocked();
     //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)
     UFUNCTION()
     bool IsActionAvailable();
