@@ -8,11 +8,13 @@
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "TestCharacter.generated.h"
 
 class AWeaponPickupActor;
 class AWeaponBoxActor;
 class UCombatAbilitySystemComponent;
+class UGameplayAbility;
 struct FGameplayEffectContextHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerKilled);
@@ -27,6 +29,11 @@ public:
     ATestCharacter();
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+    virtual void PossessedBy(AController* NewController) override;
+
+    // Activates the skill configured on this character BP; GA handles cost/cooldown and effects.
+    UFUNCTION(BlueprintCallable, Category = "Combat|Skill")
+    bool TryUseCharacterSkill();
 
 protected:
     virtual void PostInitializeComponents() override;
@@ -149,6 +156,10 @@ public:
     void PlayerAttack();
 
 protected:
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
+    TSubclassOf<UGameplayAbility> SkillAbilityClass;
+
     // 앞뒤양옆으로 움직이는 함수
     UFUNCTION()
     void OnMovementInput(const FInputActionValue& InValue);
@@ -203,6 +214,8 @@ protected:
     void InitializeCharacterStat();
 
 private:
+    FGameplayAbilitySpecHandle SkillAbilityHandle;
+
     void HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
     void HandleAttackBlocked();
     //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)

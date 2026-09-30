@@ -57,8 +57,18 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 
     if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
     {
-        const float Damage = GetIncomingDamage();
+        float Damage = GetIncomingDamage();
         SetIncomingDamage(0.0f);
+
+        static const FGameplayTag DamageReductionTag =
+            FGameplayTag::RequestGameplayTag(
+                FName(TEXT("State.DamageReduction")));
+
+        if (ASC->HasMatchingGameplayTag(DamageReductionTag))
+        {
+            Damage *= 0.7f; // 받는 피해 30% 감소
+        }
+
         const float PreviousHealth = GetHealth();
         SetHealth(FMath::Clamp(PreviousHealth - Damage, 0.0f, GetMaxHealth()));
         FGameplayTagContainer Tags;

@@ -15,6 +15,9 @@
 #include "Item/Weapon/SwordWeaponActor.h"
 #include "Data/WeaponDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Abilities/GameplayAbility.h"
+#include "UObject/UnrealType.h"
 #include <limits>
 
 namespace
@@ -488,6 +491,53 @@ bool FCombatPlayerOnlyStatusTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Combined hit retains ordinary damage to enemy"), UCombatFunctionLibrary::ApplyCombatDamageWithStatuses(Enemy, 5.0f, PlayerASC->GetOwner(), Statuses), 5.0f);
     TestFalse(TEXT("Combined hit does not inflict poison on enemy"), EnemyASC->HasStatus(ECombatStatus::Poison));
     TestEqual(TEXT("Legacy boss damage unchanged"), UGameplayStatics::ApplyDamage(Boss, 5.0f, nullptr, PlayerASC->GetOwner(), nullptr), 5.0f);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FCombatCharacterSkillTest, "TeamPotato.Combat.GAS.CharacterSkill",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FCombatCharacterSkillTest::RunTest(const FString& Parameters)
+{
+    FCombatTestWorld Fixture;
+    auto* Unconfigured = Fixture.World->SpawnActor<ATestCharacter>();
+    TestFalse(TEXT("Unset skill safely does nothing"), Unconfigured->TryUseCharacterSkill());
+
+    auto* SkillProperty = FindFProperty<FClassProperty>(ATestCharacter::StaticClass(), TEXT("SkillAbilityClass"));
+    if (!TestNotNull(TEXT("Skill class is exposed for character BP defaults"), SkillProperty)) return false;
+    TestTrue(TEXT("Skill class is editable on defaults only"),
+        SkillProperty->HasAllPropertyFlags(CPF_Edit | CPF_DisableEditOnInstance));
+
+    // Deferred construction supplies the class just like a character BP's serialized defaults.
+    auto* Player = Fixture.World->SpawnActorDeferred<ATestCharacter>(ATestCharacter::StaticClass(),
+        FTransform(FVector(500.0f, 0.0f, 0.0f)), nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+    if (!TestNotNull(TEXT("Deferred player spawned"), Player)) return false;
+    SkillProperty->SetObjectPropertyValue_InContainer(Player, UGameplayAbility::StaticClass());
+    Player->FinishSpawning(FTransform(FVector(500.0f, 0.0f, 0.0f)));
+    auto* ASC = CastChecked<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
+    TestEqual(TEXT("Configured skill granted exactly once"), ASC->GetActivatableAbilities().Num(), 1);
+    auto* Spec = ASC->FindAbilitySpecFromClass(UGameplayAbility::StaticClass());
+    if (!TestNotNull(TEXT("Configured class was granted"), Spec)) return false;
+    const FGameplayAbilitySpecHandle Handle = Spec->Handle;
+    TestTrue(TEXT("Skill source is its character"), Spec->SourceObject.Get() == Player);
+
+    auto* Controller = Fixture.World->SpawnActor<APlayerController>();
+    Controller->Possess(Player);
+    TestTrue(TEXT("GAS sees controller after spawn-then-possess"), ASC->AbilityActorInfo->PlayerController.Get() == Controller);
+    TestEqual(TEXT("Possession does not duplicate the skill"), ASC->GetActivatableAbilities().Num(), 1);
+    // The native base GA stays active, testing the input bridge independently of a skill effect.
+    TestTrue(TEXT("Configured skill activates without requiring a weapon"), Player->TryUseCharacterSkill());
+    TestTrue(TEXT("Skill becomes active"), ASC->FindAbilitySpecFromHandle(Handle)->IsActive());
+    TestFalse(TEXT("Repeated input cannot overlap the same skill"), Player->TryUseCharacterSkill());
+    ASC->CancelAbilityHandle(Handle);
+    TestTrue(TEXT("Ended skill can be used again"), Player->TryUseCharacterSkill());
+
+    ASC->MarkDead();
+    TestFalse(TEXT("Death cancels active skill"), ASC->FindAbilitySpecFromHandle(Handle)->IsActive());
+    TestFalse(TEXT("Dead player cannot use skill"), Player->TryUseCharacterSkill());
+    auto* Replacement = Fixture.World->SpawnActor<ATestCharacter>();
+    Controller->Possess(Replacement);
+    TestFalse(TEXT("Replacement does not inherit the previous character's skill"), Replacement->TryUseCharacterSkill());
     return true;
 }
 

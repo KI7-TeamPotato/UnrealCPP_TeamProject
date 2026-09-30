@@ -13,4 +13,7 @@ namespace CombatTags
     UE_DEFINE_GAMEPLAY_TAG(State_Fire, "State.Debuff.Burning");
     UE_DEFINE_GAMEPLAY_TAG(State_Electric, "State.Debuff.Shocked");
     UE_DEFINE_GAMEPLAY_TAG(State_AttackBlocked, "State.AttackBlocked");
+    UE_DEFINE_GAMEPLAY_TAG(State_DamageReduction, "State.DamageReduction");
+    UE_DEFINE_GAMEPLAY_TAG(GameplayCue_KnightBuff, "GameplayCue.KnightBuff");
+    UE_DEFINE_GAMEPLAY_TAG(Cooldown_KnightBuffCoolDown, "Cooldown.KnightBuffCoolDown");
 }

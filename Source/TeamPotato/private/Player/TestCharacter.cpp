@@ -20,6 +20,7 @@
 #include "Subsystem/GameStateSubsystem.h"
 #include "Combat/CombatAbilitySystemComponent.h"
 #include "Combat/CombatFunctionLibrary.h"
+#include "Abilities/GameplayAbility.h"
 #include "Engine/DamageEvents.h"
 
 
@@ -74,6 +75,21 @@ void ATestCharacter::PostInitializeComponents()
     CombatAbilitySystem->OnCombatDamageReceived.AddUObject(this, &ATestCharacter::HandleCombatDamage);
     CombatAbilitySystem->InitializeCombat(100.0f, OnHitInvincibleTime);
     CombatAbilitySystem->OnCombatAttackBlocked.AddUObject(this, &ThisClass::HandleAttackBlocked);
+
+    if (HasAuthority() && SkillAbilityClass && !SkillAbilityHandle.IsValid())
+    {
+        SkillAbilityHandle = CombatAbilitySystem->GiveAbility(FGameplayAbilitySpec(SkillAbilityClass, 1, INDEX_NONE, this));
+    }
+}
+
+void ATestCharacter::PossessedBy(AController* NewController)
+{
+    Super::PossessedBy(NewController);
+    // Character switching spawns the pawn before possession; update GAS's cached controller.
+    if (CombatAbilitySystem && CombatAbilitySystem->IsCombatInitialized())
+    {
+        CombatAbilitySystem->RefreshAbilityActorInfo();
+    }
 }
 
 float ATestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -148,6 +164,13 @@ void ATestCharacter::BeginPlay()
 
 void ATestCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    if (HasAuthority() && CombatAbilitySystem && SkillAbilityHandle.IsValid())
+    {
+        // ClearAbility also ends active instances and their ability tasks on character removal.
+        const FGameplayAbilitySpecHandle HandleToRemove = SkillAbilityHandle;
+        SkillAbilityHandle = FGameplayAbilitySpecHandle();
+        CombatAbilitySystem->ClearAbility(HandleToRemove);
+    }
     Super::EndPlay(EndPlayReason);
 }
 
@@ -564,7 +587,24 @@ void ATestCharacter::HandleAttackBlocked()
 
 void ATestCharacter::OnSkillInput()
 {
-    UE_LOG(LogTemp, Log, TEXT("Player Skill Active"));
+    TryUseCharacterSkill();
+}
+
+bool ATestCharacter::TryUseCharacterSkill()
+{
+    // The current combat system is authority-only (single player).
+    if (!HasAuthority() || IsActorBeingDestroyed() || !CombatAbilitySystem ||
+        !CombatAbilitySystem->IsCombatInitialized() || CombatAbilitySystem->IsDead() ||
+        !SkillAbilityHandle.IsValid())
+    {
+        return false;
+    }
+
+    const FGameplayAbilitySpec* SkillSpec = CombatAbilitySystem->FindAbilitySpecFromHandle(SkillAbilityHandle);
+    if (!SkillSpec || SkillSpec->IsActive()) return false;
+
+    // Let each GA decide its own blocked tags, cooldown and cost; buffs need not require a weapon.
+    return CombatAbilitySystem->TryActivateAbility(SkillAbilityHandle, false);
 }
 
 void ATestCharacter::OnInteract()
