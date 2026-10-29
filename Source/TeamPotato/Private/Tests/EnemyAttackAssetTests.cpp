@@ -3,11 +3,14 @@
 #include "Misc/AutomationTest.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "Combat/CombatAbilitySystemComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Enemy/EnemyCharacter.h"
+#include "Enemy/EliteEnemy.h"
+#include "Enemy/EnemyAxe.h"
 #include "Enemy/EnemyWeaponBase.h"
 #include "Enemy/ArcherEnemy.h"
 #include "Enemy/BulletBase.h"
@@ -129,6 +132,59 @@ bool FNewEnemyAttackAssetsTest::RunTest(const FString& Parameters)
             TestEqual(FString(Name) + TEXT(" attack end disables collision"), HitCapsule->GetCollisionEnabled(), ECollisionEnabled::NoCollision);
         }
     }
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGolemSpecialAttackTest, "TeamPotato.Combat.Enemy.GolemSpecialThrow",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FGolemSpecialAttackTest::RunTest(const FString& Parameters)
+{
+    FEnemyAttackWorld Fixture;
+    UClass* Class = LoadClass<AEliteEnemy>(nullptr, TEXT("/Game/Enemy/Blueprint/BP_EliteEnemy.BP_EliteEnemy_C"));
+    if (!TestNotNull(TEXT("Golem Blueprint loads"), Class)) return false;
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    auto* Enemy = Fixture.World->SpawnActor<AEliteEnemy>(Class, FVector(0, 0, 100), FRotator::ZeroRotator, Params);
+    auto* Player = Fixture.World->SpawnActor<ATestCharacter>(FVector(600, 0, 100), FRotator::ZeroRotator, Params);
+    Fixture.World->SpawnActor<APlayerController>()->Possess(Player);
+    Enemy->WieldWeapon();
+    auto* Axe = Cast<AEnemyAxe>(Enemy->CurrentWeapon);
+    if (!TestNotNull(TEXT("Golem equips throwable axe"), Axe)) return false;
+    Axe->DispatchBeginPlay();
+    Fixture.World->SetBegunPlay(true);
+
+    // Use the same entry point as BTT_Grab; inspect the montage that actually starts.
+    Enemy->GrabAttack();
+    auto* Montage = Enemy->GetCurrentMontage();
+    if (!TestNotNull(TEXT("AI special attack starts a montage"), Montage)) return false;
+    UAnimNotify* ThrowNotify = nullptr;
+    for (const FAnimNotifyEvent& Event : Montage->Notifies)
+    {
+        if (Event.Notify && Event.Notify->GetClass()->GetName() == TEXT("AN_AxeNotify_C")) ThrowNotify = Event.Notify;
+        TestFalse(TEXT("Special throw does not enable a second melee damage capsule"),
+            Event.NotifyStateClass && Event.NotifyStateClass->GetClass()->GetName() == TEXT("ANS_EnemyNotify_Elite_C"));
+    }
+    if (!TestNotNull(TEXT("Special montage has the axe release notify"), ThrowNotify)) return false;
+    const FVector Origin = Axe->GetActorLocation();
+    auto* PlayerASC = Cast<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
+    const float Health = PlayerASC->GetHealth();
+    ThrowNotify->Notify(Enemy->GetMesh(), Montage, FAnimNotifyEventReference());
+    TestNull(TEXT("Release notify detaches axe from hand"), Axe->GetAttachParentActor());
+
+    // Run just the thrown weapon: no level, AI or player BeginPlay dependencies are needed.
+    AActor* ThrownActor = Axe;
+    bool bCaughtPlayer = false;
+    for (int32 Frame = 0; Frame < 300 && !Axe->GetAttachParentActor(); ++Frame)
+    {
+        ThrownActor->Tick(0.01f);
+        bCaughtPlayer |= Player->GetCharacterMovement()->MovementMode == MOVE_None;
+    }
+    TestTrue(TEXT("Axe actually travels from the release position"), !Axe->GetActorLocation().Equals(Origin) || bCaughtPlayer);
+    TestTrue(TEXT("Thrown axe reduces player GAS health"), PlayerASC->GetHealth() < Health);
+    TestTrue(TEXT("Axe grabs the successfully hit player"), bCaughtPlayer);
+    TestTrue(TEXT("Axe returns to its owner"), Axe->GetAttachParentActor() == Enemy);
+    TestEqual(TEXT("Player movement restored after return"), Player->GetCharacterMovement()->MovementMode.GetValue(), MOVE_Walking);
     return true;
 }
 
