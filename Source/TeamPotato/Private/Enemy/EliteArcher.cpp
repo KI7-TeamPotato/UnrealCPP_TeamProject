@@ -12,6 +12,7 @@
 
 AEliteArcher::AEliteArcher()
 {
+    RangedMovementSpeed = 300.0f;
 }
 
 float AEliteArcher::SetMovementSpeed_Implementation(EEnemySpeed State)

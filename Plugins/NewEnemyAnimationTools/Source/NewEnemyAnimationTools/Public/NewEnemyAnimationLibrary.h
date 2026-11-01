@@ -7,8 +7,10 @@
 class UAnimBlueprint;
 class UBlueprint;
 class UAnimMontage;
-class UBlueprint;
 class USkeletalMesh;
+class UBehaviorTree;
+class UBTTaskNode;
+class UBlackboardData;
 
 /** Editor helper only. Generated ABPs do not reference this plugin. */
 UCLASS()
@@ -26,4 +28,8 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
     static bool SetMontageSlot(UAnimMontage* Montage, FName SlotName);
+
+    // Replace the CombatState branch in both the runtime tree and its editable graph.
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static bool ReplaceRangedCombatBranch(UBehaviorTree* Tree, TSubclassOf<UBTTaskNode> TaskClass, UBlackboardData* Blackboard);
 };
