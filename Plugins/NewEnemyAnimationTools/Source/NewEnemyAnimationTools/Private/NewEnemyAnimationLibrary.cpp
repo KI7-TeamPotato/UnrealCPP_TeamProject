@@ -18,6 +18,36 @@
 #include "K2Node_DynamicCast.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "UObject/UnrealType.h"
+#include "MaterialEditingLibrary.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialExpressionSetMaterialAttributes.h"
+#include "Materials/MaterialAttributeDefinitionMap.h"
+
+UMaterialExpression* UNewEnemyAnimationLibrary::GetMaterialAttributesInput(UMaterial* Material, FString& OutputName)
+{
+    OutputName = UMaterialEditingLibrary::GetMaterialPropertyInputNodeOutputName(Material, MP_MaterialAttributes);
+    return UMaterialEditingLibrary::GetMaterialPropertyInputNode(Material, MP_MaterialAttributes);
+}
+
+bool UNewEnemyAnimationLibrary::ConnectMaterialAttributes(UMaterial* Material, UMaterialExpression* Expression, const FString& OutputName)
+{
+    return Material && Expression && Expression->GetOuter() == Material &&
+        UMaterialEditingLibrary::ConnectMaterialProperty(Expression, OutputName, MP_MaterialAttributes);
+}
+
+UMaterialExpression* UNewEnemyAnimationLibrary::CreateEmissiveAttributeOverride(UMaterial* Material, int32 X, int32 Y)
+{
+    if (!Material) return nullptr;
+    auto* Expression = Cast<UMaterialExpressionSetMaterialAttributes>(UMaterialEditingLibrary::CreateMaterialExpression(
+        Material, UMaterialExpressionSetMaterialAttributes::StaticClass(), X, Y));
+    if (Expression)
+    {
+        // Initialize the GUID list and its matching input together. Python property edits update them separately.
+        Expression->AttributeSetTypes = {FMaterialAttributeDefinitionMap::GetID(MP_EmissiveColor)};
+        Expression->Inputs.SetNum(2);
+    }
+    return Expression;
+}
 
 bool UNewEnemyAnimationLibrary::ReplaceRangedCombatBranch(UBehaviorTree* Tree,
     TSubclassOf<UBTTaskNode> TaskClass, UBlackboardData* Blackboard)

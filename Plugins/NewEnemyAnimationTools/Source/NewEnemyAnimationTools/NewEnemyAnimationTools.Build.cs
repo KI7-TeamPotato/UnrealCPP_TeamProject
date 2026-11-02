@@ -7,6 +7,6 @@ public class NewEnemyAnimationTools : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine" });
         PrivateDependencyModuleNames.AddRange(new[] { "UnrealEd", "BlueprintGraph", "AnimGraph", "KismetCompiler",
-            "AIModule", "AIGraph", "BehaviorTreeEditor" });
+            "AIModule", "AIGraph", "BehaviorTreeEditor", "MaterialEditor" });
     }
 }

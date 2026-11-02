@@ -11,6 +11,8 @@ class USkeletalMesh;
 class UBehaviorTree;
 class UBTTaskNode;
 class UBlackboardData;
+class UMaterial;
+class UMaterialExpression;
 
 /** Editor helper only. Generated ABPs do not reference this plugin. */
 UCLASS()
@@ -32,4 +34,14 @@ public:
     // Replace the CombatState branch in both the runtime tree and its editable graph.
     UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
     static bool ReplaceRangedCombatBranch(UBehaviorTree* Tree, TSubclassOf<UBTTaskNode> TaskClass, UBlackboardData* Blackboard);
+
+    // MP_MaterialAttributes is hidden from Python's enum, so expose its existing connection explicitly.
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static UMaterialExpression* GetMaterialAttributesInput(UMaterial* Material, FString& OutputName);
+
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static bool ConnectMaterialAttributes(UMaterial* Material, UMaterialExpression* Expression, const FString& OutputName);
+
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static UMaterialExpression* CreateEmissiveAttributeOverride(UMaterial* Material, int32 X, int32 Y);
 };
