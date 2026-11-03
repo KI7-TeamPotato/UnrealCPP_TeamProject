@@ -22,6 +22,98 @@
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionSetMaterialAttributes.h"
 #include "Materials/MaterialAttributeDefinitionMap.h"
+#include "Rendering/SkeletalMeshModel.h"
+#include "Rendering/SkeletalMeshRenderData.h"
+#include "Rendering/SkeletalMeshLODRenderData.h"
+#include "SkeletalMeshTypes.h"
+
+namespace
+{
+    int32 EffectiveSectionMaterial(const USkeletalMesh& Mesh, const FSkeletalMeshLODInfo& Info,
+        const FSkelMeshSection& Section, int32 SectionIndex)
+    {
+        const int32 Material = Info.LODMaterialMap.IsValidIndex(SectionIndex) && Info.LODMaterialMap[SectionIndex] != INDEX_NONE
+            ? Info.LODMaterialMap[SectionIndex] : Section.MaterialIndex;
+        return Mesh.GetMaterials().IsValidIndex(Material) ? Material : INDEX_NONE;
+    }
+}
+
+FString UNewEnemyAnimationLibrary::GetSkeletalMeshSectionSummary(USkeletalMesh* SkeletalMesh)
+{
+    if (!SkeletalMesh || SkeletalMesh->IsCompiling()) return TEXT("error=invalid_or_compiling_mesh\n");
+    const FSkeletalMeshModel* Model = SkeletalMesh->GetImportedModel();
+    if (!Model) return TEXT("error=missing_imported_model\n");
+    const FSkeletalMeshRenderData* Render = SkeletalMesh->GetResourceForRendering();
+    FString Summary;
+    for (int32 LOD = 0; LOD < Model->LODModels.Num(); ++LOD)
+    {
+        const FSkeletalMeshLODModel& LodModel = Model->LODModels[LOD];
+        const FSkeletalMeshLODInfo* Info = SkeletalMesh->GetLODInfo(LOD);
+        for (int32 Index = 0; Index < LodModel.Sections.Num(); ++Index)
+        {
+            const FSkelMeshSection& Section = LodModel.Sections[Index];
+            const FSkelMeshSourceSectionUserData* User = LodModel.UserSectionsData.Find(Section.OriginalDataSectionIndex);
+            const int32 RenderDisabled = Render && Render->LODRenderData.IsValidIndex(LOD) &&
+                Render->LODRenderData[LOD].RenderSections.IsValidIndex(Index)
+                ? int32(Render->LODRenderData[LOD].RenderSections[Index].bDisabled) : -1;
+            Summary += FString::Printf(TEXT("lod=%d section=%d material=%d effective_material=%d disabled=%d source=%d source_disabled=%d chunk_parent=%d render_disabled=%d vertices=%d triangles=%d\n"),
+                LOD, Index, int32(Section.MaterialIndex), Info ? EffectiveSectionMaterial(*SkeletalMesh, *Info, Section, Index) : -1,
+                int32(Section.bDisabled), Section.OriginalDataSectionIndex, User ? int32(User->bDisabled) : -1,
+                Section.ChunkedParentSectionIndex, RenderDisabled, Section.NumVertices, Section.NumTriangles);
+        }
+    }
+    return Summary;
+}
+
+int32 UNewEnemyAnimationLibrary::DisableSkeletalMeshMaterialSections(USkeletalMesh* SkeletalMesh, const TArray<int32>& MaterialSlots)
+{
+    if (!SkeletalMesh || SkeletalMesh->IsCompiling()) return -1;
+    FSkeletalMeshModel* Model = SkeletalMesh->GetImportedModel();
+    if (!Model || Model->LODModels.Num() != SkeletalMesh->GetLODNum()) return -1;
+    for (int32 Slot : MaterialSlots)
+        if (!SkeletalMesh->GetMaterials().IsValidIndex(Slot)) return -1;
+    if (MaterialSlots.IsEmpty()) return 0;
+
+    TArray<FIntPoint> Changes;
+    for (int32 LOD = 0; LOD < Model->LODModels.Num(); ++LOD)
+    {
+        const FSkeletalMeshLODInfo* Info = SkeletalMesh->GetLODInfo(LOD);
+        if (!Info) return -1;
+        const FSkeletalMeshLODModel& LodModel = Model->LODModels[LOD];
+        TSet<int32> Roots;
+        TSet<int32> Sources;
+        for (int32 Index = 0; Index < LodModel.Sections.Num(); ++Index)
+        {
+            const FSkelMeshSection& Section = LodModel.Sections[Index];
+            const int32 Material = EffectiveSectionMaterial(*SkeletalMesh, *Info, Section, Index);
+            if (Material == INDEX_NONE) return -1;
+            if (!MaterialSlots.Contains(Material)) continue;
+            const int32 Root = Section.ChunkedParentSectionIndex == INDEX_NONE ? Index : Section.ChunkedParentSectionIndex;
+            if (!LodModel.Sections.IsValidIndex(Root) || LodModel.Sections[Root].ChunkedParentSectionIndex != INDEX_NONE) return -1;
+            Roots.Add(Root);
+            Sources.Add(Section.OriginalDataSectionIndex);
+            Sources.Add(LodModel.Sections[Root].OriginalDataSectionIndex);
+        }
+        for (int32 Index = 0; Index < LodModel.Sections.Num(); ++Index)
+        {
+            const FSkelMeshSection& Section = LodModel.Sections[Index];
+            if (!Roots.Contains(Index) && !Roots.Contains(Section.ChunkedParentSectionIndex) &&
+                !Sources.Contains(Section.OriginalDataSectionIndex)) continue;
+            const FSkelMeshSourceSectionUserData* User = LodModel.UserSectionsData.Find(Section.OriginalDataSectionIndex);
+            // RemoveMeshSection uses FindChecked and refuses sections with clothing bindings.
+            if (Section.OriginalDataSectionIndex < 0 || !User || User->HasClothingData() || Section.HasClothingData()) return -1;
+            if (!Section.bDisabled || !User->bDisabled) Changes.Emplace(LOD, Index);
+        }
+    }
+    if (Changes.IsEmpty()) return 0;
+
+    // Prevalidation above finishes before any edit. Nested RemoveMeshSection scopes rebuild only once.
+    {
+        FScopedSkeletalMeshPostEditChange Scope(SkeletalMesh);
+        for (const FIntPoint& Change : Changes) SkeletalMesh->RemoveMeshSection(Change.X, Change.Y);
+    }
+    return Changes.Num();
+}
 
 UMaterialExpression* UNewEnemyAnimationLibrary::GetMaterialAttributesInput(UMaterial* Material, FString& OutputName)
 {

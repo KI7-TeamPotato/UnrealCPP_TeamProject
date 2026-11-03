@@ -44,4 +44,11 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
     static UMaterialExpression* CreateEmissiveAttributeOverride(UMaterial* Material, int32 X, int32 Y);
+
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static FString GetSkeletalMeshSectionSummary(USkeletalMesh* SkeletalMesh);
+
+    // Returns changed section count, zero when already disabled, or -1 on validation failure. Does not save.
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static int32 DisableSkeletalMeshMaterialSections(USkeletalMesh* SkeletalMesh, const TArray<int32>& MaterialSlots);
 };
