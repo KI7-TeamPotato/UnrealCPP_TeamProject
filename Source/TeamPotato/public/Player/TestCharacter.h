@@ -16,6 +16,8 @@ class AWeaponBoxActor;
 class UCombatAbilitySystemComponent;
 class URangedTargetingComponent;
 class UGameplayAbility;
+class UAnimSequenceBase;
+struct FAnimMontageInstance;
 struct FGameplayEffectContextHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerKilled);
@@ -72,6 +74,7 @@ public:
     void PlaySwordAttackMontage();
 
     void PlaySwordAttackMontage_Combo();
+    bool IsCurrentSwordAttack(const UAnimSequenceBase* Animation) const;
 
     //총 발사 몽타주 재생
     void PlayGunShootingMontage();
@@ -222,6 +225,11 @@ private:
 
     void HandleCombatDamage(float ActualDamage, const FGameplayEffectContextHandle& Context);
     void HandleAttackBlocked();
+    bool StartSwordAttackMontage(UAnimMontage* Montage);
+    const FAnimMontageInstance* GetSwordAttackMontageInstance() const;
+    void OnSwordAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted, int32 InstanceId);
+    void ClearSwordComboInput();
+    int32 SwordAttackMontageInstanceId = INDEX_NONE;
     //행동을 할 수 있는 상태인지(행동중이 아니고 무기를 들고 있음)
     UFUNCTION()
     bool IsActionAvailable();
@@ -314,6 +322,8 @@ protected:
     TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo1 = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
     TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo2 = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage")
+    TObjectPtr<class UAnimMontage> AttackMontage_Sword_Combo3 = nullptr;
 
     //총
     //회피(구르기)

@@ -16,8 +16,5 @@ class TEAMPOTATO_API UAnimNotifyState_OnAttack : public UAnimNotifyState
 	
 public:
     virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
-    virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
-
-private:
-    TWeakObjectPtr<class ATestCharacter> OwnerCharacter = nullptr;
+    virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 };

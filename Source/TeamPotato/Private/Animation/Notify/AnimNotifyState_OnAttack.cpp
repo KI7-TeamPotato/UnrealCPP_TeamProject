@@ -8,32 +8,17 @@ void UAnimNotifyState_OnAttack::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
-    Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
-
-    if (!OwnerCharacter.IsValid())
+    if (auto* Owner = MeshComp ? Cast<ATestCharacter>(MeshComp->GetOwner()) : nullptr)
     {
-        OwnerCharacter = Cast<ATestCharacter>(MeshComp->GetOwner());
-    }
-
-    if (OwnerCharacter.IsValid())
-    {
-        OwnerCharacter->SetOnAttacking(true);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_OnAttack::NotifyBegin | OwnerCharacter Unavailable"));
+        Owner->SetOnAttacking(true);
     }
 }
 
 void UAnimNotifyState_OnAttack::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-    if (OwnerCharacter.IsValid())
+    if (auto* Owner = MeshComp ? Cast<ATestCharacter>(MeshComp->GetOwner()) : nullptr)
     {
-        OwnerCharacter->SetOnAttacking(false);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_OnAttack::NotifyEnd | OwnerCharacter Unavailable"));
+        Owner->SetOnAttacking(false);
     }
 
     Super::NotifyEnd(MeshComp, Animation, EventReference);

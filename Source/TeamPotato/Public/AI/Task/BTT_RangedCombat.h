@@ -23,11 +23,18 @@ protected:
     virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
     virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
     virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+    virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 
 private:
     ERangedCombatAction Action = ERangedCombatAction::Attack;
     double NextDecisionTime = 0.0;
     double NextRepathTime = 0.0;
     FVector LastTargetLocation = FVector::ZeroVector;
+    TWeakObjectPtr<AArcherEnemy> FacingEnemy;
+    bool bSavedControllerYaw = false;
+    bool bSavedOrientToMovement = false;
+    bool bSavedControllerDesiredRotation = false;
+    void SetMovementFacing(AArcherEnemy& Enemy, bool bMoving);
+    void RestoreFacing();
     void Cleanup(UBehaviorTreeComponent& OwnerComp);
 };

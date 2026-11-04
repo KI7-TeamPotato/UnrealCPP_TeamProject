@@ -17,7 +17,4 @@ class TEAMPOTATO_API UAnimNotifyState_CancelInput : public UAnimNotifyState
 public:
     virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
     void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
-
-private:
-    TWeakObjectPtr<class ATestCharacter> OwnerCharacter = nullptr;
 };

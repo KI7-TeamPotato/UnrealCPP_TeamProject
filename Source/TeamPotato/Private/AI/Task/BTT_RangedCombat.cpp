@@ -28,6 +28,7 @@ UBTT_RangedCombat::UBTT_RangedCombat()
     NodeName = TEXT("Ranged Combat: Retreat / Fire / Approach");
     bCreateNodeInstance = true;
     bNotifyTick = true;
+    bNotifyTaskFinished = true;
     BlackboardKey.SelectedKeyName = TEXT("AttackTarget");
     BlackboardKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_RangedCombat, BlackboardKey), AActor::StaticClass());
 }
@@ -116,6 +117,7 @@ bool UBTT_RangedCombat::FindMoveGoal(AArcherEnemy& Enemy, AActor& Target, ERange
 
 EBTNodeResult::Type UBTT_RangedCombat::ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
 {
+    RestoreFacing();
     Action=ERangedCombatAction::Attack;
     NextDecisionTime=NextRepathTime=0.0;
     LastTargetLocation=FVector(FLT_MAX);
@@ -151,13 +153,17 @@ void UBTT_RangedCombat::TickTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMe
     }
     const ERangedCombatAction Previous=Action;
     Action=SelectAction(*Enemy,FVector::Dist2D(Enemy->GetActorLocation(),Target->GetActorLocation()),Enemy->HasClearRangedShot(Target),Previous);
-    AI->SetFocus(Target);
     if (Action==ERangedCombatAction::Attack)
     {
         if (AI->GetMoveStatus()!=EPathFollowingStatus::Idle) AI->StopMovement();
+        SetMovementFacing(*Enemy, false);
+        AI->SetFocus(Target);
         Enemy->TryStartRangedAttack(Target);
         return;
     }
+    // Gameplay focus overrides path-following focus, causing a forward walk to slide backwards.
+    AI->ClearFocus(EAIFocusPriority::Gameplay);
+    SetMovementFacing(*Enemy, true);
     Enemy->StopAnimMontage(Enemy->AttackMontage);
     const float Speed=FMath::IsFinite(Enemy->RangedMovementSpeed) ? FMath::Max(1.0f,Enemy->RangedMovementSpeed) : 500.0f;
     Enemy->GetCharacterMovement()->MaxWalkSpeed=Speed;
@@ -170,12 +176,40 @@ void UBTT_RangedCombat::TickTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMe
             FVector Goal;
             if (FindMoveGoal(*Enemy,*Target,Action,Goal))
             {
-                AI->MoveToLocation(Goal,40.0f,false,true,true,true,nullptr,false);
+                AI->MoveToLocation(Goal,40.0f,false,true,true,false,nullptr,false);
                 LastTargetLocation=Target->GetActorLocation();
             }
             else AI->StopMovement();
         }
     }
+}
+
+void UBTT_RangedCombat::SetMovementFacing(AArcherEnemy& Enemy, bool bMoving)
+{
+    UCharacterMovementComponent* Movement = Enemy.GetCharacterMovement();
+    if (FacingEnemy.Get() != &Enemy)
+    {
+        RestoreFacing();
+        FacingEnemy = &Enemy;
+        bSavedControllerYaw = Enemy.bUseControllerRotationYaw;
+        bSavedOrientToMovement = Movement->bOrientRotationToMovement;
+        bSavedControllerDesiredRotation = Movement->bUseControllerDesiredRotation;
+    }
+    // Turn along the current path while moving; use target focus only while standing to fire.
+    Enemy.bUseControllerRotationYaw = !bMoving;
+    Movement->bOrientRotationToMovement = bMoving;
+    Movement->bUseControllerDesiredRotation = false;
+}
+
+void UBTT_RangedCombat::RestoreFacing()
+{
+    if (AArcherEnemy* Enemy = FacingEnemy.Get())
+    {
+        Enemy->bUseControllerRotationYaw = bSavedControllerYaw;
+        Enemy->GetCharacterMovement()->bOrientRotationToMovement = bSavedOrientToMovement;
+        Enemy->GetCharacterMovement()->bUseControllerDesiredRotation = bSavedControllerDesiredRotation;
+    }
+    FacingEnemy.Reset();
 }
 
 void UBTT_RangedCombat::Cleanup(UBehaviorTreeComponent& OwnerComp)
@@ -186,10 +220,17 @@ void UBTT_RangedCombat::Cleanup(UBehaviorTreeComponent& OwnerComp)
         AI->ClearFocus(EAIFocusPriority::Gameplay);
         if (auto* Enemy=Cast<AArcherEnemy>(AI->GetPawn())) Enemy->StopAnimMontage(Enemy->AttackMontage);
     }
+    RestoreFacing();
 }
 
 EBTNodeResult::Type UBTT_RangedCombat::AbortTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
 {
     Cleanup(OwnerComp);
     return EBTNodeResult::Aborted;
+}
+
+void UBTT_RangedCombat::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+    Cleanup(OwnerComp);
+    Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 }

@@ -2,41 +2,34 @@
 
 
 #include "Animation/Notify/AnimNotifyState_CancelInput.h"
+#include "Animation/AnimNotifyLibrary.h"
 #include "Player/TestCharacter.h"
 
 void UAnimNotifyState_CancelInput::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
-    if (!OwnerCharacter.IsValid())
+    auto* Owner = MeshComp ? Cast<ATestCharacter>(MeshComp->GetOwner()) : nullptr;
+    if (Owner && Owner->IsCurrentSwordAttack(Animation))
     {
-        OwnerCharacter = Cast<ATestCharacter>(MeshComp->GetOwner());
-    }
-
-    if (OwnerCharacter.IsValid())
-    {
-        OwnerCharacter->bIsComboInputAvailable = true;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_CancelInput::NotifyBegin : Ownercharacter Unavailable"));
+        Owner->bIsComboInputAvailable = true;
     }
 }
 
 void UAnimNotifyState_CancelInput::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-    if (OwnerCharacter.IsValid())
+    auto* Owner = MeshComp ? Cast<ATestCharacter>(MeshComp->GetOwner()) : nullptr;
+    if (Owner && Owner->IsCurrentSwordAttack(Animation))
     {
-        bool bOnCombo = OwnerCharacter->bIsOnComboInput;
-        if (bOnCombo)
+        Owner->bIsComboInputAvailable = false;
+        if (UAnimNotifyLibrary::NotifyStateReachedEnd(EventReference))
         {
-            OwnerCharacter->bIsComboInputAvailable = false;
-            OwnerCharacter->bIsOnComboInput = false;
-            OwnerCharacter->PlaySwordAttackMontage_Combo();
+            Owner->PlaySwordAttackMontage_Combo();
+        }
+        else
+        {
+            Owner->bIsOnComboInput = false;
         }
     }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("UAnimNotifyState_CancelInput::NotifyEnd : Ownercharacter Unavailable"));
-    }
+    Super::NotifyEnd(MeshComp, Animation, EventReference);
 }

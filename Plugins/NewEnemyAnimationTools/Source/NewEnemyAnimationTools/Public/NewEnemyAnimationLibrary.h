@@ -7,7 +7,10 @@
 class UAnimBlueprint;
 class UBlueprint;
 class UAnimMontage;
+class UAnimSequence;
+class UAnimSequenceBase;
 class USkeletalMesh;
+class USkeletalMeshComponent;
 class UBehaviorTree;
 class UBTTaskNode;
 class UBlackboardData;
@@ -30,6 +33,15 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
     static bool SetMontageSlot(UAnimMontage* Montage, FName SlotName);
+
+    // Replaces the slots and sections with one full-length segment in a registered slot.
+    // Clears existing montage notifies for the caller to recreate. Preserves blend settings and does not save.
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static bool ConfigureSingleSequenceMontage(UAnimMontage* Montage, UAnimSequence* Sequence, FName SlotName);
+
+    // Evaluates a paused SingleNode pose immediately for an editor preview component.
+    UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")
+    static bool EvaluateSingleSequencePose(USkeletalMeshComponent* MeshComponent, UAnimSequenceBase* Sequence, float Time);
 
     // Replace the CombatState branch in both the runtime tree and its editable graph.
     UFUNCTION(BlueprintCallable, Category = "Editor|NewEnemy")

@@ -5,6 +5,7 @@
 #include "Enemy/BulletBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -52,11 +53,14 @@ void AArcherEnemy::Shoot()
 {
     AActor* Target = ResolveRangedTarget();
     if (!HasAuthority() || !UCombatFunctionLibrary::CanActorAttack(this) || !IsLivingRangedTarget(Target)) return;
-    const FRotator Aim = (Target->GetActorLocation() - GetActorLocation()).Rotation();
-    SetActorRotation(FRotator(0.0f, Aim.Yaw, 0.0f));
+    // A queued montage notify must not turn the enemy back toward the player after repositioning starts.
+    const AAIController* AI = Cast<AAIController>(GetController());
+    if (AI && AI->GetMoveStatus() == EPathFollowingStatus::Moving) return;
     if (!HasClearRangedShot(Target)) return;
     const float Distance = FVector::Dist2D(GetActorLocation(), Target->GetActorLocation());
     if (Distance < FMath::Max(0.0f, RetreatStartDistance) || Distance > MaxRangedAttackDistance) return;
+    const FRotator Aim = (Target->GetActorLocation() - GetActorLocation()).Rotation();
+    SetActorRotation(FRotator(0.0f, Aim.Yaw, 0.0f));
 
     ABulletBase* BulletToFire = nullptr;
     for (ABulletBase* Bullet : BulletPool)

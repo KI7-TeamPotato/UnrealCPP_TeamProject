@@ -2,6 +2,9 @@
 
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimMontage.h"
+#include "Animation/AnimSequence.h"
+#include "Animation/AnimSingleNodeInstance.h"
+#include "Animation/Skeleton.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BTDecorator.h"
@@ -10,6 +13,7 @@
 #include "BehaviorTreeGraphNode.h"
 #include "BehaviorTreeGraphNode_Root.h"
 #include "BehaviorTreeGraphNode_Task.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
@@ -280,6 +284,65 @@ bool UNewEnemyAnimationLibrary::SetMontageSlot(UAnimMontage* Montage, FName Slot
     Montage->Modify();
     Montage->SlotAnimTracks[0].SlotName = SlotName;
     return true;
+}
+
+bool UNewEnemyAnimationLibrary::ConfigureSingleSequenceMontage(UAnimMontage* Montage, UAnimSequence* Sequence, FName SlotName)
+{
+    if (!Montage || !Sequence || SlotName.IsNone() || Montage->HasParentAsset()) return false;
+
+    const USkeleton* MontageSkeleton = Montage->GetSkeleton();
+    const USkeleton* SequenceSkeleton = Sequence->GetSkeleton();
+    if (!MontageSkeleton || !SequenceSkeleton || !MontageSkeleton->ContainsSlotName(SlotName) ||
+        (MontageSkeleton != SequenceSkeleton && !MontageSkeleton->IsCompatibleForEditor(SequenceSkeleton)))
+    {
+        return false;
+    }
+
+    FAnimSegment Segment;
+    Segment.SetAnimReference(Sequence, true);
+    const float SegmentLength = Segment.GetLength();
+    if (!FMath::IsFinite(SegmentLength) || SegmentLength <= 0.0f) return false;
+
+    Montage->Modify();
+    Montage->SlotAnimTracks.Reset(1);
+    FSlotAnimationTrack& Track = Montage->SlotAnimTracks.AddDefaulted_GetRef();
+    Track.SlotName = SlotName;
+    Track.AnimTrack.AnimSegments.Add(MoveTemp(Segment));
+    Montage->CompositeSections.Reset(1);
+    Montage->Notifies.Reset();
+
+    Montage->InvalidateRecursiveAsset();
+    Montage->SetCompositeLength(SegmentLength);
+    Montage->AddAnimCompositeSection(FName(TEXT("Default")), 0.0f);
+    Montage->UpdateLinkableElements();
+    Montage->RefreshCacheData();
+    Montage->PostEditChange(); // Recomputes the common sampling frame rate.
+    Montage->MarkPackageDirty();
+    return true;
+}
+
+bool UNewEnemyAnimationLibrary::EvaluateSingleSequencePose(USkeletalMeshComponent* MeshComponent, UAnimSequenceBase* Sequence, float Time)
+{
+    if (!MeshComponent || !MeshComponent->IsRegistered() || !Sequence || !Sequence->GetSkeleton() ||
+        !FMath::IsFinite(Time) || Time < 0.0f || Time > Sequence->GetPlayLength())
+    {
+        return false;
+    }
+
+    USkeletalMesh* Mesh = MeshComponent->GetSkeletalMeshAsset();
+    if (!Mesh || Mesh->IsCompiling()) return false;
+
+    MeshComponent->PlayAnimation(Sequence, false);
+    UAnimSingleNodeInstance* Instance = MeshComponent->GetSingleNodeInstance();
+    if (!Instance || Instance->GetCurrentAsset() != Sequence) return false;
+
+    MeshComponent->SetPlayRate(0.0f);
+    MeshComponent->SetPosition(Time, false);
+    // Offscreen editor worlds can skip component ticks. Evaluate on the game thread now.
+    MeshComponent->TickAnimation(0.0f, false);
+    MeshComponent->RefreshBoneTransforms();
+    MeshComponent->MarkRenderDynamicDataDirty();
+    return FMath::IsNearlyEqual(MeshComponent->GetPosition(), Time);
 }
 
 int32 UNewEnemyAnimationLibrary::ReplaceGraphObjectReference(UBlueprint* Blueprint, UObject* Previous, UObject* Replacement)

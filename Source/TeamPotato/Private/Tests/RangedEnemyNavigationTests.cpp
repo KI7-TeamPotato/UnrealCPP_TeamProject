@@ -98,6 +98,8 @@ namespace
                 World->Tick(LEVELTICK_TimeOnly, 0.05f);
                 Brain->TickComponent(0.05f, LEVELTICK_All, nullptr);
                 Following->TickComponent(0.05f, LEVELTICK_All, nullptr);
+                // Real controller ticks apply Gameplay/Move focus to pawn facing before character movement.
+                AI.UpdateControlRotation(0.05f, true);
                 Movement->TickComponent(0.05f, LEVELTICK_All, nullptr);
             }
         }
@@ -169,7 +171,16 @@ bool FRangedNavigationMovementTest::RunTest(const FString& Parameters)
     auto* AI = Fixture.Spawn<AAIController>(FVector::ZeroVector);
     if (!TestNotNull(TEXT("AI controller spawns"), AI)) return false;
     AI->Possess(Enemy);
-    Enemy->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    auto* Movement = Enemy->GetCharacterMovement();
+    Movement->SetMovementMode(MOVE_Walking);
+    // Reproduce controller-facing ranged characters, including BP overrides that differ from movement-facing mode.
+    Enemy->bUseControllerRotationYaw = true;
+    Movement->bOrientRotationToMovement = false;
+    Movement->bUseControllerDesiredRotation = true;
+    Movement->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
+    const bool OriginalControllerYaw = Enemy->bUseControllerRotationYaw;
+    const bool OriginalOrientToMovement = Movement->bOrientRotationToMovement;
+    const bool OriginalControllerDesiredRotation = Movement->bUseControllerDesiredRotation;
 
     for (const ERangedCombatAction Mode : { ERangedCombatAction::Retreat, ERangedCombatAction::Approach })
     {
@@ -205,21 +216,59 @@ bool FRangedNavigationMovementTest::RunTest(const FString& Parameters)
     AI->GetBlackboardComponent()->SetValueAsObject(TEXT("AttackTarget"), Target);
     Fixture.Advance(*Enemy, *AI, 0.25f);
     TestTrue(TEXT("Ranged BT task issues a path-following movement request"), AI->GetMoveStatus() == EPathFollowingStatus::Moving);
-    Fixture.Advance(*Enemy, *AI, 2.0f);
+    const FQuat RetreatFacing = Enemy->GetActorQuat();
+    Enemy->Shoot();
+    TestTrue(TEXT("A late shooting notify cannot turn a retreating enemy back toward its target"),
+        Enemy->GetActorQuat().AngularDistance(RetreatFacing) < 0.001f);
+    auto ObserveMovementFacing = [&](const TCHAR* Phase, float Seconds, float TurnGrace)
+    {
+        int32 MovingSamples = 0;
+        double WorstAlignment = 1.0;
+        for (float Elapsed = 0.0f; Elapsed < Seconds; Elapsed += 0.05f)
+        {
+            Fixture.Advance(*Enemy, *AI, 0.05f);
+            if (Elapsed < TurnGrace || AI->GetMoveStatus() != EPathFollowingStatus::Moving || Enemy->GetVelocity().SizeSquared2D() < 100.0f) continue;
+            ++MovingSamples;
+            WorstAlignment = FMath::Min(WorstAlignment, FVector::DotProduct(Enemy->GetActorForwardVector().GetSafeNormal2D(), Enemy->GetVelocity().GetSafeNormal2D()));
+        }
+        AddInfo(FString::Printf(TEXT("%s: %d moving samples, minimum forward/velocity alignment %.4f"), Phase, MovingSamples, WorstAlignment));
+        TestTrue(FString(Phase) + TEXT(" samples actual movement after the initial turn"), MovingSamples >= 3);
+        TestTrue(FString(Phase) + TEXT(" faces its travel direction rather than walking backward"), WorstAlignment > 0.95);
+    };
+    auto CheckTargetFacing = [&](const TCHAR* Phase)
+    {
+        const FVector ToTarget = (Target->GetActorLocation() - Enemy->GetActorLocation()).GetSafeNormal2D();
+        TestTrue(FString(Phase) + TEXT(" faces the target after stopping to fire"), FVector::DotProduct(Enemy->GetActorForwardVector().GetSafeNormal2D(), ToTarget) > 0.99);
+    };
+    ObserveMovementFacing(TEXT("Retreat"), 2.0f, 0.35f);
     const float RetreatDistance = FVector::Dist2D(Enemy->GetActorLocation(), Target->GetActorLocation());
     TestTrue(TEXT("Character movement physically retreats to the safe band"), RetreatDistance >= Enemy->RetreatStopDistance - 50);
     TestTrue(TEXT("Retreat does not leave maximum firing range"), RetreatDistance <= Enemy->MaxRangedAttackDistance);
+    CheckTargetFacing(TEXT("Retreat"));
 
     AI->StopMovement();
     Enemy->SetActorLocation(FVector(0, 0, 96), false, nullptr, ETeleportType::TeleportPhysics);
     Enemy->GetCharacterMovement()->StopMovementImmediately();
+    Enemy->SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
+    AI->SetControlRotation(Enemy->GetActorRotation());
     Target->SetActorLocation(FVector(1700, 0, 96));
-    Fixture.Advance(*Enemy, *AI, 3.0f);
+    ObserveMovementFacing(TEXT("Approach"), 3.0f, 0.7f);
     const float ApproachDistance = FVector::Dist2D(Enemy->GetActorLocation(), Target->GetActorLocation());
     TestTrue(TEXT("Character movement physically approaches into the firing band"), ApproachDistance <= Enemy->ApproachStopDistance + 50);
     TestTrue(TEXT("Approach does not run into the player's retreat radius"), ApproachDistance >= Enemy->RetreatStartDistance);
     TestEqual(TEXT("Movement stops once the target is within the firing band"), AI->GetMoveStatus(), EPathFollowingStatus::Idle);
+    CheckTargetFacing(TEXT("Approach"));
+
+    // Abort during movement, when the task's facing policy differs from the actor's original settings.
+    Target->SetActorLocation(Enemy->GetActorLocation() + FVector(250, 0, 0));
+    Fixture.Advance(*Enemy, *AI, 0.25f);
+    TestEqual(TEXT("Close target starts another retreat before abort"), AI->GetMoveStatus(), EPathFollowingStatus::Moving);
     CastChecked<UBehaviorTreeComponent>(AI->GetBrainComponent())->StopTree(EBTStopMode::Forced);
+    TestEqual(TEXT("Aborting combat stops navigation"), AI->GetMoveStatus(), EPathFollowingStatus::Idle);
+    TestNull(TEXT("Aborting combat releases target focus"), AI->GetFocusActor());
+    TestEqual(TEXT("Aborting combat restores controller yaw policy"), bool(Enemy->bUseControllerRotationYaw), OriginalControllerYaw);
+    TestEqual(TEXT("Aborting combat restores movement-facing policy"), bool(Movement->bOrientRotationToMovement), OriginalOrientToMovement);
+    TestEqual(TEXT("Aborting combat restores controller desired rotation policy"), bool(Movement->bUseControllerDesiredRotation), OriginalControllerDesiredRotation);
     return true;
 }
 

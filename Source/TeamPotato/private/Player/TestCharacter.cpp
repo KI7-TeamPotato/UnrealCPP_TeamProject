@@ -3,6 +3,8 @@
 
 #include "Player/TestCharacter.h"
 #include "Player/PlayerAnimation.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -265,6 +267,7 @@ void ATestCharacter::KillPlayer()
     bDeathHandled = true;
     CombatAbilitySystem->MarkDead();
     OnAttackCompleted();
+    ClearSwordComboInput();
     //캐릭터 이동 중지
     GetCharacterMovement()->DisableMovement();
     GetCharacterMovement()->StopMovementImmediately();
@@ -303,25 +306,80 @@ void ATestCharacter::InvincibleDeactivate()
 
 void ATestCharacter::PlaySwordAttackMontage()
 {
-    if (!CombatAbilitySystem->CanAttack()) return;
-    PlayAnimMontage(AttackMontage_Sword_Combo1, AttackSpeed);
+    if (CombatAbilitySystem->CanAttack() && !GetSwordAttackMontageInstance())
+    {
+        StartSwordAttackMontage(AttackMontage_Sword_Combo1);
+    }
 }
 
 void ATestCharacter::PlaySwordAttackMontage_Combo()
 {
-    if (!CombatAbilitySystem->CanAttack()) return;
-    if (!IsValid(WeaponComponent))
-	{
-		return;
-	}
+    const bool bQueuedAttack = bIsOnComboInput;
+    ClearSwordComboInput();
+    const FAnimMontageInstance* Current = GetSwordAttackMontageInstance();
+    if (!bQueuedAttack || !Current || !Current->IsActive() || !CombatAbilitySystem->CanAttack() ||
+        ActivatedWeapon != EWeaponType::Sword || !IsValid(WeaponComponent)) return;
 
-	AWeaponBase* ActiveWeapon = WeaponComponent->GetActivateWeapon();
-	UWeaponDataAsset* WeaponData = IsValid(ActiveWeapon) ? ActiveWeapon->GetWeaponData() : nullptr;
-	if (WeaponData && UseEnergy(WeaponData->AttackCost))
+    UAnimMontage* NextMontage = nullptr;
+    if (Current->Montage == AttackMontage_Sword_Combo1) NextMontage = AttackMontage_Sword_Combo2;
+    else if (Current->Montage == AttackMontage_Sword_Combo2) NextMontage = AttackMontage_Sword_Combo3;
+    if (!NextMontage || NextMontage == AttackMontage_Sword_Combo1.Get() || NextMontage == Current->Montage.Get()) return;
+
+    AWeaponBase* ActiveWeapon = WeaponComponent->GetActivateWeapon();
+    const UWeaponDataAsset* WeaponData = IsValid(ActiveWeapon) ? ActiveWeapon->GetWeaponData() : nullptr;
+    if (!WeaponData || !UseEnergy(WeaponData->AttackCost)) return;
+
+    if (StartSwordAttackMontage(NextMontage))
     {
-        PlayAnimMontage(AttackMontage_Sword_Combo2, AttackSpeed);
         WeaponComponent->WeaponAttack();
     }
+    else
+    {
+        FillEnergy(WeaponData->AttackCost);
+    }
+}
+
+bool ATestCharacter::StartSwordAttackMontage(UAnimMontage* Montage)
+{
+    UAnimInstance* Anim = GetMesh()->GetAnimInstance();
+    if (!Anim || !Montage || PlayAnimMontage(Montage, AttackSpeed) <= 0.0f) return false;
+
+    FAnimMontageInstance* Instance = Anim->GetActiveInstanceForMontage(Montage);
+    if (!Instance) return false;
+    SwordAttackMontageInstanceId = Instance->GetInstanceID();
+    Instance->OnMontageEnded.BindUObject(this, &ATestCharacter::OnSwordAttackMontageEnded, SwordAttackMontageInstanceId);
+    ClearSwordComboInput();
+    GetCharacterMovement()->StopMovementImmediately();
+    ConsumeMovementInputVector();
+    return true;
+}
+
+const FAnimMontageInstance* ATestCharacter::GetSwordAttackMontageInstance() const
+{
+    UAnimInstance* Anim = GetMesh()->GetAnimInstance();
+    if (!Anim || SwordAttackMontageInstanceId == INDEX_NONE) return nullptr;
+    const FAnimMontageInstance* Instance = Anim->GetMontageInstanceForID(SwordAttackMontageInstanceId);
+    // The active montage map drops the instance at the start of blend out.
+    return Instance && Instance->IsValid() ? Instance : nullptr;
+}
+
+bool ATestCharacter::IsCurrentSwordAttack(const UAnimSequenceBase* Animation) const
+{
+    const FAnimMontageInstance* Instance = GetSwordAttackMontageInstance();
+    return Instance && Instance->Montage.Get() == Animation;
+}
+
+void ATestCharacter::OnSwordAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted, int32 InstanceId)
+{
+    if (SwordAttackMontageInstanceId != InstanceId) return;
+    SwordAttackMontageInstanceId = INDEX_NONE;
+    ClearSwordComboInput();
+}
+
+void ATestCharacter::ClearSwordComboInput()
+{
+    bIsOnComboInput = false;
+    bIsComboInputAvailable = false;
 }
 
 void ATestCharacter::PlayGunShootingMontage()
@@ -394,7 +452,7 @@ void ATestCharacter::OnMovementInput(const FInputActionValue& InValue)
     {
         CurrentInput = InValue.Get<FVector2D>();
 
-        if (Controller && !CurrentInput.IsZero())
+        if (Controller && !CurrentInput.IsZero() && !GetSwordAttackMontageInstance())
         {
             FRotator controllerRotation = Controller->GetControlRotation();         //컨트롤러 회전 구하기
             FRotator controllerYawRotation(0, controllerRotation.Yaw, 0);           //컨트롤러 방향으로 플레이어 회전
@@ -522,12 +580,11 @@ void ATestCharacter::OnAttack(bool bIsAutoFiring)
             WeaponComponent->SwitchToBaseWeapon();
         }
     }
-    else if (bIsOnAttacking && bIsComboInputAvailable)
+    else if (bIsComboInputAvailable && WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
     {
-        // 총일 때는 콤보 입력을 무시하도록 설정
-        if (WeaponComponent->GetCurrentWeaponType() == EWeaponType::Sword)
+        if (const FAnimMontageInstance* Instance = GetSwordAttackMontageInstance(); Instance && Instance->IsActive())
         {
-               bIsOnComboInput = true;
+            bIsOnComboInput = true;
         }
     }
 }
@@ -577,13 +634,13 @@ void ATestCharacter::OnAttackCompleted()
 void ATestCharacter::HandleAttackBlocked()
 {
     OnAttackCompleted();
-    bIsOnComboInput = false;
-    bIsComboInputAvailable = false;
+    ClearSwordComboInput();
     bIsOnAttacking = false;
     if (WeaponComponent)
         if (AWeaponBase* Weapon = WeaponComponent->GetActivateWeapon()) Weapon->CancelAttack();
     if (AttackMontage_Sword_Combo1) StopAnimMontage(AttackMontage_Sword_Combo1);
     if (AttackMontage_Sword_Combo2) StopAnimMontage(AttackMontage_Sword_Combo2);
+    if (AttackMontage_Sword_Combo3) StopAnimMontage(AttackMontage_Sword_Combo3);
     if (AttackMontage_Gun) StopAnimMontage(AttackMontage_Gun);
 }
 
@@ -622,7 +679,7 @@ void ATestCharacter::OnInteract()
 
 bool ATestCharacter::IsActionAvailable()
 {
-    if (!bIsOnAction && !bIsOnAttacking && (ActivatedWeapon != EWeaponType::None))
+    if (!bIsOnAction && !bIsOnAttacking && !GetSwordAttackMontageInstance() && (ActivatedWeapon != EWeaponType::None))
     {
         return true;
     }
