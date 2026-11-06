@@ -17,4 +17,5 @@ namespace CombatTags
     UE_DEFINE_GAMEPLAY_TAG(GameplayCue_KnightBuff, "GameplayCue.KnightBuff");
     UE_DEFINE_GAMEPLAY_TAG(Cooldown_KnightBuffCoolDown, "Cooldown.KnightBuffCoolDown");
     UE_DEFINE_GAMEPLAY_TAG(Cooldown_TurretSommonCoolDown, "Cooldown.TurretSommonCoolDown");
+    UE_DEFINE_GAMEPLAY_TAG(Cooldown_RangeSkillCoolDown, "Cooldown.RangeSkillCoolDown");
 }

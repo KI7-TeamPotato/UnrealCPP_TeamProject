@@ -8,6 +8,7 @@
 #include "Combat/CombatTags.h"
 #include "Combat/RangedTargetingComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Enemy/EnemyCharacter.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -28,14 +29,17 @@ namespace
         FGameplayAbilitySpecHandle Handle;
         UProjectileSkillAbility* Skill;
 
-        FProjectileSkillWorld()
+        FProjectileSkillWorld(TSubclassOf<ATestCharacter> PlayerClass = ATestCharacter::StaticClass(),
+            TSubclassOf<UProjectileSkillAbility> AbilityClass = UProjectileSkillAbility::StaticClass())
         {
             World = UWorld::CreateWorld(EWorldType::GamePreview, false);
             GEngine->CreateNewWorldContext(EWorldType::GamePreview).SetCurrentWorld(World);
             World->InitializeActorsForPlay(FURL());
-            Player = World->SpawnActor<ATestCharacter>(FVector(0, 0, 100), FRotator::ZeroRotator);
+            Player = World->SpawnActor<ATestCharacter>(PlayerClass, FVector(0, 0, 100), FRotator::ZeroRotator);
             ASC = CastChecked<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
-            Handle = ASC->GiveAbility(FGameplayAbilitySpec(UProjectileSkillAbility::StaticClass(), 1, INDEX_NONE, Player));
+            // Character BPs grant their configured skill in PostInitializeComponents, without UI BeginPlay.
+            const FGameplayAbilitySpec* Existing = ASC->FindAbilitySpecFromClass(AbilityClass);
+            Handle = Existing ? Existing->Handle : ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, INDEX_NONE, Player));
             Skill = CastChecked<UProjectileSkillAbility>(ASC->FindAbilitySpecFromHandle(Handle)->GetPrimaryInstance());
         }
 
@@ -201,6 +205,73 @@ bool FProjectileSkillLockOnTest::RunTest(const FString& Parameters)
     Shot = Fixture.FirstShot();
     if (!TestNotNull(TEXT("Fallback shot spawned"), Shot)) return false;
     TestTrue(TEXT("Disabled lock-on preserves forward fire"), Shot->Movement->Velocity.GetSafeNormal().Equals(FVector::ForwardVector, 0.001f));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRangeSkillAssetTest, "TeamPotato.Combat.ProjectileSkill.RangeSkillAssetIntegration",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
+{
+    UClass* PlayerClass = LoadClass<ATestCharacter>(nullptr,
+        TEXT("/Game/BluePrints/Test/Player/BP_PlayerGunner.BP_PlayerGunner_C"));
+    UClass* SkillClass = LoadClass<UProjectileSkillAbility>(nullptr,
+        TEXT("/Game/GameplayAbility/GA_RangeSkill.GA_RangeSkill_C"));
+    UClass* ProjectileClass = LoadClass<ATurretProjectile>(nullptr,
+        TEXT("/Game/BluePrints/Weapon/Projectiles/BP_RangeSkillProjectile.BP_RangeSkillProjectile_C"));
+    UClass* CooldownClass = LoadClass<UGameplayEffect>(nullptr,
+        TEXT("/Game/Effect/GE_RangeSkillCoolDown.GE_RangeSkillCoolDown_C"));
+    if (!TestNotNull(TEXT("Gunner character BP loads"), PlayerClass) ||
+        !TestNotNull(TEXT("Range skill uses the native projectile ability parent"), SkillClass) ||
+        !TestNotNull(TEXT("Range skill projectile BP loads"), ProjectileClass) ||
+        !TestNotNull(TEXT("Range skill cooldown GE loads"), CooldownClass)) return false;
+
+    const auto* SkillProperty = FindFProperty<FClassProperty>(ATestCharacter::StaticClass(), TEXT("SkillAbilityClass"));
+    if (!TestTrue(TEXT("Gunner BP assigns GA_RangeSkill to its input skill"), SkillProperty &&
+        SkillProperty->GetObjectPropertyValue_InContainer(PlayerClass->GetDefaultObject()) == SkillClass)) return false;
+
+    FProjectileSkillWorld Fixture(PlayerClass, SkillClass);
+    TestEqual(TEXT("GA uses the dedicated skill projectile BP"), Fixture.Skill->ProjectileClass.Get(), ProjectileClass);
+    const UGameplayEffect* Cooldown = Fixture.Skill->GetCooldownGameplayEffect();
+    if (!TestNotNull(TEXT("GA has a cooldown effect"), Cooldown)) return false;
+    TestEqual(TEXT("GA uses the dedicated cooldown GE"), Cooldown->GetClass(), CooldownClass);
+    const FGameplayTag CooldownTag = FGameplayTag::RequestGameplayTag(TEXT("Cooldown.RangeSkillCoolDown"), false);
+    if (!TestTrue(TEXT("Range skill cooldown tag is registered"), CooldownTag.IsValid())) return false;
+
+    auto* Enemy = Fixture.World->SpawnActor<AEnemyCharacter>(FVector(500, 200, 100), FRotator::ZeroRotator);
+    if (!TestNotNull(TEXT("Off-axis target spawned"), Enemy)) return false;
+    const float Before = Enemy->GetCombatHealth();
+    if (!TestTrue(TEXT("Real Gunner skill input activates the configured GA"), Fixture.Player->TryUseCharacterSkill())) return false;
+    auto* Shot = Fixture.FirstShot();
+    if (!TestNotNull(TEXT("Configured projectile spawned"), Shot)) return false;
+    TestEqual(TEXT("Spawned projectile is the configured BP"), Shot->GetClass(), ProjectileClass);
+    TestTrue(TEXT("Projectile has a visible mesh asset"), Shot->Mesh && Shot->Mesh->GetStaticMesh() &&
+        Shot->Mesh->IsVisible() && !Shot->Mesh->bHiddenInGame);
+    TestTrue(TEXT("Projectile owner is the real Gunner"), Shot->GetOwner() == Fixture.Player && Shot->GetInstigator() == Fixture.Player);
+    TestTrue(TEXT("GA corrects its projectile direction toward an off-axis enemy"),
+        Shot->Movement->Velocity.GetSafeNormal().Equals((Enemy->GetActorLocation() - Shot->GetActorLocation()).GetSafeNormal(), 0.001f));
+    TestTrue(TEXT("Cooldown starts at five seconds"), FMath::IsNearlyEqual(Fixture.Skill->GetCooldownTimeRemaining(), 5.0f, 0.05f));
+    TestTrue(TEXT("Cooldown grants its own range skill tag"), Fixture.ASC->HasMatchingGameplayTag(CooldownTag));
+    TestFalse(TEXT("Repeated skill input is blocked during cooldown"), Fixture.Player->TryUseCharacterSkill());
+    TestEqual(TEXT("Repeated input creates no additional shot"), Fixture.ShotCount(), 1);
+    const float Damage = Shot->Damage;
+    Fixture.Advance(0.4f);
+    TestEqual(TEXT("Actual skill projectile damages its off-axis target through GAS"), Enemy->GetCombatHealth(), Before - Damage);
+    TestEqual(TEXT("Projectile disappears after impact"), Fixture.ShotCount(), 0);
+
+    Enemy->Destroy();
+    Fixture.Advance(4.4f);
+    TestFalse(TEXT("Skill stays blocked until the full cooldown expires"), Fixture.Player->TryUseCharacterSkill());
+    Fixture.Advance(0.4f);
+    TestFalse(TEXT("Cooldown tag expires automatically"), Fixture.ASC->HasMatchingGameplayTag(CooldownTag));
+    Fixture.Player->SetActorRotation(FRotator(0, 90, 0));
+    if (!TestTrue(TEXT("Skill input works again after cooldown"), Fixture.Player->TryUseCharacterSkill())) return false;
+    Shot = Fixture.FirstShot();
+    if (!TestNotNull(TEXT("No-target shot spawned"), Shot)) return false;
+    TestTrue(TEXT("Without a target the skill fires in the character's current forward direction"),
+        Shot->Movement->Velocity.GetSafeNormal().Equals(Fixture.Player->GetActorForwardVector(), 0.001f));
+    Fixture.Advance(5.2f);
+    TestEqual(TEXT("A missed skill projectile expires after its configured lifetime"), Fixture.ShotCount(), 0);
     return true;
 }
 
