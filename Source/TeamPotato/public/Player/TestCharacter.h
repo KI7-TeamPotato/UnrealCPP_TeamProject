@@ -18,6 +18,7 @@ class URangedTargetingComponent;
 class UGameplayAbility;
 class UAnimMontage;
 class UAnimSequenceBase;
+class UTexture2D;
 struct FAnimMontageInstance;
 struct FGameplayEffectContextHandle;
 
@@ -40,6 +41,9 @@ public:
     bool TryUseCharacterSkill();
 
     UAnimMontage* GetSkillCastMontage() const { return SkillCastMontage; }
+    const FText& GetSkillName() const { return SkillName; }
+    const FText& GetSkillDescription() const { return SkillDescription; }
+    UTexture2D* GetSkillIcon() const { return SkillIcon; }
 
     UFUNCTION(BlueprintPure, Category = "Combat|Lock On")
     URangedTargetingComponent* GetRangedTargeting() const { return RangedTargeting; }
@@ -174,6 +178,15 @@ protected:
     // Use a montage compatible with this character's skeleton and animation blueprint slots.
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
     TObjectPtr<UAnimMontage> SkillCastMontage = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
+    FText SkillName;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill", meta = (MultiLine = true))
+    FText SkillDescription;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
+    TObjectPtr<UTexture2D> SkillIcon = nullptr;
 
     // 앞뒤양옆으로 움직이는 함수
     UFUNCTION()

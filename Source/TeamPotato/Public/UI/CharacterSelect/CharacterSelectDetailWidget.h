@@ -22,7 +22,11 @@ class TEAMPOTATO_API UCharacterSelectDetailWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+    UFUNCTION(BlueprintCallable, Category = "Character Selection")
     void UpdateCharacterDetails(ECharacterType InCharacterType);
+
+    UFUNCTION(BlueprintCallable, Category = "Character Selection")
+    void UpdateCharacterDetailsFromData(const FCharacterDataTableRow& CharacterDataRow);
 
 protected:
     // --- 캐릭터 이름 ---
@@ -59,4 +63,13 @@ protected:
     // --- 캐릭터 일러스트 ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
     TObjectPtr<UImage> CharacterIllustImage = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UImage> SkillIconImage = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UTextBlock> SkillNameText = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+    TObjectPtr<UTextBlock> SkillDescriptionText = nullptr;
 };
