@@ -1,6 +1,8 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "Misc/AutomationTest.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "Combat/ProjectileSkillAbility.h"
 #include "Combat/TurretProjectile.h"
 #include "Combat/CombatAbilitySystemComponent.h"
@@ -8,6 +10,7 @@
 #include "Combat/CombatTags.h"
 #include "Combat/RangedTargetingComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Enemy/EnemyCharacter.h"
 #include "Engine/Engine.h"
@@ -272,6 +275,41 @@ bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
         Shot->Movement->Velocity.GetSafeNormal().Equals(Fixture.Player->GetActorForwardVector(), 0.001f));
     Fixture.Advance(5.2f);
     TestEqual(TEXT("A missed skill projectile expires after its configured lifetime"), Fixture.ShotCount(), 0);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRangeSkillCastMontageTest, "TeamPotato.Combat.ProjectileSkill.OptionalCastMontage",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FRangeSkillCastMontageTest::RunTest(const FString& Parameters)
+{
+    UClass* PlayerClass = LoadClass<ATestCharacter>(nullptr,
+        TEXT("/Game/BluePrints/Test/Player/BP_PlayerGunner.BP_PlayerGunner_C"));
+    UClass* SkillClass = LoadClass<UProjectileSkillAbility>(nullptr,
+        TEXT("/Game/GameplayAbility/GA_RangeSkill.GA_RangeSkill_C"));
+    UAnimMontage* Montage = LoadObject<UAnimMontage>(nullptr,
+        TEXT("/Game/Animations/Montage/Gun/AM_Attack_Gun_Revenant.AM_Attack_Gun_Revenant"));
+    if (!TestNotNull(TEXT("Gunner BP loads"), PlayerClass) ||
+        !TestNotNull(TEXT("Range skill GA loads"), SkillClass) ||
+        !TestNotNull(TEXT("Compatible Gunner montage loads"), Montage)) return false;
+
+    FProjectileSkillWorld Fixture(PlayerClass, SkillClass);
+    UAnimInstance* Anim = Fixture.Player->GetMesh()->GetAnimInstance();
+    if (!TestNotNull(TEXT("Actual Gunner animation instance exists"), Anim)) return false;
+    auto* MontageProperty = FindFProperty<FObjectPropertyBase>(ATestCharacter::StaticClass(), TEXT("SkillCastMontage"));
+    if (!TestNotNull(TEXT("Character exposes its optional skill montage"), MontageProperty)) return false;
+    // Configure only this test actor; the character BP and montage assets remain untouched.
+    MontageProperty->SetObjectPropertyValue_InContainer(Fixture.Player, Montage);
+    if (!TestTrue(TEXT("Configured skill activates through the real input entry point"), Fixture.Player->TryUseCharacterSkill())) return false;
+    TestEqual(TEXT("Optional montage keeps the immediate single projectile launch"), Fixture.ShotCount(), 1);
+    TestFalse(TEXT("Projectile GA ends without waiting for the montage"), Fixture.ASC->FindAbilitySpecFromHandle(Fixture.Handle)->IsActive());
+    TestTrue(TEXT("Cast montage remains playing after the GA has ended"), Anim->Montage_IsPlaying(Montage));
+
+    Anim->Montage_Stop(0.0f, Montage);
+    TestFalse(TEXT("Test montage is stopped before rejected input"), Anim->Montage_IsPlaying(Montage));
+    TestFalse(TEXT("Cooldown rejects another skill use"), Fixture.Player->TryUseCharacterSkill());
+    TestFalse(TEXT("Rejected use does not start the cast montage"), Anim->Montage_IsPlaying(Montage));
+    TestEqual(TEXT("Rejected use creates no additional projectile"), Fixture.ShotCount(), 1);
     return true;
 }
 

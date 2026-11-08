@@ -16,6 +16,7 @@ class AWeaponBoxActor;
 class UCombatAbilitySystemComponent;
 class URangedTargetingComponent;
 class UGameplayAbility;
+class UAnimMontage;
 class UAnimSequenceBase;
 struct FAnimMontageInstance;
 struct FGameplayEffectContextHandle;
@@ -37,6 +38,8 @@ public:
     // Activates the skill configured on this character BP; GA handles cost/cooldown and effects.
     UFUNCTION(BlueprintCallable, Category = "Combat|Skill")
     bool TryUseCharacterSkill();
+
+    UAnimMontage* GetSkillCastMontage() const { return SkillCastMontage; }
 
     UFUNCTION(BlueprintPure, Category = "Combat|Lock On")
     URangedTargetingComponent* GetRangedTargeting() const { return RangedTargeting; }
@@ -166,6 +169,11 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
     TSubclassOf<UGameplayAbility> SkillAbilityClass;
+
+    // Optional projectile-skill animation, played when the projectile launches successfully.
+    // Use a montage compatible with this character's skeleton and animation blueprint slots.
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Skill")
+    TObjectPtr<UAnimMontage> SkillCastMontage = nullptr;
 
     // 앞뒤양옆으로 움직이는 함수
     UFUNCTION()

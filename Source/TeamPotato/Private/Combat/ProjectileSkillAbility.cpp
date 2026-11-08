@@ -118,6 +118,12 @@ void UProjectileSkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle H
         return;
     }
 
+    // Play directly on the character so the cast animation can finish after this instant GA ends.
+    if (IsValid(Character) && !Character->IsActorBeingDestroyed())
+    {
+        if (UAnimMontage* Montage = Character->GetSkillCastMontage()) Character->PlayAnimMontage(Montage);
+    }
+
     if (IsValid(Projectile) && !Projectile->IsActorBeingDestroyed()) OnProjectileLaunched(Projectile);
     // Ending the GA leaves its independently moving projectile and cooldown GE alive.
     if (IsActive()) EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
