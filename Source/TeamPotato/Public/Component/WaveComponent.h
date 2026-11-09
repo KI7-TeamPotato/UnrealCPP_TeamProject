@@ -8,6 +8,8 @@
 #include "Components/ArrowComponent.h"
 #include "WaveComponent.generated.h"
 
+class UNiagaraComponent;
+
 USTRUCT(BlueprintType)
 struct FSpawnInfo
 {
@@ -67,7 +69,8 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnAllWavesCleared OnAllWavesCleared;
 
-    // Spawn-location warning. When unset, existing rooms reuse EnemyEffect.
+    // Wait for this actor's Niagara systems to finish before spawning enemies.
+    // Use non-looping systems. When unset, existing rooms reuse EnemyEffect.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave System|Effects")
     TSubclassOf<AActor> EnemyWarningEffect;
 
@@ -82,8 +85,11 @@ private:
     UFUNCTION()
     void OnEnemyKilled();
 
-    //웨이브에 있는 몬스터를 스폰하는 함수
-    void SpawnEnemiesDelayed(int32 WaveIndex);
+    UFUNCTION()
+    void OnWarningSystemFinished(UNiagaraComponent* FinishedComponent);
+
+    void CheckWarningCompletion();
+    void SpawnEnemiesAfterWarning(int32 WaveIndex);
 
     void ScheduleNextWave();
     void ClearWarningEffects();
@@ -91,6 +97,7 @@ private:
     bool GetSpawnTransforms(const FSpawnInfo& Info, FTransform& SpawnTransform, FTransform& EffectTransform) const;
 
     TArray<TWeakObjectPtr<AActor>> WarningEffects;
+    TArray<TWeakObjectPtr<UNiagaraComponent>> PendingWarningSystems;
     TArray<TWeakObjectPtr<AEnemyCharacter>> WaveEnemies;
     bool bWaitingForSpawn = false;
 

@@ -9,17 +9,22 @@
 UPerkComponent::UPerkComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+    bWantsInitializeComponent = true;
+}
+
+void UPerkComponent::InitializeComponent()
+{
+    Super::InitializeComponent();
+    EquippedPerks.Init(nullptr, FMath::Max(0, MaxEquipSlots));
 }
 
 void UPerkComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EquippedPerks.Init(nullptr, MaxEquipSlots);
-
-	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+	if (UGameInstance* Instance = UGameplayStatics::GetGameInstance(this))
 	{
-		Subsystem->RegisterPerkComp(this);
+        if (UMVVMSubsystem* Subsystem = Instance->GetSubsystem<UMVVMSubsystem>()) Subsystem->RegisterPerkComp(this);
 	}
 }
 
@@ -27,22 +32,16 @@ void UPerkComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     ClearAllEquippedPerks();
 
-	if (UMVVMSubsystem* Subsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UMVVMSubsystem>())
+	if (UGameInstance* Instance = UGameplayStatics::GetGameInstance(this))
 	{
-		Subsystem->UnregisterPerkComp(this);
+        if (UMVVMSubsystem* Subsystem = Instance->GetSubsystem<UMVVMSubsystem>()) Subsystem->UnregisterPerkComp(this);
 	}
 	Super::EndPlay(EndPlayReason);
 }
 
 bool UPerkComponent::EquipPerk(UPerkDataAsset* PerkToEquip, int32 SlotIndex)
 {
-	if (!PerkToEquip) return false;
-
- //   // 같은 퍽이 이미 장착되어 있는지 확인
-	//if (IsPerkEquipped(PerkToEquip))
-	//{
-	//	return false;
-	//}
+	if (!IsValid(PerkToEquip) || !PerkToEquip->PerkEffect || IsPerkEquipped(PerkToEquip)) return false;
 
     // 인덱스가 -1 이면 빈 슬롯에 알아서 장착
 	if (SlotIndex < 0)
@@ -62,20 +61,10 @@ bool UPerkComponent::EquipPerk(UPerkDataAsset* PerkToEquip, int32 SlotIndex)
 		return false;
 	}
 
-	EquippedPerks[SlotIndex] = PerkToEquip;
-
-	if (PerkToEquip->PerkEffect)
-	{
-		UPerkEffectBase* NewEffect = DuplicateObject<UPerkEffectBase>(PerkToEquip->PerkEffect, this);
-
-		if (NewEffect)
-		{
-            UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::EquipPerk - Equipping Perk: %s at SlotIndex: %d"), *PerkToEquip->GetName(), SlotIndex);
-			NewEffect->OnEquip(GetOwner());
-
-			ActivateEffects.Add(SlotIndex, NewEffect);
-		}
-	}
+    UPerkEffectBase* NewEffect = DuplicateObject<UPerkEffectBase>(PerkToEquip->PerkEffect, this);
+    if (!NewEffect || !NewEffect->OnEquip(GetOwner())) return false;
+    EquippedPerks[SlotIndex] = PerkToEquip;
+    ActivateEffects.Add(SlotIndex, NewEffect);
 
 	// VIEWMODEL에 알림 => UI 업데이트.  (만약 플레이어의 현재 상태를 따로 저장한다면 그 인스턴스에도 알림)
 	//UE_LOG(LogTemp, Warning, TEXT("UPerkComponent::EquipPerk - OnEquipmentUpdated.Broadcast called"));

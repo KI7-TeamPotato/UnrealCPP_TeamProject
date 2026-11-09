@@ -16,7 +16,7 @@ class TEAMPOTATO_API UPerkEffectBase : public UObject
 	
 public:
 	// when the perk is equipped, this function is called
-	virtual void OnEquip(AActor* OwnerCharacter) {};
+	virtual bool OnEquip(AActor* OwnerCharacter) { return false; }
 
 	// when the perk is unequipped, this function is called
 	virtual void OnUnequip(AActor* OwnerCharacter) {};

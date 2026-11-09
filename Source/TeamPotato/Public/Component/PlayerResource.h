@@ -7,6 +7,7 @@
 #include "PlayerResource.generated.h"
 
 class UCombatAbilitySystemComponent;
+struct FOnAttributeChangeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, InCurrentHealth, float, InMaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, float, InCurrentEnergy, float, InMaxEnergy);
@@ -22,6 +23,7 @@ public:
     UPlayerResource();
 
 protected:
+    virtual void InitializeComponent() override;
     // Called when the game starts
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -29,7 +31,8 @@ protected:
 public:
     //getter
     float GetHealthAmount();
-    inline float GetEnergyAmount() { return Energy; }
+    float GetEnergyAmount();
+    float GetMaxEnergyAmount();
     inline int GetCurrentGold() { return CurrentGold; }
 
     //Setter
@@ -61,6 +64,11 @@ private:
 
     void BroadcastHealthChanged();
     void HandleCombatHealthChanged(float NewHealth, float NewMaxHealth);
+    void EnsureCombatConnection();
+    void DisconnectCombatDelegates();
+    void HandleMaxEnergyBonusChanged(const FOnAttributeChangeData& Data);
+    float CalculateMaxEnergy() const;
+    void RefreshMaxEnergy();
     void BroadcastEnergyChanged();
     void BroadcastGoldChanged();
 
@@ -82,12 +90,14 @@ private:
 	float Energy = 100.0f;
 	//최대 스태미나
 	float MaxEnergy = 100.0f;
-    //최대 스태미나의 최솟값. 최대 스태미나 감소 효과 적용시 이 이하로 내려가지 않음
-    const float MinEnergy = 10.0f;
+    // Character stats remain separate from temporary/perk GAS modifiers.
+    float BaseMaxEnergy = 100.0f;
     //스태미나가 충분히 있는지 계산할때 부동소수점 오차로 인해 사용
     const float EnergyEpsilon = 0.0001f;
     // 소지 골드
     int32 CurrentGold = 0;
+    // Preserve fractional reward bonuses across small pickups; spending never uses the multiplier.
+    double GoldRemainder = 0.0;
 
     //공격력
     float AttackPower = 10.0f;

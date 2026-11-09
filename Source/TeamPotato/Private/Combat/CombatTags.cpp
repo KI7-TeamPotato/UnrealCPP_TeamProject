@@ -8,6 +8,12 @@ namespace CombatTags
     UE_DEFINE_GAMEPLAY_TAG(State_Invincible, "State.Invincible");
     UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
     UE_DEFINE_GAMEPLAY_TAG(Damage_Periodic, "Damage.Periodic");
+    UE_DEFINE_GAMEPLAY_TAG(Damage_Poison, "Damage.Poison");
+    UE_DEFINE_GAMEPLAY_TAG(Damage_Fire, "Damage.Fire");
+    UE_DEFINE_GAMEPLAY_TAG(Damage_Electric, "Damage.Electric");
+    UE_DEFINE_GAMEPLAY_TAG(Immunity_Poison, "State.Immunity.Poison");
+    UE_DEFINE_GAMEPLAY_TAG(Immunity_Fire, "State.Immunity.Fire");
+    UE_DEFINE_GAMEPLAY_TAG(Immunity_Electric, "State.Immunity.Electric");
     UE_DEFINE_GAMEPLAY_TAG(Actor_Player, "Actor.Type.Player");
     UE_DEFINE_GAMEPLAY_TAG(State_Poison, "State.Debuff.Poison");
     UE_DEFINE_GAMEPLAY_TAG(State_Fire, "State.Debuff.Burning");

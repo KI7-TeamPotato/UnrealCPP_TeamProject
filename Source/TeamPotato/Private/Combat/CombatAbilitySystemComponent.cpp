@@ -37,6 +37,8 @@ void UCombatAbilitySystemComponent::InitializeCombat(float InitialMaxHealth, flo
             .AddUObject(this, &ThisClass::UpdateMoveSpeed);
         RegisterGameplayTagEvent(CombatTags::State_AttackBlocked, EGameplayTagEventType::NewOrRemoved)
             .AddUObject(this, &ThisClass::HandleAttackBlockedTag);
+        for (const FGameplayTag Tag : {CombatTags::Immunity_Poison.GetTag(), CombatTags::Immunity_Fire.GetTag(), CombatTags::Immunity_Electric.GetTag()})
+            RegisterGameplayTagEvent(Tag, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::HandleImmunityTag);
         OnAnyGameplayEffectRemovedDelegate().AddUObject(this, &ThisClass::HandleStatusRemoved);
         SetBaseMoveSpeed(Character->GetCharacterMovement()->MaxWalkSpeed);
     }
@@ -45,6 +47,22 @@ void UCombatAbilitySystemComponent::InitializeCombat(float InitialMaxHealth, flo
 
 float UCombatAbilitySystemComponent::GetHealth() const { return CombatAttributes ? CombatAttributes->GetHealth() : 0.0f; }
 float UCombatAbilitySystemComponent::GetMaxHealth() const { return CombatAttributes ? CombatAttributes->GetMaxHealth() : 1.0f; }
+
+FActiveGameplayEffectHandle UCombatAbilitySystemComponent::ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& Spec, FPredictionKey PredictionKey)
+{
+    FGameplayTagContainer GrantedTags;
+    Spec.GetAllGrantedTags(GrantedTags);
+    static const FGameplayTag CooldownTag = FGameplayTag::RequestGameplayTag(TEXT("Cooldown"));
+    if (CombatAttributes && Spec.Def && Spec.Def->DurationPolicy == EGameplayEffectDurationType::HasDuration &&
+        GrantedTags.HasTag(CooldownTag) && FMath::IsFinite(Spec.GetDuration()) && Spec.GetDuration() > 0.0f)
+    {
+        FGameplayEffectSpec AdjustedSpec(Spec);
+        AdjustedSpec.bDurationLocked = false;
+        AdjustedSpec.SetDuration(Spec.GetDuration() * CombatAttributes->GetCooldownDurationMultiplier(), true);
+        return Super::ApplyGameplayEffectSpecToSelf(AdjustedSpec, PredictionKey);
+    }
+    return Super::ApplyGameplayEffectSpecToSelf(Spec, PredictionKey);
+}
 
 bool UCombatAbilitySystemComponent::IsDead() const
 {
@@ -179,10 +197,30 @@ bool UCombatAbilitySystemComponent::HasStatus(ECombatStatus Status) const
     return Active && GetActiveGameplayEffect(Active->DamageHandle);
 }
 
+bool UCombatAbilitySystemComponent::IsImmuneToStatus(ECombatStatus Status) const
+{
+    switch (Status)
+    {
+    case ECombatStatus::Poison: return HasMatchingGameplayTag(CombatTags::Immunity_Poison);
+    case ECombatStatus::Fire: return HasMatchingGameplayTag(CombatTags::Immunity_Fire);
+    case ECombatStatus::Electric: return HasMatchingGameplayTag(CombatTags::Immunity_Electric);
+    default: return false;
+    }
+}
+
+void UCombatAbilitySystemComponent::HandleImmunityTag(FGameplayTag Tag, int32 Count)
+{
+    if (Count <= 0) return;
+    if (Tag == CombatTags::Immunity_Poison) RemoveStatus(ECombatStatus::Poison);
+    else if (Tag == CombatTags::Immunity_Fire) RemoveStatus(ECombatStatus::Fire);
+    else if (Tag == CombatTags::Immunity_Electric) RemoveStatus(ECombatStatus::Electric);
+}
+
 bool UCombatAbilitySystemComponent::ApplyStatus(UCombatStatusDefinition* Definition, const FGameplayEffectContextHandle& Context)
 {
     if (!CanReceiveStatuses() || !bCombatInitialized || !IsOwnerActorAuthoritative() || IsDead() || !IsValid(Definition) ||
-        !Definition->DamageEffect || !FMath::IsFinite(Definition->DamagePerTick) || Definition->DamagePerTick <= 0.0f) return false;
+        !Definition->DamageEffect || IsImmuneToStatus(Definition->Status) ||
+        !FMath::IsFinite(Definition->DamagePerTick) || Definition->DamagePerTick <= 0.0f) return false;
     const UGameplayEffect* DOT = Definition->DamageEffect.GetDefaultObject();
     // Require predictable single-stack refresh semantics. Bad editor assets must fail before side effects.
     if (DOT->DurationPolicy != EGameplayEffectDurationType::HasDuration ||
@@ -220,10 +258,17 @@ bool UCombatAbilitySystemComponent::ApplyStatus(UCombatStatusDefinition* Definit
     FGameplayTag StatusTag;
     switch (Definition->Status)
     {
-    case ECombatStatus::Poison: StatusTag = CombatTags::State_Poison; break;
-    case ECombatStatus::Fire: StatusTag = CombatTags::State_Fire; break;
+    case ECombatStatus::Poison:
+        StatusTag = CombatTags::State_Poison;
+        Spec.Data->AddDynamicAssetTag(CombatTags::Damage_Poison);
+        break;
+    case ECombatStatus::Fire:
+        StatusTag = CombatTags::State_Fire;
+        Spec.Data->AddDynamicAssetTag(CombatTags::Damage_Fire);
+        break;
     case ECombatStatus::Electric:
         StatusTag = CombatTags::State_Electric;
+        Spec.Data->AddDynamicAssetTag(CombatTags::Damage_Electric);
         Spec.Data->DynamicGrantedTags.AddTag(CombatTags::State_AttackBlocked);
         break;
     default: return false;

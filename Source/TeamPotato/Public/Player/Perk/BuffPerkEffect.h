@@ -16,7 +16,7 @@ class TEAMPOTATO_API UBuffPerkEffect : public UPerkEffectBase
 	GENERATED_BODY()
 	
 public:
-	virtual void OnEquip(AActor* OwnerCharacter) override;
+	virtual bool OnEquip(AActor* OwnerCharacter) override;
 
 	virtual void OnUnequip(AActor* OwnerCharacter) override;
 

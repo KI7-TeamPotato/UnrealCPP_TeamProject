@@ -32,7 +32,7 @@ struct FPerkSelectDataTableRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	float SelectWeight;
+	float SelectWeight = 1.0f;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
 	TObjectPtr<UPerkDataAsset> PerkDataAsset;

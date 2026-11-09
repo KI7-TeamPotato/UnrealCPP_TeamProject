@@ -30,6 +30,8 @@ public:
     UCombatAbilitySystemComponent();
     void InitializeCombat(float InitialMaxHealth, float InHitInvincibilityDuration);
     bool IsCombatInitialized() const { return bCombatInitialized; }
+    virtual FActiveGameplayEffectHandle ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& Spec,
+        FPredictionKey PredictionKey = FPredictionKey()) override;
 
     UFUNCTION(BlueprintPure, Category = "Combat")
     float GetHealth() const;
@@ -91,6 +93,8 @@ public:
     void RemoveAllStatuses();
     UFUNCTION(BlueprintPure, Category = "Combat|Status")
     bool HasStatus(ECombatStatus Status) const;
+    UFUNCTION(BlueprintPure, Category = "Combat|Status")
+    bool IsImmuneToStatus(ECombatStatus Status) const;
 
     FCombatHealthChanged OnCombatHealthChanged;
     FCombatDamageReceived OnCombatDamageReceived;
@@ -101,6 +105,7 @@ public:
 private:
     void UpdateMoveSpeed(const FOnAttributeChangeData& Data);
     void HandleAttackBlockedTag(FGameplayTag Tag, int32 Count);
+    void HandleImmunityTag(FGameplayTag Tag, int32 Count);
     void HandleStatusRemoved(const FActiveGameplayEffect& Effect);
     UPROPERTY() TMap<ECombatStatus, FActiveCombatStatus> ActiveStatuses;
     float BaseMoveSpeed = 0.0f;

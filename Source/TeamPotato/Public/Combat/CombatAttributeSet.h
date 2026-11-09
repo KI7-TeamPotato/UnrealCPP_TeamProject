@@ -31,6 +31,22 @@ public:
     FGameplayAttributeData MoveSpeedMultiplier;
     COMBAT_ATTRIBUTE_ACCESSORS(MoveSpeedMultiplier)
 
+    UPROPERTY(BlueprintReadOnly, Category = "Combat|Perks")
+    FGameplayAttributeData DamageTakenMultiplier;
+    COMBAT_ATTRIBUTE_ACCESSORS(DamageTakenMultiplier)
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat|Perks")
+    FGameplayAttributeData GoldGainMultiplier;
+    COMBAT_ATTRIBUTE_ACCESSORS(GoldGainMultiplier)
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat|Perks")
+    FGameplayAttributeData CooldownDurationMultiplier;
+    COMBAT_ATTRIBUTE_ACCESSORS(CooldownDurationMultiplier)
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat|Perks")
+    FGameplayAttributeData MaxEnergyBonus;
+    COMBAT_ATTRIBUTE_ACCESSORS(MaxEnergyBonus)
+
     // A transient, positive damage amount. Consumed and reset for every execution.
     UPROPERTY()
     FGameplayAttributeData IncomingDamage;
@@ -38,6 +54,7 @@ public:
 
     virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
     virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
+    virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
     virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
     virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 

@@ -7,6 +7,9 @@
   "Category": "Editor",
   "EnabledByDefault": false,
   "CanContainContent": false,
+  "Plugins": [
+    { "Name": "GameplayAbilities", "Enabled": true }
+  ],
   "Modules": [
     { "Name": "NewEnemyAnimationTools", "Type": "Editor", "LoadingPhase": "Default" }
   ]

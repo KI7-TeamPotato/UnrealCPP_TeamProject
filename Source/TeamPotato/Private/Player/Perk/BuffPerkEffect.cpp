@@ -4,20 +4,21 @@
 #include "Player/Perk/BuffPerkEffect.h"
 #include "Player/TestCharacter.h"
 
-void UBuffPerkEffect::OnEquip(AActor* OwnerCharacter)
+bool UBuffPerkEffect::OnEquip(AActor* OwnerCharacter)
 {
 	if (OwnerCharacter)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BuffPerkEffect OnEquip called for %s"), *OwnerCharacter->GetName());
 		
         ATestCharacter* PlayerCharacter = Cast<ATestCharacter>(OwnerCharacter);
+        if (!PlayerCharacter) return false;
 
         // 로그라이크여서 제거할 일이 없으니 모디파이어 X,
         // 만약 제거가 필요하면 Modifier 기반으로 변경
         switch (BuffType)
         {
         case EBuffType::None:
-            break;
+            return false;
         case EBuffType::SpeedUp:
             PlayerCharacter->AddMoveSpeed(Amount);
             break;
@@ -31,7 +32,7 @@ void UBuffPerkEffect::OnEquip(AActor* OwnerCharacter)
             PlayerCharacter->AddPower(Amount);
             break;
         default:
-            break;
+            return false;
         }
 
 		// 플레이어와 연결할때 풀기. Modifier에 더하는 기능
@@ -39,7 +40,9 @@ void UBuffPerkEffect::OnEquip(AActor* OwnerCharacter)
 		ATeamproject_UICharacter* PlayerCharacter = Cast<ATeamproject_UICharacter>(OwnerCharacter);
 		PlayerCharacter->AddFlatModifier(BuffAmount);
 		*/
+		return true;
 	}
+    return false;
 }
 
 void UBuffPerkEffect::OnUnequip(AActor* OwnerCharacter)

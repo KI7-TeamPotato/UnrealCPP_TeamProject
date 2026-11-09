@@ -24,6 +24,7 @@ public:
 	UPerkComponent();
 
 protected:
+	virtual void InitializeComponent() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -44,6 +45,9 @@ public:
 	// Check if Same Perk is Equipped
 	UFUNCTION(BlueprintPure, Category = "Perk System")
 	bool IsPerkEquipped(UPerkDataAsset* PerkToCheck) const;
+
+    UFUNCTION(BlueprintPure, Category = "Perk System")
+    bool HasAvailablePerkSlot() const { return EquippedPerks.Contains(nullptr); }
 
 	// Equipment - Swap Equipped Perks (더 높은 레어리티로 정렬을 위한 함수)
 	UFUNCTION(BlueprintCallable, Category = "Perk System")

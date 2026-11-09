@@ -20,6 +20,7 @@
 #include "UI/Minimap/MinimapWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/TestCharacter.h"
+#include "Component/PerkComponent.h"
 #include "Common/MyGameSettings.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -290,6 +291,8 @@ void ATestPlayerController::OnAddPlayerKilledWidget()
 // 델리게이트로 스테이지 클리어 후 뷰포트에 추가 !!!!!!!!!
 void ATestPlayerController::AddPerkSelectionScreenToViewport()
 {
+    const UPerkComponent* Perks = GetPawn() ? GetPawn()->FindComponentByClass<UPerkComponent>() : nullptr;
+    if (!Perks || !Perks->HasAvailablePerkSlot()) return;
     if (PerkSelectionScreen)
     {
         SetGameAndUIInputMode();
@@ -327,12 +330,11 @@ void ATestPlayerController::SetGameAndUIInputMode()
 
 void ATestPlayerController::TryPerkSelectionScreen(int32 InStage, int32 InChapter)
 {
-    if (InChapter == 2 || InChapter == 4)
+    // Stage selects the dungeon theme; Chapter is the stage number within that theme.
+    if (InChapter > 0 && InChapter % 2 == 1)
     {
         AddPerkSelectionScreenToViewport();
     }
-    else
-        return;
 }
 
 // --- 플레이어 움직임이 미니맵 업데이트 임계값을 넘었는지 확인 ---

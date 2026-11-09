@@ -9,6 +9,10 @@ UCombatAttributeSet::UCombatAttributeSet()
     InitMaxHealth(100.0f);
     InitIncomingDamage(0.0f);
     InitMoveSpeedMultiplier(1.0f);
+    InitDamageTakenMultiplier(1.0f);
+    InitGoldGainMultiplier(1.0f);
+    InitCooldownDurationMultiplier(1.0f);
+    InitMaxEnergyBonus(0.0f);
 }
 
 void UCombatAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, float& NewValue) const
@@ -18,6 +22,10 @@ void UCombatAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
     if (Attribute == GetHealthAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
     if (Attribute == GetIncomingDamageAttribute()) NewValue = FMath::Max(0.0f, NewValue);
     if (Attribute == GetMoveSpeedMultiplierAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, 10.0f);
+    if (Attribute == GetDamageTakenMultiplierAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, 10.0f);
+    if (Attribute == GetGoldGainMultiplierAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, 100.0f);
+    if (Attribute == GetCooldownDurationMultiplierAttribute()) NewValue = FMath::Clamp(NewValue, 0.01f, 10.0f);
+    if (Attribute == GetMaxEnergyBonusAttribute()) NewValue = FMath::Clamp(NewValue, 0.0f, 100000.0f);
 }
 
 void UCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -32,6 +40,13 @@ void UCombatAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attri
     ClampAttribute(Attribute, NewValue);
 }
 
+void UCombatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+    Super::PostAttributeChange(Attribute, OldValue, NewValue);
+    if (Attribute == GetMaxHealthAttribute() && GetHealth() > NewValue)
+        SetHealth(NewValue);
+}
+
 bool UCombatAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
 {
     if (!Super::PreGameplayEffectExecute(Data) || !FMath::IsFinite(Data.EvaluatedData.Magnitude)) return false;
@@ -42,6 +57,9 @@ bool UCombatAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
         // Also guards periodic executions and custom GEs using the damage meta attribute.
         FGameplayTagContainer Tags;
         Data.EffectSpec.GetAllAssetTags(Tags);
+        if ((Tags.HasTagExact(CombatTags::Damage_Poison) && ASC->IsImmuneToStatus(ECombatStatus::Poison)) ||
+            (Tags.HasTagExact(CombatTags::Damage_Fire) && ASC->IsImmuneToStatus(ECombatStatus::Fire)) ||
+            (Tags.HasTagExact(CombatTags::Damage_Electric) && ASC->IsImmuneToStatus(ECombatStatus::Electric))) return false;
         if (Tags.HasTagExact(CombatTags::Damage_Periodic) && !ASC->CanReceiveStatuses()) return false;
         return Data.EvaluatedData.Magnitude > 0.0f &&
             (Tags.HasTagExact(CombatTags::Damage_Periodic) || !ASC->HasMatchingGameplayTag(CombatTags::State_Invincible));
@@ -57,7 +75,7 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 
     if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
     {
-        float Damage = GetIncomingDamage();
+        float Damage = GetIncomingDamage() * GetDamageTakenMultiplier();
         SetIncomingDamage(0.0f);
 
         static const FGameplayTag DamageReductionTag =

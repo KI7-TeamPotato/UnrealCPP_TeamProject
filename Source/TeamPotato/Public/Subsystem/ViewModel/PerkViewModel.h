@@ -30,6 +30,8 @@ public:
     UFUNCTION(BlueprintCallable)
     void RequestClearAllPerks();
 
+    bool HasEquippedPerk(const UPerkDataAsset* Perk) const { return CachedEquippedPerks.Contains(Perk); }
+
 	// --- 컴포넌트 -> PerPanelWidget ---
 	UPROPERTY(BlueprintAssignable)
 	FOnPerkEquipped OnPerkEquipped;

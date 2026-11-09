@@ -31,6 +31,7 @@ bool UPerkViewModel::RequestEquipPerk(UPerkDataAsset* NewData, int32 SlotIndex)
 
 void UPerkViewModel::RequestClearAllPerks()
 {
+    CachedEquippedPerks.Reset();
     if (OnTryAllPerkClear.IsBound())
     {
         OnTryAllPerkClear.Broadcast();
