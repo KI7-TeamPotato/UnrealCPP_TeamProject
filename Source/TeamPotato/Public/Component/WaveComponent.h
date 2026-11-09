@@ -41,6 +41,8 @@ public:
 	UWaveComponent();
 protected:
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 public:
     // 웨이브 데이터 
@@ -65,8 +67,12 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnAllWavesCleared OnAllWavesCleared;
 
-    //몬스터 스폰시 이펙트
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    // Spawn-location warning. When unset, existing rooms reuse EnemyEffect.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave System|Effects")
+    TSubclassOf<AActor> EnemyWarningEffect;
+
+    // Played after the monster is successfully spawned.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave System|Effects")
     TSubclassOf<AActor> EnemyEffect;
 private:
     //몬스터 웨이브 스폰하는 함수
@@ -78,6 +84,15 @@ private:
 
     //웨이브에 있는 몬스터를 스폰하는 함수
     void SpawnEnemiesDelayed(int32 WaveIndex);
+
+    void ScheduleNextWave();
+    void ClearWarningEffects();
+    void ResetWaveSystem();
+    bool GetSpawnTransforms(const FSpawnInfo& Info, FTransform& SpawnTransform, FTransform& EffectTransform) const;
+
+    TArray<TWeakObjectPtr<AActor>> WarningEffects;
+    TArray<TWeakObjectPtr<AEnemyCharacter>> WaveEnemies;
+    bool bWaitingForSpawn = false;
 
     FTimerHandle WaveTimerHandle;
 
