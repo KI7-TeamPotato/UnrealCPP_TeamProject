@@ -6,6 +6,10 @@
 #include "Data/LevelDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/AssetManager.h"
+#include "Engine/GameInstance.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/LocalPlayer.h"
+#include "Blueprint/GameViewportSubsystem.h"
 #include "Blueprint/UserWidget.h"
 
 void UGameStateSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -23,16 +27,23 @@ void UGameStateSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		}
 		SetGameState(Settings->DefaultStartState);
 
-        if (!Settings->LoadingWidgetClass.IsNull())
-        {
-            // 로딩 화면 위젯 로드
-            LoadingWidget = Settings->LoadingWidgetClass.LoadSynchronous();
-        }
+		LoadingWidgetClass = Settings->LoadingWidgetClass.LoadSynchronous();
 	}
+
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::HandleMapLoaded);
+	GEngine->OnTravelFailure().AddUObject(this, &ThisClass::HandleTravelFailure);
 }
 
 void UGameStateSubsystem::Deinitialize()
 {
+	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
+	GEngine->OnTravelFailure().RemoveAll(this);
+	if (PendingMapLoad)
+	{
+		PendingMapLoad->CancelHandle();
+		PendingMapLoad.Reset();
+	}
+	RemoveLoadingOverlay();
 	Super::Deinitialize();
 }
 
@@ -96,51 +107,144 @@ void UGameStateSubsystem::TravelToState(EGameState TargetState)
 }
 
 
-// TSoftObjectPtr<UWorld> => 에셋 경로와 타입을 나타내는 약한 참조
-// FSoftObjectPath => 에셋 경로를 문자열로 나타냄
 void UGameStateSubsystem::ExecuteLevelTravel(const FLevelData& LevelData)
 {
-    UUserWidget* LoadingScreen = nullptr;
-
-    // 로딩 화면 표시
-    if (LoadingWidget)
-    {
-        LoadingScreen = CreateWidget<UUserWidget>(GetWorld(), LoadingWidget.Get());
-        if (LoadingScreen)
-        {
-            LoadingScreen->AddToViewport();
-        }
-    }
-    
-    // 게임 상태 변경
-	SetGameState(LevelData.GameState);
-
-	if (!LevelData.LevelAsset.IsNull())
+	UWorld* World = GetWorld();
+	if (!World || bTravelInProgress || LevelData.LevelAsset.IsNull())
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Traveling to level: %s"), *LevelData.LevelAsset.GetAssetName());
-        UE_LOG(LogTemp, Log, TEXT("Level asset path: %s"), *LevelData.LevelAsset.ToSoftObjectPath().ToString());
-
-		FString LevelPath = LevelData.LevelAsset.GetAssetName();
-
-		// OpenLevel과 비동기 맵 에셋 로드 이용
-        TSoftObjectPtr<UWorld> LevelToLoad = LevelData.LevelAsset;
-        // 비동기 에셋 로드 매니저(에셋 로드 요청, 완료 후 콜백)
-        FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-        // 비동기 로드 요청 (로드할 레벨 경로, 로드 완료 후의 콜백) (현재 레벨 유지하다가 로드 완료 후 전환)
-        Streamable.RequestAsyncLoad(LevelToLoad.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([this, LevelPath, LoadingScreen]()
-            {
-                // 로드 완료했다면 로딩 화면 제거
-                if (LoadingScreen)
-                {
-                    LoadingScreen->RemoveFromParent();
-                }
-
-                // 레벨 전환
-                UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelPath));
-            }));
+		return;
 	}
-	else 
+
+	bTravelInProgress = true;
+	AddLoadingOverlay(World);
+	const FSoftObjectPath LevelPath = LevelData.LevelAsset.ToSoftObjectPath();
+	PendingMapLoad = UAssetManager::GetStreamableManager().RequestAsyncLoad(LevelPath,
+		FStreamableDelegate::CreateUObject(this, &ThisClass::OpenLoadedLevel, LevelPath, LevelData.GameState));
+	if (!PendingMapLoad)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("LevelData for state %d has no valid level asset or name."), static_cast<int32>(LevelData.GameState));
+		bTravelInProgress = false;
+		RemoveLoadingOverlay();
+	}
+}
+
+void UGameStateSubsystem::OpenLoadedLevel(FSoftObjectPath LevelPath, EGameState TargetState)
+{
+	if (!PendingMapLoad)
+	{
+		return;
+	}
+	const bool bLoaded = IsValid(PendingMapLoad->GetLoadedAsset());
+	PendingMapLoad.Reset();
+	if (!bLoaded)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not load destination map %s"), *LevelPath.ToString());
+		bTravelInProgress = false;
+		RemoveLoadingOverlay();
+		return;
+	}
+	SetGameState(TargetState);
+	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelPath.GetLongPackageName()));
+}
+
+void UGameStateSubsystem::ShowLoadingScreen(UWorld* DungeonWorld)
+{
+	if (DungeonWorld && DungeonWorld->GetGameInstance() == GetGameInstance())
+	{
+		DungeonBeingGenerated = DungeonWorld;
+		AddLoadingOverlay(DungeonWorld);
+	}
+}
+
+void UGameStateSubsystem::AddLoadingOverlay(UWorld* World)
+{
+	WorldReadyToDraw.Reset();
+	if (ActiveLoadingScreen || !LoadingWidgetClass || !World->GetGameViewport())
+	{
+		return;
+	}
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetGameInstance(), LoadingWidgetClass);
+	FGameViewportWidgetSlot Slot;
+	Slot.ZOrder = 1000;
+	Slot.bAutoRemoveOnWorldRemoved = false;
+	if (Widget && UGameViewportSubsystem::Get(World)->AddWidget(Widget, Slot))
+	{
+		ActiveLoadingScreen = Widget;
+		World->GetGameViewport()->OnDrawn().AddUObject(this, &ThisClass::OnViewportDrawn);
+	}
+}
+
+void UGameStateSubsystem::HandleMapLoaded(UWorld* World)
+{
+	if (!World || World->GetGameInstance() != GetGameInstance())
+	{
+		return;
+	}
+	bTravelInProgress = false;
+	if (PendingMapLoad)
+	{
+		PendingMapLoad->CancelHandle();
+		PendingMapLoad.Reset();
+	}
+	if (ActiveLoadingScreen)
+	{
+		ActiveLoadingScreen->SetPlayerContext(FLocalPlayerContext(GetGameInstance()->GetFirstGamePlayer(), World));
+		if (DungeonBeingGenerated.Get() != World)
+		{
+			RevealAfterDraw(World);
+		}
+	}
+}
+
+void UGameStateSubsystem::FinishDungeonLoading(UWorld* DungeonWorld)
+{
+	if (DungeonWorld && DungeonBeingGenerated.Get() == DungeonWorld)
+	{
+		DungeonBeingGenerated.Reset();
+		if (!bTravelInProgress)
+		{
+			RevealAfterDraw(DungeonWorld);
+		}
+	}
+}
+
+void UGameStateSubsystem::RevealAfterDraw(UWorld* World)
+{
+	WorldReadyToDraw = World;
+	ReadyFrame = GFrameCounter;
+}
+
+void UGameStateSubsystem::OnViewportDrawn()
+{
+	UWorld* World = WorldReadyToDraw.Get();
+	// LoadMap issues an unpresented draw in the same frame as PostLoadMap.
+	if (World && World == GetWorld() && GFrameCounter > ReadyFrame &&
+		World->GetGameViewport() && !World->GetGameViewport()->bDisableWorldRendering &&
+		!World->ViewLocationsRenderedLastFrame.IsEmpty())
+	{
+		RemoveLoadingOverlay();
+	}
+}
+
+void UGameStateSubsystem::HandleTravelFailure(UWorld* World, ETravelFailure::Type Failure, const FString& Error)
+{
+	if (World && World->GetGameInstance() == GetGameInstance() && bTravelInProgress)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Level travel failed: %s"), *Error);
+		bTravelInProgress = false;
+		RemoveLoadingOverlay();
+	}
+}
+
+void UGameStateSubsystem::RemoveLoadingOverlay()
+{
+	WorldReadyToDraw.Reset();
+	if (UGameViewportClient* Viewport = GetGameInstance()->GetGameViewportClient())
+	{
+		Viewport->OnDrawn().RemoveAll(this);
+	}
+	if (ActiveLoadingScreen)
+	{
+		ActiveLoadingScreen->RemoveFromParent();
+		ActiveLoadingScreen = nullptr;
 	}
 }

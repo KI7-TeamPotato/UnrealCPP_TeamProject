@@ -5,6 +5,7 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundBase.h"
 #include "Subsystem/AudioSubsystem.h"
+#include "Subsystem/GameStateSubsystem.h"
 #include "TeamPotato/Room/RoomBase.h"
 #include "TeamPotato/Room/DungeonRoom1.h"
 #include "TeamPotato/Logic/ClosingWall.h"
@@ -48,12 +49,14 @@ void ADungeonGanarator::BeginPlay()
     if (!ValidateGenerationConfig() || !SpawnStarterRooms())
     {
         UE_LOG(LogTemp, Error, TEXT("Dungeon generation aborted because required configuration is invalid."));
+        FinishDungeonLoading();
         return;
     }
 
     bIsFinalizingDungeon = false;
     bIsDungeonGenerationCompleted = false;
 
+    ShowDungeonLoading();
     PlayDungeonMusic();
 
     // 생성이 끝나지 못하는 경우에만 재시도하는 안전장치
@@ -463,7 +466,23 @@ void ADungeonGanarator::AfterEndedSpawnNomalRooms()
 
     // 스테이지 및 챕터 변경 델리게이트 호출
     OnStageAndChapterChanged.Broadcast(Stage, chapter);
+    FinishDungeonLoading();
+}
 
+void ADungeonGanarator::ShowDungeonLoading()
+{
+    if (UGameStateSubsystem* GameState = UGameInstance::GetSubsystem<UGameStateSubsystem>(GetGameInstance()))
+    {
+        GameState->ShowLoadingScreen(GetWorld());
+    }
+}
+
+void ADungeonGanarator::FinishDungeonLoading()
+{
+    if (UGameStateSubsystem* GameState = UGameInstance::GetSubsystem<UGameStateSubsystem>(GetGameInstance()))
+    {
+        GameState->FinishDungeonLoading(GetWorld());
+    }
 }
 
 //닫힌 벽 막는 함수
@@ -606,6 +625,7 @@ void ADungeonGanarator::ResetDungeon()
     {
         GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
         UE_LOG(LogTemp, Error, TEXT("Dungeon generation failed after %d reset attempts."), MaxResetLimit);
+        FinishDungeonLoading();
         return;
     }
 
@@ -660,6 +680,7 @@ void ADungeonGanarator::ResetDungeon()
 	if (!ValidateGenerationConfig() || !SpawnStarterRooms())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Dungeon regeneration aborted because required configuration is invalid."));
+		FinishDungeonLoading();
 		return;
 	}
 
@@ -778,6 +799,7 @@ void ADungeonGanarator::StageConfigSetting()
 
 void ADungeonGanarator::GoToNextStage(int32 NewChapter)
 {
+    ShowDungeonLoading();
     SetSeed();
     int32 NextStage = NewChapter+1;
     UE_LOG(LogTemp, Log, TEXT("Leaving chapter %d, stage %d"), Stage, NewChapter);

@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/EngineBaseTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Common/GameStateTypes.h"
 #include "GameStateSubsystem.generated.h"
 
 class ULevelDataAsset;
+class UUserWidget;
+struct FStreamableHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameStateChanged, EGameState, OldState, EGameState, NewState);
 /**
@@ -49,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game State")
 	void TravelToChapter(int32 ChapterIndex);
 
+	void ShowLoadingScreen(UWorld* DungeonWorld);
+	void FinishDungeonLoading(UWorld* DungeonWorld);
+
 	// =============================================================================
 	// Setter / Getter
 	// =============================================================================
@@ -62,6 +68,13 @@ public:
 private:
 	// 실제 레벨 이동 처리
 	void ExecuteLevelTravel(const FLevelData& LevelData);
+	void OpenLoadedLevel(FSoftObjectPath LevelPath, EGameState TargetState);
+	void HandleMapLoaded(UWorld* World);
+	void HandleTravelFailure(UWorld* World, ETravelFailure::Type Failure, const FString& Error);
+	void AddLoadingOverlay(UWorld* World);
+	void RevealAfterDraw(UWorld* World);
+	void OnViewportDrawn();
+	void RemoveLoadingOverlay();
 
 private:
 	UPROPERTY()
@@ -70,6 +83,15 @@ private:
 	UPROPERTY()
 	TObjectPtr<ULevelDataAsset> LevelDataAsset;
 
-    UPROPERTY()
-    TSoftClassPtr<UUserWidget> LoadingWidget;
+	UPROPERTY(Transient)
+	TSubclassOf<UUserWidget> LoadingWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UUserWidget> ActiveLoadingScreen;
+
+	TSharedPtr<FStreamableHandle> PendingMapLoad;
+	bool bTravelInProgress = false;
+	TWeakObjectPtr<UWorld> DungeonBeingGenerated;
+	TWeakObjectPtr<UWorld> WorldReadyToDraw;
+	uint64 ReadyFrame = 0;
 };

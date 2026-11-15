@@ -221,6 +221,9 @@ protected:
     void CalculateDungeonMinMaxPoint();
 
 private:
+    void ShowDungeonLoading();
+    void FinishDungeonLoading();
+
     UPROPERTY(Transient)
     TObjectPtr<UAudioComponent> MusicPlayer;
     void PlayBossMusic();
