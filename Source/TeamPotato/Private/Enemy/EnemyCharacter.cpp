@@ -141,6 +141,17 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
     return UCombatFunctionLibrary::ApplyCombatDamage(this, DamageAmount, DamageCauser, EventInstigator);
 }
 
+UCombatStatusDefinition* AEnemyCharacter::GetAttackStatus(AActor* DamageCauser) const
+{
+    if (IsValid(DamageCauser) && !PatternStatuses.IsEmpty())
+    {
+        const TSoftClassPtr<AActor> PatternClass(DamageCauser->GetClass());
+        if (const auto* Status = PatternStatuses.Find(PatternClass))
+            return Status->Get();
+    }
+    return AttackStatus.Get();
+}
+
 void AEnemyCharacter::WieldWeapon()
 {
     //무기 없으면 리턴

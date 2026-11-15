@@ -116,6 +116,8 @@ void UBulletHellComponent::SpawnGridAtLocation(TSubclassOf<AActor> ActorToSpawn,
     FVector StartPos = TargetLocation;
     StartPos.X -= HalfWidth;
     StartPos.Y -= HalfDepth;
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = GetOwner();
     for (int32 i = 0; i < Rows; i++)
     {
         for (int32 j = 0; j < Cols; j++)
@@ -126,7 +128,7 @@ void UBulletHellComponent::SpawnGridAtLocation(TSubclassOf<AActor> ActorToSpawn,
 
             FRotator SpawnRot = FRotator(-90.0f, 0.0f, 0.0f);
 
-            GetWorld()->SpawnActor<AActor>(ActorToSpawn, SpawnPos, SpawnRot);
+            GetWorld()->SpawnActor<AActor>(ActorToSpawn, SpawnPos, SpawnRot, SpawnParams);
         }
     }
 }
@@ -156,6 +158,8 @@ void UBulletHellComponent::SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
 
     FVector FixedDir = FVector(0.0f, 0.0f, 1.0f); 
     float FixedSpread = 55.0f;                   
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = GetOwner();
 
     for (int32 i = 0; i < Count; i++)
     {
@@ -165,7 +169,7 @@ void UBulletHellComponent::SpawnWaterSplash(TSubclassOf<AActor> ActorToSpawn,
 
         FRotator SpawnRotation = RandomDir.Rotation();
 
-        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawn, Origin, SpawnRotation);
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorToSpawn, Origin, SpawnRotation, SpawnParams);
 
         if (SpawnedActor)
         {

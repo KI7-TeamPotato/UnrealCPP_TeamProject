@@ -1,6 +1,7 @@
 #include "Combat/CombatFunctionLibrary.h"
 #include "Combat/CombatAbilitySystemComponent.h"
 #include "Combat/CombatTags.h"
+#include "Enemy/EnemyCharacter.h"
 #include "AbilitySystemGlobals.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Pawn.h"
@@ -23,17 +24,6 @@ namespace
         return nullptr;
     }
 
-    bool ApplyStatusInternal(AActor* Target, UCombatStatusDefinition* Definition, AActor* Causer, AController* Controller, bool bAcceptedHit)
-    {
-        if (!IsValid(Target) || !Target->HasAuthority() || !Target->CanBeDamaged()) return false;
-        auto* ASC = Cast<UCombatAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target, true));
-        if (!ASC || (!bAcceptedHit && ASC->HasMatchingGameplayTag(CombatTags::State_Invincible))) return false;
-        UAbilitySystemComponent* Source = FindSourceASC(Causer, Controller);
-        FGameplayEffectContextHandle Context = (Source ? Source : ASC)->MakeEffectContext();
-        Context.AddInstigator(Source ? Source->GetAvatarActor() : Causer, Causer);
-        if (IsValid(Causer)) Context.AddSourceObject(Causer);
-        return ASC->ApplyStatus(Definition, Context);
-    }
 }
 
 bool UCombatFunctionLibrary::CanActorAttack(AActor* Actor)
@@ -45,23 +35,20 @@ bool UCombatFunctionLibrary::CanActorAttack(AActor* Actor)
 
 bool UCombatFunctionLibrary::ApplyCombatStatus(AActor* Target, UCombatStatusDefinition* Definition, AActor* DamageCauser, AController* InstigatorController)
 {
-    return ApplyStatusInternal(Target, Definition, DamageCauser, InstigatorController, false);
+    if (!IsValid(Target) || !Target->HasAuthority() || !Target->CanBeDamaged()) return false;
+    auto* ASC = Cast<UCombatAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target, true));
+    if (!ASC || ASC->HasMatchingGameplayTag(CombatTags::State_Invincible)) return false;
+    UAbilitySystemComponent* Source = FindSourceASC(DamageCauser, InstigatorController);
+    FGameplayEffectContextHandle Context = (Source ? Source : ASC)->MakeEffectContext();
+    Context.AddInstigator(Source ? Source->GetAvatarActor() : DamageCauser, DamageCauser);
+    if (IsValid(DamageCauser)) Context.AddSourceObject(DamageCauser);
+    return ASC->ApplyStatus(Definition, Context);
 }
 
 float UCombatFunctionLibrary::ApplyCombatDamageWithStatuses(AActor* Target, float Damage, AActor* DamageCauser,
     const TArray<UCombatStatusDefinition*>& Statuses, AController* InstigatorController)
 {
     return ApplyCombatHitWithStatuses(Target, Damage, DamageCauser, Statuses, InstigatorController, nullptr);
-}
-
-float UCombatFunctionLibrary::ApplyCombatHitWithStatuses(AActor* Target, float Damage, AActor* DamageCauser,
-    const TArray<UCombatStatusDefinition*>& Statuses, AController* InstigatorController, const FHitResult* Hit, TSubclassOf<UDamageType> DamageType)
-{
-    const float Applied = ApplyCombatDamageWithHit(Target, Damage, DamageCauser, InstigatorController, Hit, DamageType);
-    if (Applied > 0.0f)
-        for (UCombatStatusDefinition* Definition : Statuses)
-            ApplyStatusInternal(Target, Definition, DamageCauser, InstigatorController, true);
-    return Applied;
 }
 
 float UCombatFunctionLibrary::ApplyCombatDamage(AActor* Target, float Damage, AActor* DamageCauser, AController* InstigatorController,
@@ -72,6 +59,12 @@ float UCombatFunctionLibrary::ApplyCombatDamage(AActor* Target, float Damage, AA
 
 float UCombatFunctionLibrary::ApplyCombatDamageWithHit(AActor* Target, float Damage, AActor* DamageCauser,
     AController* InstigatorController, const FHitResult* Hit, TSubclassOf<UDamageType> DamageType)
+{
+    return ApplyCombatHitWithStatuses(Target, Damage, DamageCauser, {}, InstigatorController, Hit, DamageType);
+}
+
+float UCombatFunctionLibrary::ApplyCombatHitWithStatuses(AActor* Target, float Damage, AActor* DamageCauser,
+    const TArray<UCombatStatusDefinition*>& Statuses, AController* InstigatorController, const FHitResult* Hit, TSubclassOf<UDamageType> DamageType)
 {
     if (!IsValid(Target) || !Target->HasAuthority() || !Target->CanBeDamaged() || !FMath::IsFinite(Damage) || Damage <= 0.0f) return 0.0f;
     UAbilitySystemComponent* ExistingASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target, true);
@@ -84,18 +77,7 @@ float UCombatFunctionLibrary::ApplyCombatDamageWithHit(AActor* Target, float Dam
     if (!TargetASC || !TargetASC->IsCombatInitialized() || TargetASC->IsDead() || TargetASC->GetHealth() <= 0.0f) return 0.0f;
 
     // Resolve the current source on every hit (including reused/pool projectiles).
-    AActor* SourceActor = IsValid(InstigatorController) ? InstigatorController->GetPawn() : nullptr;
-    if (!SourceActor && IsValid(DamageCauser)) SourceActor = DamageCauser->GetInstigator();
-    if (!SourceActor) SourceActor = DamageCauser;
-    UAbilitySystemComponent* SourceASC = nullptr;
-    TSet<AActor*> Visited;
-    while (IsValid(SourceActor) && !Visited.Contains(SourceActor))
-    {
-        Visited.Add(SourceActor);
-        SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(SourceActor, true);
-        if (SourceASC) break;
-        SourceActor = SourceActor->GetOwner();
-    }
+    UAbilitySystemComponent* SourceASC = FindSourceASC(DamageCauser, InstigatorController);
 
     // World hazards may have no ASC. Retain their identity in the context.
     // Also cover legacy BP ApplyDamage from characters/attached melee weapons. Detached,
@@ -119,5 +101,17 @@ float UCombatFunctionLibrary::ApplyCombatDamageWithHit(AActor* Target, float Dam
     Spec.Data->SetSetByCallerMagnitude(CombatTags::Data_Damage, Damage);
     const float PreviousHealth = TargetASC->GetHealth();
     SpecASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
-    return FMath::Max(0.0f, PreviousHealth - TargetASC->GetHealth());
+    const float Applied = FMath::Max(0.0f, PreviousHealth - TargetASC->GetHealth());
+    if (Applied > 0.0f && TargetASC->CanReceiveStatuses() && !TargetASC->IsDead())
+    {
+        for (UCombatStatusDefinition* Status : Statuses)
+            if (IsValid(Status)) TargetASC->ApplyStatus(Status, Context);
+
+        const auto* Enemy = SourceASC ? Cast<AEnemyCharacter>(SourceASC->GetAvatarActor()) : nullptr;
+        UCombatStatusDefinition* DefaultStatus = Enemy ? Enemy->GetAttackStatus(DamageCauser) : nullptr;
+        if (DefaultStatus && !Statuses.ContainsByPredicate([DefaultStatus](const UCombatStatusDefinition* Status)
+            { return IsValid(Status) && Status->Status == DefaultStatus->Status; }))
+            TargetASC->ApplyStatus(DefaultStatus, Context);
+    }
+    return Applied;
 }

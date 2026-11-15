@@ -16,6 +16,7 @@ class UWidgetComponent;
 class UEnemyHealthBarWidget;
 class UPoolingSubsystem;
 class UCombatAbilitySystemComponent;
+class UCombatStatusDefinition;
 struct FGameplayEffectContextHandle;
 
 UCLASS()
@@ -83,6 +84,16 @@ public:
     //착용할 무기 블루프린트에서 할당함
     UPROPERTY(EditAnywhere, Category = "Combat")
     TSubclassOf<AActor> WeaponClass;
+
+    // Applied to the player after a successful hit from this enemy or its weapons.
+    UPROPERTY(EditDefaultsOnly, Category = "Combat|Elemental Attacks")
+    TObjectPtr<UCombatStatusDefinition> AttackStatus;
+
+    // Per-pattern settings apply only to hits from the specified damage actor class.
+    UPROPERTY(EditDefaultsOnly, Category = "Combat|Elemental Attacks")
+    TMap<TSoftClassPtr<AActor>, TObjectPtr<UCombatStatusDefinition>> PatternStatuses;
+
+    UCombatStatusDefinition* GetAttackStatus(AActor* DamageCauser) const;
 
     // 현재 무기
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")

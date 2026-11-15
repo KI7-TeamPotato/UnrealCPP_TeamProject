@@ -1,9 +1,12 @@
 #if WITH_DEV_AUTOMATION_TESTS && WITH_EDITOR
 
 #include "Misc/AutomationTest.h"
+#include "Misc/Paths.h"
 #include "Combat/CombatAbilitySystemComponent.h"
 #include "Combat/CombatEffects.h"
+#include "Combat/CombatFunctionLibrary.h"
 #include "Combat/CombatTags.h"
+#include "Component/BulletHellComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Enemy/Bullet/EnemyProjectile.h"
@@ -12,6 +15,7 @@
 #include "Enemy/EnemyWeaponBase.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameplayEffect.h"
@@ -214,6 +218,80 @@ bool FBossProjectileGASMigrationTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Boss damage retains the projectile as causer"), LastCauser, static_cast<AActor*>(Projectile));
     TestEqual(TEXT("Boss projectile emits one accepted damage event"), DamageNotifications, 1);
     TargetASC->OnCombatDamageReceived.Remove(DamageDelegate);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEnemyElementalLoadoutsTest, "TeamPotato.Combat.Enemy.ElementalLoadouts",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FEnemyElementalLoadoutsTest::RunTest(const FString& Parameters)
+{
+    struct FHitCase
+    {
+        const TCHAR* EnemyName;
+        const TCHAR* CauserPath;
+        TOptional<ECombatStatus> Expected;
+    };
+    const FHitCase Cases[] = {
+        {TEXT("BP_Archer"), TEXT("Weapon/BP_Arrow"), ECombatStatus::Poison},
+        {TEXT("BP_ScareCrow"), TEXT("Bullet/ScareCrow/BP_Rock"), ECombatStatus::Poison},
+        {TEXT("BP_EliteEnemy"), TEXT("Weapon/BP_Hand"), ECombatStatus::Fire},
+        {TEXT("BP_TreeEliteEnemy1"), TEXT("Weapon/BP_Hand"), ECombatStatus::Electric},
+        {TEXT("BP_LastBoss"), TEXT("Bullet/LastBoss/BP_Burn"), ECombatStatus::Fire},
+        {TEXT("BP_LastBoss"), TEXT("Bullet/LastBoss/BP_Laser"), ECombatStatus::Electric},
+        {TEXT("BP_LastBoss"), TEXT("Bullet/LastBoss/BP_Laser1"), ECombatStatus::Electric},
+        {TEXT("BP_LastBoss"), TEXT("Bullet/LastBoss/BP_Laser2"), ECombatStatus::Electric},
+        {TEXT("BP_LastBoss"), TEXT("Bullet/LastBoss/BP_MagmaBall"), {}}
+    };
+    auto LoadEnemyAssetClass = [](const FString& RelativePath)
+    {
+        const FString ClassPath = TEXT("/Game/Enemy/Blueprint/") + RelativePath + TEXT(".")
+            + FPaths::GetCleanFilename(RelativePath) + TEXT("_C");
+        return LoadClass<AActor>(nullptr, *ClassPath);
+    };
+    FEnemyDamageMigrationWorld Fixture;
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    auto* Player = Fixture.World->SpawnActor<ATestCharacter>(FVector::ZeroVector, FRotator::ZeroRotator, Params);
+    if (!TestNotNull(TEXT("Player spawns"), Player)) return false;
+    auto* Target = CastChecked<UCombatAbilitySystemComponent>(Player->GetAbilitySystemComponent());
+    for (const FHitCase& Hit : Cases)
+    {
+        const FString Label = FString(Hit.EnemyName) + TEXT(" / ") + Hit.CauserPath;
+        UClass* EnemyClass = LoadEnemyAssetClass(Hit.EnemyName);
+        UClass* CauserClass = LoadEnemyAssetClass(Hit.CauserPath);
+        if (!TestNotNull(Label + TEXT(" enemy class"), EnemyClass) || !TestNotNull(Label + TEXT(" causer class"), CauserClass)) continue;
+        auto* Enemy = Fixture.World->SpawnActor<AEnemyCharacter>(EnemyClass, FVector(-2000, 0, 100), FRotator::ZeroRotator, Params);
+        if (!TestNotNull(Label + TEXT(" attacker"), Enemy)) continue;
+        FActorSpawnParameters OwnedParams = Params;
+        OwnedParams.Owner = Enemy;
+        const FVector SpawnLocation(2000, 0, 100);
+        AActor* Causer = nullptr;
+        if (FString(Hit.CauserPath) == TEXT("Bullet/LastBoss/BP_Laser"))
+        {
+            auto* Patterns = Enemy->FindComponentByClass<UBulletHellComponent>();
+            if (!TestNotNull(Label + TEXT(" boss pattern component"), Patterns)) continue;
+            Patterns->SpawnGridAtLocation(CauserClass, SpawnLocation, 1, 1, 100.0f);
+            for (TActorIterator<AActor> It(Fixture.World, CauserClass); It; ++It)
+                if (It->GetOwner() == Enemy) { Causer = *It; break; }
+        }
+        else
+        {
+            Causer = Fixture.World->SpawnActor<AActor>(CauserClass, SpawnLocation, FRotator::ZeroRotator, OwnedParams);
+        }
+        if (!TestNotNull(Label + TEXT(" damage actor"), Causer)) continue;
+        Target->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(CombatTags::State_Invincible));
+        Target->SetMaxHealthAndFill(100.0f);
+        TestEqual(Label + TEXT(" hit damage"), UCombatFunctionLibrary::ApplyCombatDamage(Player, 10.0f, Causer), 10.0f);
+        for (ECombatStatus Type : {ECombatStatus::Poison, ECombatStatus::Fire, ECombatStatus::Electric})
+            TestEqual(Label + TEXT(" status ") + UEnum::GetValueAsString(Type), Target->HasStatus(Type),
+                Hit.Expected.IsSet() && Hit.Expected.GetValue() == Type);
+        Target->RemoveAllStatuses();
+        TestEqual(Label + TEXT(" invincible hit"), UCombatFunctionLibrary::ApplyCombatDamage(Player, 10.0f, Causer), 0.0f);
+        if (Hit.Expected.IsSet()) TestFalse(Label + TEXT(" no status on blocked hit"), Target->HasStatus(Hit.Expected.GetValue()));
+        Causer->Destroy();
+        Enemy->Destroy();
+    }
     return true;
 }
 
