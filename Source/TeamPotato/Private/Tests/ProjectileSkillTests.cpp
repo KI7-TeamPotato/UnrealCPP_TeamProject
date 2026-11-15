@@ -234,6 +234,7 @@ bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
         SkillProperty->GetObjectPropertyValue_InContainer(PlayerClass->GetDefaultObject()) == SkillClass)) return false;
 
     FProjectileSkillWorld Fixture(PlayerClass, SkillClass);
+    TestEqual(TEXT("Gunner fires three rounds per cast"), Fixture.Skill->BurstCount, 3);
     TestEqual(TEXT("GA uses the dedicated skill projectile BP"), Fixture.Skill->ProjectileClass.Get(), ProjectileClass);
     const UGameplayEffect* Cooldown = Fixture.Skill->GetCooldownGameplayEffect();
     if (!TestNotNull(TEXT("GA has a cooldown effect"), Cooldown)) return false;
@@ -243,6 +244,8 @@ bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
 
     auto* Enemy = Fixture.World->SpawnActor<AEnemyCharacter>(FVector(500, 200, 100), FRotator::ZeroRotator);
     if (!TestNotNull(TEXT("Off-axis target spawned"), Enemy)) return false;
+    CastChecked<UCombatAbilitySystemComponent>(Enemy->GetAbilitySystemComponent())->SetMaxHealthAndFill(
+        FMath::Max(100.0f, ProjectileClass->GetDefaultObject<ATurretProjectile>()->Damage * 4.0f));
     const float Before = Enemy->GetCombatHealth();
     if (!TestTrue(TEXT("Real Gunner skill input activates the configured GA"), Fixture.Player->TryUseCharacterSkill())) return false;
     auto* Shot = Fixture.FirstShot();
@@ -258,12 +261,13 @@ bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Repeated skill input is blocked during cooldown"), Fixture.Player->TryUseCharacterSkill());
     TestEqual(TEXT("Repeated input creates no additional shot"), Fixture.ShotCount(), 1);
     const float Damage = Shot->Damage;
-    Fixture.Advance(0.4f);
-    TestEqual(TEXT("Actual skill projectile damages its off-axis target through GAS"), Enemy->GetCombatHealth(), Before - Damage);
-    TestEqual(TEXT("Projectile disappears after impact"), Fixture.ShotCount(), 0);
+    Fixture.Advance(1.2f);
+    TestEqual(TEXT("All three rounds damage the same off-axis target through GAS"), Enemy->GetCombatHealth(), Before - Damage * 3.0f);
+    TestEqual(TEXT("All three projectiles disappear after impact"), Fixture.ShotCount(), 0);
+    TestFalse(TEXT("Ability ends after launching the burst"), Fixture.Skill->IsActive());
 
     Enemy->Destroy();
-    Fixture.Advance(4.4f);
+    Fixture.Advance(3.5f);
     TestFalse(TEXT("Skill stays blocked until the full cooldown expires"), Fixture.Player->TryUseCharacterSkill());
     Fixture.Advance(0.4f);
     TestFalse(TEXT("Cooldown tag expires automatically"), Fixture.ASC->HasMatchingGameplayTag(CooldownTag));
@@ -273,6 +277,12 @@ bool FRangeSkillAssetTest::RunTest(const FString& Parameters)
     if (!TestNotNull(TEXT("No-target shot spawned"), Shot)) return false;
     TestTrue(TEXT("Without a target the skill fires in the character's current forward direction"),
         Shot->Movement->Velocity.GetSafeNormal().Equals(Fixture.Player->GetActorForwardVector(), 0.001f));
+    Fixture.Advance(Fixture.Skill->ShotInterval * 0.5f);
+    TestEqual(TEXT("Second round waits for the interval"), Fixture.ShotCount(), 1);
+    Fixture.Advance(Fixture.Skill->ShotInterval);
+    TestEqual(TEXT("Second round launches separately"), Fixture.ShotCount(), 2);
+    Fixture.Advance(Fixture.Skill->ShotInterval);
+    TestEqual(TEXT("Third round completes the burst"), Fixture.ShotCount(), 3);
     Fixture.Advance(5.2f);
     TestEqual(TEXT("A missed skill projectile expires after its configured lifetime"), Fixture.ShotCount(), 0);
     return true;
@@ -301,15 +311,22 @@ bool FRangeSkillCastMontageTest::RunTest(const FString& Parameters)
     // Configure only this test actor; the character BP and montage assets remain untouched.
     MontageProperty->SetObjectPropertyValue_InContainer(Fixture.Player, Montage);
     if (!TestTrue(TEXT("Configured skill activates through the real input entry point"), Fixture.Player->TryUseCharacterSkill())) return false;
-    TestEqual(TEXT("Optional montage keeps the immediate single projectile launch"), Fixture.ShotCount(), 1);
-    TestFalse(TEXT("Projectile GA ends without waiting for the montage"), Fixture.ASC->FindAbilitySpecFromHandle(Fixture.Handle)->IsActive());
-    TestTrue(TEXT("Cast montage remains playing after the GA has ended"), Anim->Montage_IsPlaying(Montage));
+    TestEqual(TEXT("First round launches immediately"), Fixture.ShotCount(), 1);
+    TestTrue(TEXT("Ability stays active between shots"), Fixture.Skill->IsActive());
+    TestTrue(TEXT("First shot starts the cast montage"), Anim->Montage_IsPlaying(Montage));
 
     Anim->Montage_Stop(0.0f, Montage);
     TestFalse(TEXT("Test montage is stopped before rejected input"), Anim->Montage_IsPlaying(Montage));
     TestFalse(TEXT("Cooldown rejects another skill use"), Fixture.Player->TryUseCharacterSkill());
     TestFalse(TEXT("Rejected use does not start the cast montage"), Anim->Montage_IsPlaying(Montage));
     TestEqual(TEXT("Rejected use creates no additional projectile"), Fixture.ShotCount(), 1);
+    Fixture.Advance(Fixture.Skill->ShotInterval * 1.5f);
+    TestEqual(TEXT("Second round fires without another montage"), Fixture.ShotCount(), 2);
+    TestFalse(TEXT("Second round does not restart the cast montage"), Anim->Montage_IsPlaying(Montage));
+    Fixture.ASC->AddLooseGameplayTag(CombatTags::State_AttackBlocked);
+    Fixture.Advance(Fixture.Skill->ShotInterval * 2.0f);
+    TestEqual(TEXT("Attack block interrupts the remaining round"), Fixture.ShotCount(), 2);
+    TestFalse(TEXT("Interrupted burst ends the ability"), Fixture.Skill->IsActive());
     return true;
 }
 

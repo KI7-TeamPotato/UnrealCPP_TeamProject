@@ -22,6 +22,13 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile Skill", meta = (Units = "cm"))
     FVector SpawnOffset = FVector(100.0f, 0.0f, 30.0f);
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile Skill", meta = (ClampMin = "1"))
+    int32 BurstCount = 1;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile Skill",
+        meta = (EditCondition = "BurstCount > 1", ClampMin = "0.01", Units = "s"))
+    float ShotInterval = 0.25f;
+
     virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
         const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr,
         const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
@@ -35,6 +42,10 @@ protected:
     void OnProjectileLaunched(ATurretProjectile* Projectile);
 
 private:
+    UFUNCTION()
+    void FireNextShot();
+
+    int32 ShotsFired = 0;
     bool GetLaunchTransform(const FGameplayAbilityActorInfo* ActorInfo, FTransform& OutTransform) const;
     static bool IsProjectileConfigured(const ATurretProjectile* Projectile);
 };

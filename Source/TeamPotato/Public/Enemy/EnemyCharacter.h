@@ -172,7 +172,7 @@ protected:
 
     //몬스터 무적 시간
     UPROPERTY(EditAnywhere, Category = "Combat")
-    float InvincibilityDuration = 0.3f;
+    float InvincibilityDuration = 0.2f;
 
 private:
 

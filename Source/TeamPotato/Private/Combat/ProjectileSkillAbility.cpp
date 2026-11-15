@@ -1,4 +1,5 @@
 #include "Combat/ProjectileSkillAbility.h"
+#include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "Combat/CombatAbilitySystemComponent.h"
 #include "Combat/CombatTags.h"
 #include "Combat/TurretProjectile.h"
@@ -73,7 +74,8 @@ bool UProjectileSkillAbility::CanActivateAbility(const FGameplayAbilitySpecHandl
     const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
     FTransform Transform;
-    return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags) &&
+    return BurstCount >= 1 && (BurstCount == 1 || (FMath::IsFinite(ShotInterval) && ShotInterval > 0.0f)) &&
+        Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags) &&
         GetLaunchTransform(ActorInfo, Transform);
 }
 
@@ -81,10 +83,17 @@ void UProjectileSkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle H
     const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
     const FGameplayEventData* TriggerEventData)
 {
+    ShotsFired = 0;
+    FireNextShot();
+}
+
+void UProjectileSkillAbility::FireNextShot()
+{
+    const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
     FTransform Transform;
     if (!GetLaunchTransform(ActorInfo, Transform))
     {
-        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        K2_CancelAbility();
         return;
     }
 
@@ -98,33 +107,42 @@ void UProjectileSkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle H
     if (!IsProjectileConfigured(Projectile) || Projectile->IsActorBeingDestroyed())
     {
         if (IsValid(Projectile)) Projectile->Destroy();
-        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        K2_CancelAbility();
         return;
     }
 
-    if (!CommitAbility(Handle, ActorInfo, ActivationInfo) || !IsActive() ||
+    const bool bFirstShot = ShotsFired == 0;
+    if ((bFirstShot && !CommitAbility(CurrentSpecHandle, ActorInfo, CurrentActivationInfo)) || !IsActive() ||
         !IsValid(Character) || Character->IsActorBeingDestroyed() ||
         !CastChecked<UCombatAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get())->CanAttack())
     {
         Projectile->Destroy();
-        if (IsActive()) EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        if (IsActive()) K2_CancelAbility();
         return;
     }
 
     if (!Projectile->Launch(Transform.GetRotation().GetForwardVector()))
     {
         Projectile->Destroy();
-        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        K2_CancelAbility();
         return;
     }
 
-    // Play directly on the character so the cast animation can finish after this instant GA ends.
-    if (IsValid(Character) && !Character->IsActorBeingDestroyed())
+    ++ShotsFired;
+    if (bFirstShot && IsValid(Character) && !Character->IsActorBeingDestroyed())
     {
         if (UAnimMontage* Montage = Character->GetSkillCastMontage()) Character->PlayAnimMontage(Montage);
     }
 
     if (IsValid(Projectile) && !Projectile->IsActorBeingDestroyed()) OnProjectileLaunched(Projectile);
-    // Ending the GA leaves its independently moving projectile and cooldown GE alive.
-    if (IsActive()) EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+    if (!IsActive()) return;
+    if (ShotsFired >= BurstCount)
+    {
+        K2_EndAbility();
+        return;
+    }
+
+    auto* Delay = UAbilityTask_WaitDelay::WaitDelay(this, ShotInterval);
+    Delay->OnFinish.AddDynamic(this, &ThisClass::FireNextShot);
+    Delay->ReadyForActivation();
 }
