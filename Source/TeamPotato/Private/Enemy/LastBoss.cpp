@@ -2,7 +2,8 @@
 
 
 #include "Enemy/LastBoss.h"
-#include "TeamPotato/Room/DungeonRoom9.h"
+#include "TeamPotato/Logic/DungeonGanarator.h"
+#include "TeamPotato/Room/RoomBase.h"
 #include "Kismet/GameplayStatics.h"
 ALastBoss::ALastBoss()
 {
@@ -19,7 +20,18 @@ void ALastBoss::OnDie()
     if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
 
-    GetWorldTimerManager().SetTimer(VictoryWidgetTimerHandle, this, &ALastBoss::ShowVictoryWidget, 14.0f, false);
+    ARoomBase* Room = EncounterRoom.Get();
+    auto* Dungeon = Room ? Cast<ADungeonGanarator>(Room->GetOwner()) : nullptr;
+    if (Dungeon && Dungeon->HasNextChapter())
+    {
+        Dungeon->OpenNextChapterPortal(*Room);
+        return;
+    }
+
+    constexpr float VictoryDelay = 14.0f;
+    if (VictoryWidgetClass && GetLifeSpan() > 0.0f && GetLifeSpan() <= VictoryDelay)
+        SetLifeSpan(VictoryDelay + 1.0f);
+    GetWorldTimerManager().SetTimer(VictoryWidgetTimerHandle, this, &ALastBoss::ShowVictoryWidget, VictoryDelay, false);
 }
 
 float ALastBoss::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

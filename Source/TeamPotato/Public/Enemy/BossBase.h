@@ -21,6 +21,9 @@ class TEAMPOTATO_API ABossBase : public AEnemyCharacter
 public:
     ABossBase();
 
+    // AI possession changes Pawn.Owner to its controller. Keep the room that started this encounter.
+    TWeakObjectPtr<class ARoomBase> EncounterRoom;
+
 protected:
     virtual void BeginPlay() override;
 

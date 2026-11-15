@@ -2,8 +2,6 @@
 
 
 #include "DungeonRoom9.h"
-#include "Enemy/BossScarecrow.h"
-#include "Kismet/GameplayStatics.h"
 
 ADungeonRoom9::ADungeonRoom9()
 {
@@ -14,22 +12,14 @@ ADungeonRoom9::ADungeonRoom9()
     PortalPoint->SetupAttachment(OtherArchitecture);
 
 }
-void ADungeonRoom9::BeginPlay()
+void ADungeonRoom9::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    Super::BeginPlay();
-
-    AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ABossScarecrow::StaticClass());
-
-    ABossScarecrow* BossActor = Cast<ABossScarecrow>(FoundActor);
-
-    if (BossActor)
-    {
-        BossActor->OnScarecrowDead.AddDynamic(this, &ADungeonRoom9::SpawnPortal);
-    }
+    if (SpawnedPortal.IsValid()) SpawnedPortal->Destroy();
+    Super::EndPlay(EndPlayReason);
 }
 void ADungeonRoom9::SpawnPortal()
 {
-    if (PortalClass && PortalPoint)
+    if (PortalClass && PortalPoint && !SpawnedPortal.IsValid())
     {
         FVector SpawnLocation = PortalPoint->GetComponentLocation();
         FRotator SpawnRotation = PortalPoint->GetComponentRotation();
@@ -37,7 +27,8 @@ void ADungeonRoom9::SpawnPortal()
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this;
 
-        GetWorld()->SpawnActor<AActor>(PortalClass, SpawnLocation, SpawnRotation, SpawnParams);
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        SpawnedPortal = GetWorld()->SpawnActor<AActor>(PortalClass, SpawnLocation, SpawnRotation, SpawnParams);
 
         UE_LOG(LogTemp, Log, TEXT("SpawnPortal"));
     }

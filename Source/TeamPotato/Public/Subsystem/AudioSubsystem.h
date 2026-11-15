@@ -7,6 +7,7 @@
 #include "AudioSubsystem.generated.h"
 
 class USoundMix;
+class UAudioComponent;
 class USaveGameSubsystem;
 /**
  * 
@@ -23,6 +24,7 @@ protected:
     void InitializeSaveSettings();
 
 public:
+    void ConfigureMusicPlayer(UAudioComponent& Player) const;
     UFUNCTION(BlueprintCallable, Category = "Audio")
     void SetMusicVolume(float InVolume, UObject* WorldContextObject = nullptr);
 
@@ -37,9 +39,12 @@ public:
 
 private:
     // --- 사운드 믹스와 클래스 캐싱 ---
-    USoundMix* CachedMasterSoundMix = nullptr;
-    USoundClass* CachedMusicSoundClass = nullptr;
-    USoundClass* CachedSFXSoundClass = nullptr;
+    UPROPERTY(Transient)
+    TObjectPtr<USoundMix> CachedMasterSoundMix;
+    UPROPERTY(Transient)
+    TObjectPtr<USoundClass> CachedMusicSoundClass;
+    UPROPERTY(Transient)
+    TObjectPtr<USoundClass> CachedSFXSoundClass;
 
     TObjectPtr<USaveGameSubsystem> CachedSaveGameSubsystem = nullptr;
 

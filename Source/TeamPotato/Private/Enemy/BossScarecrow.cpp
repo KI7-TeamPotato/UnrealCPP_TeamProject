@@ -21,10 +21,10 @@ void ABossScarecrow::OnDie()
     if (bDeathHandled || !HasAuthority()) return;
     Super::OnDie();
 
-    AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ADungeonRoom9::StaticClass());
-
-    // 3. 찾았다면 캐스팅 후 함수 실행
-    if (ADungeonRoom9* Room = Cast<ADungeonRoom9>(FoundActor))
+    ADungeonRoom9* Room = Cast<ADungeonRoom9>(EncounterRoom.Get());
+    if (!EncounterRoom.IsValid())
+        Room = Cast<ADungeonRoom9>(UGameplayStatics::GetActorOfClass(GetWorld(), ADungeonRoom9::StaticClass()));
+    if (Room)
     {
         Room->SpawnPortal(); 
     }

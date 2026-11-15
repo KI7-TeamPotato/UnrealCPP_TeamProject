@@ -2,6 +2,7 @@
 
 
 #include "Subsystem/AudioSubsystem.h"
+#include "Components/AudioComponent.h"
 #include "Common/MyGameSettings.h"
 #include "Sound/SoundMix.h"
 #include "Sound/SoundClass.h"
@@ -20,20 +21,9 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     // 사운드 믹스와 클래스 캐싱 로직 구현
     if (UMyGameSettings* GameSettings = UMyGameSettings::Get())
     {
-        if (GameSettings->MasterSoundMix.IsValid())
-        {
-            CachedMasterSoundMix = GameSettings->MasterSoundMix.LoadSynchronous();;
-        }
-
-        if (GameSettings->MusicSoundClass.IsValid())
-        {
-            CachedMusicSoundClass = GameSettings->MusicSoundClass.LoadSynchronous();
-        }
-
-        if (GameSettings->SFXSoundClass.IsValid())
-        {
-            CachedSFXSoundClass = GameSettings->SFXSoundClass.LoadSynchronous();;
-        }
+        CachedMasterSoundMix = GameSettings->MasterSoundMix.LoadSynchronous();
+        CachedMusicSoundClass = GameSettings->MusicSoundClass.LoadSynchronous();
+        CachedSFXSoundClass = GameSettings->SFXSoundClass.LoadSynchronous();
     }
 
     // 초기화를 보장된 상태  
@@ -49,11 +39,18 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAudioSubsystem::InitializeSaveSettings()
 {
-    if (CachedSaveGameSubsystem)
+    if (const USaveSettings* Saved = CachedSaveGameSubsystem->GetGameSettings())
     {
-        SetMusicVolume(CachedSaveGameSubsystem->GetGameSettings()->MusicVolume);
-        SetSFXVolume(CachedSaveGameSubsystem->GetGameSettings()->SFXVolume);
+        CurrnetMusicVolume = Saved->MusicVolume;
+        CurrnetSFXVolume = Saved->SFXVolume;
     }
+}
+
+void UAudioSubsystem::ConfigureMusicPlayer(UAudioComponent& Player) const
+{
+    Player.SoundClassOverride = CachedMusicSoundClass;
+    if (CachedMasterSoundMix && CachedMusicSoundClass)
+        UGameplayStatics::SetSoundMixClassOverride(&Player, CachedMasterSoundMix, CachedMusicSoundClass, CurrnetMusicVolume);
 }
 
 void UAudioSubsystem::SetMusicVolume(float InVolume, UObject* WorldContextObject)

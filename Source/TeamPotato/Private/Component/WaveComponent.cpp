@@ -2,6 +2,8 @@
 
 
 #include "Component/WaveComponent.h"
+#include "Enemy/BossBase.h"
+#include "TeamPotato/Room/RoomBase.h"
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
 
@@ -200,6 +202,8 @@ void UWaveComponent::SpawnEnemiesAfterWarning(int32 WaveIndex)
             AEnemyCharacter* NewEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(Info.EnemyClass, SpawnTransform, SpawnParams);
             if (IsValid(NewEnemy))
             {
+                if (ABossBase* Boss = Cast<ABossBase>(NewEnemy))
+                    Boss->EncounterRoom = Cast<ARoomBase>(GetOwner());
                 NewEnemy->OnDeath.AddDynamic(this, &UWaveComponent::OnEnemyKilled);
                 WaveEnemies.Add(NewEnemy);
                 RemainingEnemies++;

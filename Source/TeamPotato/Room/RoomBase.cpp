@@ -252,6 +252,7 @@ void ARoomBase::OnRoomTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp,
     if (PlayerCharacter && WaveSystemComp)
     {
         bIsStartBattle = true;
+        OnBattleStarted.Broadcast();
 
         UE_LOG(LogTemp, Warning, TEXT("Battle Start"));
 

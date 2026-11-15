@@ -44,5 +44,6 @@ private:
 
 
     // --- 설정 캐싱 ---
-    USaveSettings* CachedSettings = nullptr;
+    UPROPERTY(Transient)
+    TObjectPtr<USaveSettings> CachedSettings;
 };

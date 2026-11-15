@@ -37,6 +37,7 @@ public:
 
     //플레이어가 방에 들어왔는지 검사하는 콜리전(OnEnterRoomCollision)을 관리하는 함수
     void ActivateBattleTrigger();
+    FSimpleMulticastDelegate OnBattleStarted;
     
     //클리어 한 방인지 넘겨주는 getter
     bool GetRoomClear() { return bIsRoomClear; }

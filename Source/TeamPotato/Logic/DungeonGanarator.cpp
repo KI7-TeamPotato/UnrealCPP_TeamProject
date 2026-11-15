@@ -2,6 +2,9 @@
 
 
 #include "DungeonGanarator.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
+#include "Subsystem/AudioSubsystem.h"
 #include "TeamPotato/Room/RoomBase.h"
 #include "TeamPotato/Room/DungeonRoom1.h"
 #include "TeamPotato/Logic/ClosingWall.h"
@@ -51,6 +54,8 @@ void ADungeonGanarator::BeginPlay()
     bIsFinalizingDungeon = false;
     bIsDungeonGenerationCompleted = false;
 
+    PlayDungeonMusic();
+
     // 생성이 끝나지 못하는 경우에만 재시도하는 안전장치
     GetWorld()->GetTimerManager().SetTimer(
         GenerationTimeoutHandle, 
@@ -64,6 +69,7 @@ void ADungeonGanarator::BeginPlay()
 
 void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    SetMusic(nullptr);
     if (GetWorld())
     {
         GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
@@ -78,6 +84,48 @@ void ADungeonGanarator::EndPlay(const EEndPlayReason::Type EndPlayReason)
     }
 
     Super::EndPlay(EndPlayReason);
+}
+
+void ADungeonGanarator::PlayDungeonMusic()
+{
+    SetMusic(DungeonMusic);
+}
+
+void ADungeonGanarator::PlayBossMusic()
+{
+    SetMusic(BossMusic ? BossMusic : DungeonMusic);
+}
+
+void ADungeonGanarator::SetMusic(USoundBase* Track)
+{
+    if (IsValid(MusicPlayer))
+    {
+        if (Track && MusicPlayer->Sound == Track && MusicPlayer->IsPlaying()) return;
+        MusicPlayer->OnAudioFinishedNative.RemoveAll(this);
+        MusicPlayer->bAutoDestroy = true;
+        if (Track && MusicPlayer->IsPlaying())
+            MusicPlayer->FadeOut(0.5f, 0.0f);
+        else
+            MusicPlayer->DestroyComponent();
+        MusicPlayer = nullptr;
+    }
+    if (!Track) return;
+
+    MusicPlayer = UGameplayStatics::CreateSound2D(this, Track, 1.0f, 1.0f, 0.0f, nullptr, false, false);
+    if (!MusicPlayer) return;
+    MusicPlayer->bStopWhenOwnerDestroyed = true;
+    if (auto* Audio = UGameInstance::GetSubsystem<UAudioSubsystem>(GetGameInstance()))
+        Audio->ConfigureMusicPlayer(*MusicPlayer);
+    MusicPlayer->OnAudioFinishedNative.AddUObject(this, &ThisClass::RepeatMusic);
+    MusicPlayer->FadeIn(0.5f);
+}
+
+void ADungeonGanarator::RepeatMusic(UAudioComponent* FinishedPlayer)
+{
+    const UWorld* World = GetWorld();
+    if (FinishedPlayer == MusicPlayer && FinishedPlayer->IsRegistered() && HasActorBegunPlay() &&
+        !IsActorBeingDestroyed() && World && !World->bIsTearingDown)
+        FinishedPlayer->Play();
 }
 
 bool ADungeonGanarator::SpawnStarterRooms()
@@ -354,13 +402,13 @@ void ADungeonGanarator::ScheduleNextRoomSpawn()
 
 bool ADungeonGanarator::ValidateGenerationConfig() const
 {
-	const TArray<TSubclassOf<ARoomBase>>& LastRoomClasses = chapter == MaxAmout ? BossRoomClass : PotalRoomClass;
 	return GetWorld()
 		&& !StartRoom.IsEmpty() && StartRoom[0]
 		&& !RoomsToBeSpawned.IsEmpty()
 		&& !CorridorRooms.IsEmpty()
 		&& !ClosingWall.IsEmpty() && ClosingWall[0]
-		&& !LastRoomClasses.IsEmpty() && LastRoomClasses[0]
+		&& GetLastRoomClass()
+		&& (chapter != StagesPerChapter || !HasNextChapter() || ChapterExitPortalClass)
 		&& RoomAmount > 0;
 }
 
@@ -454,23 +502,18 @@ void ADungeonGanarator::ClosingUnuusedWall()
     UE_LOG(LogTemp, Warning, TEXT("ClosingUnuusedWall"));
 }
 
+TSubclassOf<ARoomBase> ADungeonGanarator::GetLastRoomClass() const
+{
+    // Stage selects the theme. chapter is the 1-based floor within it.
+    if (chapter == 2) return MidBossRoomClass;
+    if (chapter == StagesPerChapter) return FinalBossRoomClass;
+    return PotalRoomClass.IsEmpty() ? TSubclassOf<ARoomBase>() : PotalRoomClass[0];
+}
+
 bool ADungeonGanarator::SpawnLastRoom()
 {
-    //보스방 생성
-    const TArray<TSubclassOf<ARoomBase>>* TargetRoomArray = nullptr;
-
-    if (chapter == MaxAmout)
-    {
-        TargetRoomArray = &BossRoomClass;
-        UE_LOG(LogTemp, Warning, TEXT("createboss"));
-    }
-    else
-    {
-        TargetRoomArray = &PotalRoomClass;
-        UE_LOG(LogTemp, Warning, TEXT("createportal"));
-    }
-
-    if (!GetWorld() || !TargetRoomArray || TargetRoomArray->IsEmpty() || !(*TargetRoomArray)[0] || !IsValid(LastestSpawnRoom))
+    const TSubclassOf<ARoomBase> RoomClass = GetLastRoomClass();
+    if (!GetWorld() || !RoomClass || !IsValid(LastestSpawnRoom))
     {
         UE_LOG(LogTemp, Error, TEXT("Cannot spawn final room: class or latest room is invalid."));
         return false;
@@ -492,7 +535,9 @@ bool ADungeonGanarator::SpawnLastRoom()
 		return false;
 	}
 
-    ARoomBase* LastRoom = GetWorld()->SpawnActor<ARoomBase>((*TargetRoomArray)[0]);
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    ARoomBase* LastRoom = GetWorld()->SpawnActor<ARoomBase>(RoomClass, Params);
     if (!IsValid(LastRoom))
     {
 		UE_LOG(LogTemp, Error, TEXT("Failed to spawn final room actor."));
@@ -516,10 +561,32 @@ bool ADungeonGanarator::SpawnLastRoom()
 
     DoorList.Add(LastExit);
     GeneratedActors.Add(LastRoom);
+    if (chapter == 2 || chapter == StagesPerChapter)
+    {
+        LastRoom->OnBattleStarted.AddUObject(this, &ThisClass::PlayBossMusic);
+        LastRoom->WaveSystemComp->OnAllWavesCleared.AddDynamic(this, &ThisClass::PlayDungeonMusic);
+    }
     Exits.Remove(LastExit);
     UE_LOG(LogTemp, Warning, TEXT("Final room spawned successfully."));
     CurrentResetCount = 0;
     return true;
+}
+
+void ADungeonGanarator::OpenNextChapterPortal(const ARoomBase& BossRoom)
+{
+    if (!HasAuthority() || !ChapterExitPortalClass || &BossRoom != LastestSpawnRoom) return;
+
+    // The fixed final arena uses spawn point zero, on the floor even during airborne boss attacks.
+    const auto* Wave = BossRoom.WaveSystemComp.Get();
+    const USceneComponent* Point = Wave && Wave->SpawnPoints.IsValidIndex(0) ? Wave->SpawnPoints[0] : nullptr;
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    const FVector Location = IsValid(Point) ? Point->GetComponentLocation() : BossRoom.GetActorLocation();
+    if (AActor* Portal = GetWorld()->SpawnActor<AActor>(ChapterExitPortalClass, Location, BossRoom.GetActorRotation(), Params))
+    {
+        GeneratedActors.Add(Portal);
+    }
 }
 
 void ADungeonGanarator::SelectedSpecialRoom()
@@ -543,6 +610,7 @@ void ADungeonGanarator::ResetDungeon()
     }
 
     //현재 진행 중인 타이머 모두 중지
+    PlayDungeonMusic();
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
     TArray<AActor*> AllEnemies;
@@ -680,7 +748,6 @@ void ADungeonGanarator::StageConfigSetting()
             && SelectedConfig.SpecialRooms.Num() > 0
             && SelectedConfig.Corridors.Num() > 0
             && SelectedConfig.StartRooms.Num() > 0
-            && SelectedConfig.BossRooms.Num() > 0
             && SelectedConfig.ClosingWalls.Num() > 0
             && SelectedConfig.PotalRooms.Num() > 0
             && RoomAmount > 0
@@ -690,7 +757,6 @@ void ADungeonGanarator::StageConfigSetting()
             SpecialRoomsToBeSpawned = SelectedConfig.SpecialRooms;
             CorridorRooms = SelectedConfig.Corridors;
             StartRoom = SelectedConfig.StartRooms;
-            BossRoomClass = SelectedConfig.BossRooms;
             PotalRoomClass = SelectedConfig.PotalRooms;
             ClosingWall = SelectedConfig.ClosingWalls;
 			if (!SelectedConfig.Doors.IsEmpty())
@@ -714,8 +780,8 @@ void ADungeonGanarator::GoToNextStage(int32 NewChapter)
 {
     SetSeed();
     int32 NextStage = NewChapter+1;
-    UE_LOG(LogTemp, Error, TEXT("%d스테이지-%d챕터"), Stage, NewChapter);
-    if (NextStage > MaxAmout)
+    UE_LOG(LogTemp, Log, TEXT("Leaving chapter %d, stage %d"), Stage, NewChapter);
+    if (NextStage > StagesPerChapter)
     {
         chapter = 1;
         Stage++;

@@ -29,9 +29,6 @@ struct FStageRoomConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class ARoomBase>> Corridors;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class ARoomBase>> BossRooms;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<TSubclassOf<class ARoomBase>> PotalRooms;
 
@@ -54,6 +51,8 @@ class ADungeonRoom1;
 class ARoomBase;
 class AClosingWall;
 class ADoor;
+class UAudioComponent;
+class USoundBase;
 
 UCLASS()
 class TEAMPOTATO_API ADungeonGanarator : public AActor
@@ -63,6 +62,12 @@ class TEAMPOTATO_API ADungeonGanarator : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ADungeonGanarator();
+
+    UPROPERTY(EditDefaultsOnly, Category = "Music")
+    TObjectPtr<USoundBase> DungeonMusic;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Music")
+    TObjectPtr<USoundBase> BossMusic;
 
 	//던전 크기
 	UPROPERTY(EditAnywhere, Category = "DungeonInfo")
@@ -88,9 +93,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rooms")
 	TArray<TSubclassOf<ARoomBase>> RoomsToBeSpawned;
 
-	//보스방
-	UPROPERTY(EditAnywhere, Category = "Rooms")
-	TArray<TSubclassOf<ARoomBase>> BossRoomClass; // 연결할 보스 방 클래스
+    UPROPERTY(EditDefaultsOnly, Category = "Rooms|Boss")
+    TSubclassOf<ARoomBase> MidBossRoomClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rooms|Boss")
+    TSubclassOf<ARoomBase> FinalBossRoomClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rooms|Boss")
+    TSubclassOf<AActor> ChapterExitPortalClass;
+
+    bool HasNextChapter() const { return StageConfigMap.Contains(Stage + 1); }
+    void OpenNextChapterPortal(const ARoomBase& BossRoom);
 
     //포탈방
     UPROPERTY(EditAnywhere, Category = "Rooms")
@@ -208,6 +221,15 @@ protected:
     void CalculateDungeonMinMaxPoint();
 
 private:
+    UPROPERTY(Transient)
+    TObjectPtr<UAudioComponent> MusicPlayer;
+    void PlayBossMusic();
+    UFUNCTION()
+    void PlayDungeonMusic();
+    void SetMusic(USoundBase* Track);
+    void RepeatMusic(UAudioComponent* FinishedPlayer);
+
+    TSubclassOf<ARoomBase> GetLastRoomClass() const;
 	//벽이랑 복도등 모든 요소 저장하는 배열(ResetDungeon에서 맵 리셋할떄 씀)
     UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
 	TArray<AActor*> GeneratedActors;
@@ -230,7 +252,7 @@ private:
 	bool bIsFinalizingDungeon = false;
 	bool bIsDungeonGenerationCompleted = false;
 
-    const int32 MaxAmout = 3;
+    static constexpr int32 StagesPerChapter = 3;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
