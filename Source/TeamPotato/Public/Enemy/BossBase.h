@@ -50,7 +50,7 @@ public:
 
     //패턴 종료시 델리게이트 호출하는 함수(블루프린트에서 씀)
     UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
-    void FinishCurrentPattern();
+    virtual void FinishCurrentPattern();
 
     //패턴 종료 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "Boss|Event")
