@@ -52,9 +52,13 @@ void ADungeonGanarator::BeginPlay()
     bIsDungeonGenerationCompleted = false;
 
     // 생성이 끝나지 못하는 경우에만 재시도하는 안전장치
-    GetWorld()->GetTimerManager().SetTimer(GenerationTimeoutHandle, this, &ADungeonGanarator::OnGenerationTimeout, 4.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(
+        GenerationTimeoutHandle, 
+        this, 
+        &ADungeonGanarator::OnGenerationTimeout, 
+        4.0f,
+        false);
 
-    //시작 방 생성
 	SpawnNextRoom();
 }
 
@@ -225,8 +229,6 @@ void ADungeonGanarator::SpawnNextRoom()
         RoomClassToSpawn = SpecialRoomsToBeSpawned[SpecialRoomIndex];
         UE_LOG(LogTemp, Warning, TEXT("%d"), CurrentSpecialRoomIndex);
         IsSpawnSpecialRoom = true;
-
-        //버그 있음 가끔 같은 특수방이 나옴 Seed = 13190 -> 해결함
     }
     else
     {

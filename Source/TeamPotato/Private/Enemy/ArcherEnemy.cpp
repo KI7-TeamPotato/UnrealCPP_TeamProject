@@ -39,7 +39,10 @@ void AArcherEnemy::InitBulletPool()
         SpawnParams.Instigator = this;
 
         // 생성 후 숨겨둠 (BulletBase 내부 로직에 의해 자동 Deactivate)
-        ABulletBase* NewBullet = GetWorld()->SpawnActor<ABulletBase>(BulletClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+        ABulletBase* NewBullet = GetWorld()->SpawnActor<ABulletBase>(BulletClass,
+            FVector::ZeroVector,
+            FRotator::ZeroRotator,
+            SpawnParams);
 
         if (NewBullet)
         {
